@@ -1,4 +1,5 @@
 import { input, confirm } from "@inquirer/prompts";
+import { execSync } from "node:child_process";
 import chalk from "chalk";
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
@@ -93,5 +94,22 @@ export async function runInit(options: InitOptions): Promise<void> {
   const ciResults = await installCi(root, projectInfo);
   for (const result of ciResults) {
     console.log(`  ${chalk.green("+")} ${result}`);
+  }
+
+  // Post-install notes
+  const notes: string[] = [];
+  try {
+    execSync("command -v semgrep", { stdio: "ignore" });
+  } catch {
+    notes.push(
+      `Semgrep not found. Security scanning hooks will skip until installed: ${chalk.cyan("pipx install semgrep")}`
+    );
+  }
+  if (notes.length > 0) {
+    console.log("");
+    console.log(chalk.yellow("Notes:"));
+    for (const note of notes) {
+      console.log(`  ${chalk.dim("→")} ${note}`);
+    }
   }
 }

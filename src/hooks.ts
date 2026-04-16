@@ -132,7 +132,7 @@ export async function installHooks(
       ],
     },
   ];
-  results.push("Stop: plan validation + dependency graph + workflow navigator + handoff reminder");
+  results.push("Stop: plan validation + workflow navigator + handoff reminder");
 
   // SessionStart: Checkpoint commit + context injection
   hooks.SessionStart = [
@@ -158,7 +158,7 @@ export async function installHooks(
     },
   ];
   results.push("SessionStart: checkpoint commit before agent session");
-  results.push("SessionStart: inject dependency graph context");
+  results.push("SessionStart: context injection");
 
   // Merge hooks into settings (don't overwrite other settings)
   settings.hooks = hooks;
@@ -252,13 +252,8 @@ for plan in docs/plans/$(date +%Y)*.md; do
   fi
 done
 
-# Regenerate dependency graph if TS/TSX files changed
-if command -v npx &>/dev/null && git diff --name-only HEAD 2>/dev/null | grep -qE "\\.(ts|tsx)$"; then
-  if [ -f "package.json" ]; then
-    mkdir -p .ai
-    npx madge --json src/ --ts-config tsconfig.json > .ai/deps.json 2>/dev/null || true
-  fi
-fi
+# Dependency graph generation removed — Serena MCP provides
+# superior live LSP-backed dependency tracking on demand.
 
 # Workflow navigator: detect what just happened and suggest next step
 LAST_COMMIT=$(git log -1 --pretty=%s 2>/dev/null || true)
@@ -349,13 +344,8 @@ fi
 
 function buildSessionStartScript(): string {
   return `bash -c '
-# Inject dependency graph if available
-if [ -f ".ai/deps.json" ]; then
-  SIZE=$(wc -c < .ai/deps.json | tr -d " ")
-  if [ "$SIZE" -lt 10000 ]; then
-    echo "{\\"systemMessage\\": \\"Dependency graph (.ai/deps.json) loaded. $(wc -l < .ai/deps.json | tr -d " ") entries.\\"}"
-  fi
-fi
+# Dependency graph injection removed — Serena MCP provides
+# live LSP-backed dependency tracking on demand.
 '`;
 }
 
