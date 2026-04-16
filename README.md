@@ -18,6 +18,20 @@ Soloship exists to close that gap for solo operators. Not by pretending you're a
 2. **A small set of workflow skills** — audit, plan, implement, review, ship, debug, retro — each one a guided path through the steps a professional would take.
 3. **A graduation signal** — a system that watches your project and tells you when it's gotten complex enough that you need a real engineer, not just another skill.
 
+### How we got here
+
+Soloship didn't start as a project. It started as a frustration.
+
+We had 40+ solution documents in `docs/solutions/` — real fixes to real problems we'd hit before. The kind of knowledge that should prevent you from making the same mistake twice. But the agents kept making the same mistakes. We finally stopped and asked why.
+
+The answer: none of the tools in our stack were actually reading the solutions at the point of execution. [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin)'s planning workflow (`/workflows:plan`) does dispatch a `learnings-researcher` agent that searches `docs/solutions/` — but it runs once, during the research phase, and its results get compressed into a few bullet points in the plan doc. The execution workflow (`/workflows:work`) never touches the solutions directory. It reads the plan, follows the plan, and trusts the plan to carry everything forward. With 40+ solution docs, most get scored out during the research pass. What survives is a summary of a summary. And once execution starts, there's no retrieval — even when the agent is hitting the exact error a solution doc describes.
+
+So we tried rules. We added a `solution-search` rule that told the agent to check `docs/solutions/` before planning, debugging, or reviewing. It helped — when the agent followed it. But rules are suggestions. The agent would rationalize past them: "this is a simple change, no need to search," "I already know what to do here." We'd reinforce by asking the agent if the rules were followed, and the honest answer was usually no.
+
+So we tried hooks — mechanical triggers that fire regardless of what the agent is paying attention to. Hooks can't be rationalized away. That worked better. But wiring up hooks, rules, solution docs, AGENTS.md files, and CI checks for each new project was its own overhead. And the workflow skills we were routing through weren't quite right either.
+
+[gstack](https://github.com/garrytan/gstack) has a strong skill set — QA, design review, security, shipping — but its skills are verbose and try to cover too much surface area. In a lot of cases the agent would get lost in instruction volume, or the skill would prescribe steps that didn't apply to a solo operator's workflow. So we started pulling the good parts out and writing our own versions: leaner, opinionated for the solo use case, with the enforcement gates and solution-search hooks wired in from the start. That became Soloship.
+
 It's a companion, not a replacement. It sits alongside tools like [Superpowers](https://github.com/anthropics/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), [Impeccable](https://github.com/pbakaus/impeccable), and cherry-picked [gstack](https://github.com/garrytan/gstack). It doesn't duplicate what those do — it routes to them, and fills in the guardrails they assume you already have.
 
 ## What's in the box
