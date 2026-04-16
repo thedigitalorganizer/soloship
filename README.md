@@ -6,6 +6,8 @@ Soloship is a methodology and toolkit for people who direct AI coding agents (li
 
 **Value prop:** Keeps you safe while solo, tells you when you're not, makes the handoff smooth when you graduate to a real team.
 
+**Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet) — bookmarkable one-pager of the skills and workflows.
+
 ## Why this exists
 
 AI coding agents made it possible for one person with no engineering background to build software. That's the miracle. The problem is that the things a senior engineer quietly prevents — hidden coupling, missing tests, silent regressions, un-rollback-able deploys, security sloppiness, design drift — none of those go away just because the agent is writing the code. They just happen faster, and without anyone noticing.
