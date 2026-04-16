@@ -16,7 +16,7 @@ Soloship exists to close that gap for solo operators. Not by pretending you're a
 2. **A small set of workflow skills** — audit, plan, implement, review, ship, debug, retro — each one a guided path through the steps a professional would take.
 3. **A graduation signal** — a system that watches your project and tells you when it's gotten complex enough that you need a real engineer, not just another skill.
 
-It's a companion, not a replacement. It sits alongside tools like [Superpowers](https://github.com/anthropics/superpowers), Compound Engineering, Impeccable, and cherry-picked gstack. It doesn't duplicate what those do — it routes to them, and fills in the guardrails they assume you already have.
+It's a companion, not a replacement. It sits alongside tools like [Superpowers](https://github.com/anthropics/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), [Impeccable](https://github.com/pbakaus/impeccable), and cherry-picked [gstack](https://github.com/garrytan/gstack). It doesn't duplicate what those do — it routes to them, and fills in the guardrails they assume you already have.
 
 ## What's in the box
 
