@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It gives you three things a traditional engineering team would: a **safety floor** that fires automatically (hooks, CI, rules — no judgment calls required), a **small set of workflow skills** that guide you through the steps a professional would take (plan, implement, review, ship, debug), and a **graduation signal** that tells you when your project has outgrown solo mode and it's time to hire help.
+Soloship is guardrails for non-coders building software through AI agents. It gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **16 workflow skills** that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **an npm installer** that detects your stack and sets everything up in one command.
 
 **Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet)
 
@@ -18,9 +18,47 @@ So we tried **rules** — a `solution-search` rule that told the agent to check 
 
 So we tried **hooks** — mechanical triggers that fire regardless of what the agent is paying attention to. Hooks can't be rationalized away. That worked better. But wiring up hooks, rules, solution docs, `AGENTS.md` files, and CI checks for each new project was its own overhead.
 
-And the workflow skills we were routing through weren't quite right either. [gstack](https://github.com/garrytan/gstack) has a strong skill set — QA, design review, security, shipping — but its skills are verbose and try to cover too much surface area. The agent would get lost in instruction volume, or the skill would prescribe steps that didn't apply to a solo operator's workflow. So we started pulling the good parts out and writing our own versions: leaner, opinionated for the solo use case, with enforcement gates and solution-search wired in from the start.
+And the workflow skills we were routing through weren't quite right either. [gstack](https://github.com/garrytan/gstack) has a strong skill set — QA, design review, security, shipping — but its skills are verbose and try to cover too much surface area. The agent would get lost in instruction volume, or the skill would prescribe steps that didn't apply to a solo operator's workflow. So we started pulling the good parts out and writing our own versions: leaner, opinionated for the solo use case, with enforcement gates and solution-search wired in from the start. Where the upstream tools already do the job well, Soloship routes to them and adds enforcement on top rather than rewriting them.
 
 That became Soloship.
+
+## How it works
+
+Three layers, from most mechanical to most guided:
+
+**Hooks** fire automatically on git events. They can't be rationalized away. Dangerous command blocking, auto-lint, CHANGELOG enforcement, dependency graph checks, plan validation, architecture fitness functions. If the agent forgets, the hook remembers.
+
+**Rules** are injected into every agent session as always-on context. Solution search before planning, plan materialization after plan mode, plan rationale requirements, plan lifecycle enforcement. The agent can't not see them, even if a skill doesn't reference them.
+
+**Skills** are guided workflows invoked as `/soloship-*` commands. Each adds enforcement gates (checklists the agent must complete), anti-rationalization tables (preemptive counters to the ways agents cut corners), and routing to the right underlying tool.
+
+### Skill architecture
+
+Some skills are fully self-contained — the logic lives entirely in the SKILL.md:
+
+| Skill | What it does |
+|-------|-------------|
+| `/audit` | 10 parallel investigation agents, two-phase with human checkpoint |
+| `/bootstrap` | Reads audit findings, generates governance infrastructure |
+| `/spec` | Formal specification with acceptance criteria |
+| `/onboard` | Reads all project docs, produces orientation briefing |
+| `/shipfast` | Lint → test → build → commit → push → deploy |
+| `/cleanup` | 5 audit agents → interactive proposals → atomic execution |
+
+Others are routers — Soloship adds enforcement and routing logic, then dispatches to an external skill:
+
+| Skill | Routes to | What Soloship adds |
+|-------|-----------|-------------------|
+| `/brainstorm` | `office-hours` (product) / `superpowers:brainstorming` (technical) | Product-vs-technical routing, mandatory design-first nudge |
+| `/plan` | `superpowers:writing-plans` / `plan-eng-review` | Solution search before planning, 7-point enforcement gate, artifact contracts |
+| `/implement` | `superpowers:subagent-driven-development` / `superpowers:dispatching-parallel-agents` | Plan-first enforcement, execution strategy routing |
+| `/debug` | `superpowers:systematic-debugging` | Solution search for prior art, root-cause iron law |
+| `/learn` | `compound-engineering:workflows:compound` (Step 1) | Solution doc via CE, then own protocols: JSONL logging, registry audit, AGENTS.md propagation + creation |
+| `/review` | `plan-eng/ceo/design-review` (plans) / 3-pass agents (code) | Target detection (plan vs code), severity classification, synthesis |
+| `/shipthorough` | Invokes `/review` internally | 12-step pipeline: preflight, merge, lint, test, coverage audit, review, registry, CHANGELOG, plan lifecycle, commits, PR, deploy |
+| `/qa` | gstack `qa` / `qa-only` | Mode selection (fix vs report-only) |
+| `/security` | gstack `cso` | Post-audit triage routing |
+| `/design-review` | gstack `design-review` | Adds AI slop detection pass (visual/content/layout patterns) |
 
 ## What you get
 
@@ -42,33 +80,35 @@ Run it once per project.
 
 ### The skills
 
-16 Claude Code skills invoked as `/soloship-*` slash commands, organized by when you use them:
+16 Claude Code skills invoked as `/soloship-*` slash commands:
 
 **Setup & orientation**
-- `/soloship-audit` — deep 2-phase codebase investigation (understand before you govern)
-- `/soloship-bootstrap` — configure governance from audit findings or interactive questions
-- `/soloship-onboard` — codebase orientation briefing for fresh sessions
+
+- `/soloship-audit` — Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 6 more to assess quality, entanglement, security, dependencies, gaps, and leverage points. Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
+- `/soloship-bootstrap` — Configures governance from audit findings or interactive questions. Creates CLAUDE.md, AGENTS.md files (3+ source file threshold), installs 4 core rules, and wires up hooks. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
+- `/soloship-onboard` — Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. No external routing — fully self-contained.
 
 **Daily work**
-- `/soloship-brainstorm` — product or technical exploration, with a design-first nudge
-- `/soloship-spec` — formal specification with acceptance criteria
-- `/soloship-plan` — solution search + plan writing with enforcement gates
-- `/soloship-implement` — route to subagent-driven or parallel execution
-- `/soloship-debug` — systematic debugging with the root-cause iron law
-- `/soloship-learn` — capture solutions, update learnings log, propagate to AGENTS.md
-- `/soloship-cleanup` — knowledge system maintenance (dedup solutions, prune stale refs, enforce plan lifecycle, rebuild indexes)
+
+- `/soloship-brainstorm` — Detects whether the question is product (demand, audience, wedge) or technical (approaches, trade-offs) and routes accordingly: `office-hours` for product questions, `superpowers:brainstorming` for technical ones. Ends with a mandatory design-first nudge — sketch before you plan.
+- `/soloship-spec` — Writes formal specifications with numbered acceptance criteria, data models, API contracts, user flows (including error states), and explicit out-of-scope boundaries. 8-point verification checklist. Fully self-contained.
+- `/soloship-plan` — Searches `docs/solutions/` for prior art, reads architecture context, then routes to `superpowers:writing-plans` for standard features or `plan-eng-review` for architectural work. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls.
+- `/soloship-implement` — Finds the most recent plan in `docs/plans/`, assesses the execution strategy, and routes to `superpowers:subagent-driven-development` (sequential tasks) or `superpowers:dispatching-parallel-agents` (independent modules). Freshness check warns on stale plans.
+- `/soloship-debug` — Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then routes to `superpowers:systematic-debugging` for 4-phase discipline (Investigate → Analyze → Hypothesize → Implement). Nudges `/learn` for non-obvious fixes.
+- `/soloship-learn` — Captures knowledge from non-obvious work. Step 1 routes to `compound-engineering:workflows:compound` for solution doc creation. Steps 2-3 are Soloship's own protocols: JSONL logging for cross-session search and architecture registry drift checking. Steps 4-5 adapt the distributed AGENTS.md concept — propagating pitfalls into existing AGENTS.md files and creating new ones for directories above the 3-file governance threshold. Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
+- `/soloship-cleanup` — Knowledge system maintenance. Launches 5 parallel audit agents (solution health, overlap detection, plan lifecycle, AGENTS.md staleness, index sync), presents findings interactively, then executes approved changes in a single atomic commit. Merge candidates require 2-of-3 signal threshold. Each merge dispatched as an independent subagent to prevent context bloat.
 
 **Shipping**
-- `/soloship-shipfast` — emergency deploy (lint, test, build, commit, push, deploy)
-- `/soloship-shipthorough` — full pipeline with review, coverage audit, registry update, PR
+
+- `/soloship-shipfast` — Emergency deploy pipeline. Lint (with auto-fix tolerance), test (pre-existing failures allowed), build (must pass), commit, push, deploy. Auto-detects platform. Minimum viable safety, maximum speed.
+- `/soloship-shipthorough` — Full due diligence: preflight checks, base branch merge, lint, test, coverage audit, 3-pass code review (via `/review`), registry update, CHANGELOG enforcement, plan lifecycle cleanup, bisectable commits, PR with structured body, verification gate, deploy. 12-point checklist.
 
 **Quality**
-- `/soloship-review` — plan reviews (engineering, CEO, design) or code reviews (3-pass)
-- `/soloship-qa` — headless browser QA testing
-- `/soloship-security` — OWASP / STRIDE security audit
-- `/soloship-design-review` — visual audit with AI-slop detection
 
-The skills route to underlying workflows in [Superpowers](https://github.com/anthropics/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), [Impeccable](https://github.com/pbakaus/impeccable), and [gstack](https://github.com/garrytan/gstack) where those already exist. Soloship adds the routing, the enforcement gates, and the solo-operator defaults.
+- `/soloship-review` — Detects whether the target is a plan or code. Plans route to `plan-eng-review`, `plan-ceo-review`, or `plan-design-review`. Code gets a 3-pass parallel review: structural (SQL safety, auth, types, tests), adversarial (load, bad input, state transitions), and design-lite (a11y, responsive, AI slop — only if frontend changed). Severity classification with file:line references.
+- `/soloship-qa` — Routes to gstack `qa` (test and fix) or `qa-only` (report only). Uses accessibility checklist as baseline.
+- `/soloship-security` — Routes to gstack `cso` for infrastructure-first security scanning: OWASP Top 10, STRIDE threat modeling, secrets archaeology, dependency supply chain, npm audit.
+- `/soloship-design-review` — Two-pass visual audit. Pass 1 routes to gstack `design-review` for spacing, hierarchy, and consistency. Pass 2 is Soloship's own AI slop detection — flags generic gradients, default shadows, "Welcome to" copy, 3-column feature grids, and other patterns that mark AI-generated design. Each fix committed atomically with before/after screenshots.
 
 ## Quick start
 
@@ -95,21 +135,33 @@ cd existing-project
 2. **Design-first principle.** `/soloship-brainstorm` nudges you toward visual design before `/soloship-plan`. Design catches problems text can't.
 3. **Hooks for enforcement, skills for intelligence.** Hooks are mechanical and fire automatically. Skills are guided and require judgment. Rules sit underneath both — they're always on, even when the skill forgets.
 4. **npm installer + Claude Code plugin.** Installer handles one-time infrastructure. Skills handle daily workflow. Different jobs, different tools.
+5. **Routers, not rewrites.** Where [Superpowers](https://github.com/anthropics/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), or [gstack](https://github.com/garrytan/gstack) already do the job well, Soloship routes to them and adds enforcement gates, routing logic, and solo-operator defaults on top. When upstream skills improve, Soloship benefits automatically.
 
 ## Status
 
-The installer works. The 16 skills are in place. The hooks and rules are wired up. You can use it today on a real project.
+| Phase | Status | What it delivered |
+|-------|--------|-------------------|
+| 1-2 | Done | Cleanup + `npx soloship init` with stack detection |
+| 3-4 | Done | `/audit` + `/bootstrap` skills |
+| 5-6 | Done | 14 more skills (16 total) + 9 hooks + 4 rules |
+| 7 | Not started | Safety floor hardening, surface simplification, CLAUDE.md governance |
+| 8 | Not started | Graduation system, methodology documentation |
 
-What's next:
-
-- **Safety floor hardening** — mechanical triggers, security scanning, rollback, artifact contracts
-- **Surface simplification** — consolidating the 16 skills into 3-4 meta-workflows with observable-fact checkpoints
-- **CLAUDE.md governance** — a budget for CLAUDE.md size, priority tiers, an audit hook that fires every Nth commit
-- **Graduation system** — calibrated thresholds that tell you when to hire help
+Phases 1-6 are shipped and usable today. Phases 7-8 were restructured after a [3-round adversarial review](docs/research/2026-04-08-adversarial-review-synthesis.md) that identified rationalization traps in the original design. Phase 7 adds mechanical safety enforcement (Semgrep scanning, automated rollback, phone-a-friend triggers) and consolidates the 16 skills into 3-4 meta-workflows. Phase 8 adds a graduation system with calibrated thresholds that tell you when your project has outgrown solo mode.
 
 ## Prior art & influences
 
-Soloship's `/soloship-learn` skill adapts the [intent-layer](https://github.com/crafter-station/skills/tree/main/context-engineering/intent-layer) concept from [crafter-station/skills](https://github.com/crafter-station/skills), built on [The Intent Layer](https://www.intent-systems.com/learn/intent-layer) by Tyler Brandt — the idea that distributed per-directory `AGENTS.md` files let agents navigate a codebase the way a senior engineer would. Soloship's version is continuous (updates on every `/learn` pass, not one-shot), threshold-gated (3+ source files before creating), append-only with dated attribution, and scoped to solution-doc evidence rather than speculative.
+Soloship builds on top of four Claude Code skill ecosystems rather than replacing them:
+
+[Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin) — `/learn` uses CE's `workflows:compound` to create solution documents with structured frontmatter. The multi-agent pattern in CE informs how `/audit` and `/review` dispatch parallel investigation agents.
+
+[Superpowers](https://github.com/anthropics/superpowers) — `/brainstorm` routes to `superpowers:brainstorming` for technical exploration. `/plan` routes to `superpowers:writing-plans`. `/implement` routes to `superpowers:subagent-driven-development` or `superpowers:dispatching-parallel-agents`. `/debug` routes to `superpowers:systematic-debugging`.
+
+[gstack](https://github.com/garrytan/gstack) — `/qa` routes to gstack's QA skill. `/security` routes to `cso`. `/design-review` routes to gstack's design-review checklist. `/brainstorm` routes to `office-hours` for product questions. `/plan` routes to `plan-eng-review` for architectural work. `/review` routes to `plan-eng-review`, `plan-ceo-review`, and `plan-design-review` for plan reviews.
+
+[intent-layer](https://github.com/crafter-station/skills/tree/main/context-engineering/intent-layer) (crafter-station/skills, built on [The Intent Layer](https://www.intent-systems.com/learn/intent-layer) by Tyler Brandt) — `/learn` Steps 4-5 adapt the concept of distributed per-directory `AGENTS.md` files for codebase navigation. Soloship's version is continuous (updates on every `/learn` pass, not one-shot), threshold-gated (3+ source files before creating), append-only with dated attribution, and scoped to solution-doc evidence rather than speculative. `/bootstrap` and `/cleanup` also maintain the AGENTS.md network.
+
+[Impeccable](https://github.com/pbakaus/impeccable) — `/design-review` adds an AI slop detection pass inspired by Impeccable's design quality philosophy, checking for generic AI-generated visual, content, and layout patterns.
 
 The broader design traces back to a research pass across: Ousterhout on strategic vs tactical programming (you are the architect, the agent implements), Hickey on simple vs easy, Metz on dependency awareness and sizing rules, Meadows on leverage points in systems, the BCG "AI Brain Fry" finding that productivity drops past three tools, Kathy Sierra on the collapse zone (only automated process survives when things break), and the Codified Context paper that validated the CLAUDE.md + AGENTS.md + docs/ three-tier pattern.
 
