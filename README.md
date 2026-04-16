@@ -26,7 +26,7 @@ That became Soloship.
 
 Three layers, from most mechanical to most guided:
 
-**Hooks** fire automatically on git events. They can't be rationalized away. Dangerous command blocking, auto-lint, CHANGELOG enforcement, dependency graph checks, plan validation, architecture fitness functions. If the agent forgets, the hook remembers.
+**Hooks** fire automatically on git events. They can't be rationalized away. Dangerous command blocking, security scanning, auto-lint, CHANGELOG enforcement, plan validation, architecture fitness functions. If the agent forgets, the hook remembers.
 
 **Rules** are injected into every agent session as always-on context. Solution search before planning, plan materialization after plan mode, plan rationale requirements, plan lifecycle enforcement. The agent can't not see them, even if a skill doesn't reference them.
 
@@ -71,7 +71,7 @@ npx soloship init
 Detects your language, framework, and package manager, asks a few questions, and installs:
 
 - **Folder scaffolding** — `docs/plans/`, `docs/solutions/`, `docs/audit/`, `AGENTS.md` stubs
-- **9 Claude Code hooks** — dangerous command blocking, auto-lint, CHANGELOG check, dependency graph, plan validation, workflow navigator, handoff reminder, context injection, architecture fitness
+- **9 Claude Code hooks** — dangerous command blocking, security scanning, auto-lint, CHANGELOG check, plan validation, workflow navigator, handoff reminder, checkpoint/rollback, architecture fitness
 - **4 workflow rules** — solution search, plan materialization, plan rationale, plan lifecycle
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs** — CLAUDE.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE, sized to your stack
