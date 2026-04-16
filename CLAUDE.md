@@ -20,7 +20,7 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 | 2. npm installer | Done | `npx soloship init` working |
 | 3. Audit tool | Done | `/soloship-audit` skill |
 | 4. Bootstrap | Done | `/soloship-bootstrap` skill |
-| 5. Workflow commands | Done | 14 additional skills (16 total) |
+| 5. Workflow commands | Done | 15 additional skills (17 total) |
 | 6. Hooks | Done | All 9 hooks implemented |
 | 7. Safety + Simplification | Not started | WS1: safety floor, WS2: surface simplification, WS3: CLAUDE.md governance |
 | 8. Graduation + Docs | Not started | WS4: graduation system, methodology page for aifoundationlevels.com |
@@ -50,6 +50,7 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── implement/SKILL.md     # Route to subagent-driven or parallel
 │   ├── review/SKILL.md        # Plan reviews (eng/CEO/design) or code reviews (3-pass)
 │   ├── debug/SKILL.md         # Systematic debugging with root cause iron law
+│   ├── cleanup/SKILL.md        # Knowledge system maintenance (dedup, prune, reindex)
 │   ├── learn/SKILL.md         # Solution doc + learnings.jsonl + registry audit
 │   ├── shipfast/SKILL.md      # Emergency deploy: lint → test → build → commit → push → deploy
 │   ├── shipthorough/SKILL.md  # Full pipeline: review, coverage, registry, PR, deploy
