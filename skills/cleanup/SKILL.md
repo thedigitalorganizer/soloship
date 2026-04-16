@@ -256,6 +256,10 @@ Wait for user approval on each group before proceeding.
 
 ## Phase 3: EXECUTE (Approved Changes Only)
 
+**Context hygiene rule:** Any step that requires reading 3+ solution/AGENTS.md bodies
+must be dispatched to a subagent. The main agent orchestrates and commits; subagents
+read and write.
+
 Execute in dependency order. **Each merge is dispatched as an independent subagent** —
 the subagent reads only the 2-3 source solutions, writes the merged doc, and returns.
 The main agent never holds all source content simultaneously.
@@ -314,26 +318,87 @@ The main agent never holds all source content simultaneously.
 3. **Wire cross-references** — add `related_solutions` to frontmatter, bidirectional
    (if A links B, B must also link A)
 
-4. **Fix incomplete frontmatter** — add missing fields where inferable from the body
+4. **Fix incomplete frontmatter** — dispatch one subagent per batch of ~5 solutions.
+   The subagent reads each solution body, infers missing frontmatter fields, and writes
+   corrected frontmatter. The main agent never reads solution bodies for this step —
+   it only provides the list of incomplete solution paths to each subagent.
+   ```
+   Prompt: You are normalizing frontmatter for solution docs. For each file, read the
+   body and infer any missing required fields (components, files, root_cause, resolution,
+   tags). Write the corrected frontmatter back. Do not modify the body.
+
+   Files to fix: [list of ~5 paths with their missing fields]
+   ```
 
 5. **Clean plans** — `git rm` (small + completed) or `git mv` to `docs/plans/archive/`
    (large + completed). Create archive directory if needed.
 
-6. **Update stale AGENTS.md** — remove dead references, update contracts
-
-7. **Create missing AGENTS.md** — for directories above the 3-file threshold, use the
-   `/learn` Step 5 skeleton (Scope, Contracts, Key Files, Pitfalls). Infer from actual
-   directory contents — do not generate stubs.
-
-8. **Rebuild learnings.jsonl** — full regeneration from current solution set.
-   For each solution doc (excluding `status: stale`), generate:
-   ```json
-   {"date":"YYYY-MM-DD","key":"SHORT_KEY","type":"TYPE","insight":"ONE_LINE","solution":"PATH","components":["COMP1"]}
+6. **Update stale AGENTS.md** — dispatch one subagent per AGENTS.md file to update.
+   The subagent reads the directory contents and existing AGENTS.md, removes dead
+   references, and updates contracts. The main agent provides the file path and the
+   list of dead refs to remove.
    ```
-   Overwrite `.ai/learnings.jsonl` with the new index.
+   Prompt: You are updating an AGENTS.md file to remove stale references and fix
+   contracts.
 
-9. **Regenerate README.md** — recompute `docs/solutions/README.md` hotspot analysis
-   and pattern library from current solution set.
+   File: [AGENTS.md path]
+   Dead references to remove: [list from audit]
+
+   Read the AGENTS.md and the directory it governs. Remove the dead references,
+   update any contracts that reference deleted files, and verify remaining refs
+   are still accurate. Write the corrected file.
+   ```
+
+7. **Create missing AGENTS.md** — dispatch one subagent per directory that needs a new
+   AGENTS.md. The subagent reads the directory contents and writes a new file using
+   the `/learn` Step 5 skeleton (Scope, Contracts, Key Files, Pitfalls). The main
+   agent provides the directory path and source file count. Do not generate stubs —
+   infer from actual directory contents.
+   ```
+   Prompt: You are creating an AGENTS.md file for a directory that has grown past
+   the governance threshold.
+
+   Directory: [path]
+   Source file count: [N]
+
+   Read all source files in the directory. Write an AGENTS.md using this skeleton:
+   - Scope: what this directory owns
+   - Contracts: what it exports/exposes
+   - Key Files: important files and their roles
+   - Pitfalls: non-obvious gotchas inferred from the code
+   ```
+
+8. **Rebuild learnings.jsonl** — dispatch a single subagent that reads all non-stale
+   solution frontmatter and regenerates `.ai/learnings.jsonl`. The main agent provides
+   the list of solution paths and stale-flagged paths to exclude. The subagent reads
+   each solution's frontmatter, generates entries, and overwrites the file.
+   ```
+   Prompt: You are rebuilding the learnings index from the current solution set.
+
+   Solution paths to index: [list of paths]
+   Paths to EXCLUDE (stale): [list of stale paths]
+
+   For each non-excluded solution, read its frontmatter and generate a JSONL entry:
+   {"date":"YYYY-MM-DD","key":"SHORT_KEY","type":"TYPE","insight":"ONE_LINE","solution":"PATH","components":["COMP1"]}
+
+   Overwrite .ai/learnings.jsonl with all entries.
+   ```
+
+9. **Regenerate README.md** — dispatch a single subagent that reads current solution
+   frontmatter and regenerates `docs/solutions/README.md` hotspot analysis and
+   category counts. The main agent provides the list of solution paths.
+   ```
+   Prompt: You are regenerating the solutions README from current solution metadata.
+
+   Solution paths: [list of paths]
+
+   Read the frontmatter of each solution. Recompute:
+   - Hotspot analysis (which components/areas have the most solutions)
+   - Category counts
+   - Pattern library summary
+
+   Write the result to docs/solutions/README.md.
+   ```
 
 10. **Write cleanup report** — `docs/audit/cleanup-YYYY-MM-DD.md` with this structure:
     ```yaml
@@ -407,6 +472,7 @@ The main agent never holds all source content simultaneously.
 | "The user approved everything, I can batch the commit" | You should batch the commit — that's correct. But each merge still gets its own subagent. Batching the commit ≠ batching the content. |
 | "This plan is probably completed but I can't find the commit" | "Probably" is not evidence. If git log doesn't show implementation commits, the plan stays as "keep" not "delete". |
 | "I'll skip the learnings rebuild, it's just an index" | The index is how future agents find solutions quickly. 13 entries for 75 solutions means most solutions are invisible. Rebuild it. |
+| "I can normalize frontmatter inline, it's just YAML" | 14 solution bodies in main context crowds out orchestration quality. Batch into subagents of ~5. |
 | "Cross-references aren't that important" | Cross-refs are how agents discover related solutions they didn't search for directly. Missing links = missed prevention strategies. Wire them. |
 
 ---
