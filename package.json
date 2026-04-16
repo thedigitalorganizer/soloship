@@ -1,0 +1,38 @@
+{
+  "name": "soloship",
+  "version": "0.1.0",
+  "description": "Systematic programming methodology for AI-assisted development",
+  "type": "module",
+  "bin": {
+    "soloship": "./bin/soloship.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/cli.js"
+  },
+  "keywords": [
+    "claude-code",
+    "ai-development",
+    "methodology",
+    "code-quality"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "templates"
+  ],
+  "dependencies": {
+    "chalk": "^5.4.0",
+    "commander": "^13.1.0",
+    "inquirer": "^12.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.15.0",
+    "typescript": "^5.8.0"
+  }
+}

@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.ai/
+.DS_Store
+
+# Wrangler local state — not for version control
+.wrangler/
+
+# Internal strategy + research — excluded from public repo
+docs/research/
+docs/plans/

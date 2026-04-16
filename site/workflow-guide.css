@@ -1,0 +1,550 @@
+/* Workflow Guide — Page-specific styles
+   Extends style.css (shared base) with sidebar TOC, tabs, code blocks, etc. */
+
+/* ── Layout: Sidebar + Main ── */
+.guide-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.guide-main {
+  flex: 1;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+/* ── Sidebar TOC (Desktop) ── */
+.toc-sidebar {
+  position: fixed;
+  top: 72px;
+  left: 0;
+  width: 260px;
+  height: calc(100vh - 72px);
+  overflow-y: auto;
+  padding: 2rem 1.25rem;
+  border-right: 1px solid var(--dust-storm);
+  background: rgba(255, 255, 255, 0.97);
+  z-index: 40;
+  scrollbar-width: thin;
+}
+
+.toc-sidebar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.toc-sidebar::-webkit-scrollbar-thumb {
+  background: var(--dust-storm);
+  border-radius: 2px;
+}
+
+.toc-title {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--black-cow);
+  margin-bottom: 1rem;
+  opacity: 0.6;
+}
+
+.toc-link {
+  display: block;
+  padding: 0.6rem 0.75rem;
+  margin-bottom: 0.1rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  color: var(--black-cow);
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  border-radius: 0 6px 6px 0;
+  transition: all 0.2s ease;
+}
+
+.toc-link:hover {
+  color: var(--haiti);
+  background: rgba(221, 207, 195, 0.2);
+}
+
+.toc-link.active {
+  color: var(--haiti);
+  font-weight: 600;
+  border-left-color: var(--plantation);
+  background: rgba(41, 74, 72, 0.06);
+}
+
+/* Push main content right on desktop */
+@media (min-width: 1024px) {
+  .guide-main {
+    margin-left: 260px;
+  }
+}
+
+/* Hide sidebar on mobile/tablet */
+@media (max-width: 1023px) {
+  .toc-sidebar {
+    display: none;
+  }
+}
+
+/* ── Pipeline Diagram ── */
+.pipeline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.pipeline-step {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.6rem 1.4rem;
+  border-radius: 100px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pipeline-step:hover {
+  transform: scale(1.05);
+}
+
+.pipeline-step.step-think { background: rgba(32, 22, 58, 0.08); color: var(--haiti); }
+.pipeline-step.step-plan { background: rgba(41, 74, 72, 0.1); color: var(--plantation); }
+.pipeline-step.step-work { background: var(--haiti); color: var(--white); }
+.pipeline-step.step-learn { background: rgba(221, 207, 195, 0.5); color: var(--black-cow); }
+.pipeline-step.step-ship { background: var(--plantation); color: var(--white); }
+
+.pipeline-arrow {
+  display: flex;
+  align-items: center;
+  padding: 0 0.5rem;
+  color: var(--dust-storm);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .pipeline {
+    flex-direction: column;
+    gap: 0;
+  }
+  .pipeline-arrow {
+    transform: rotate(90deg);
+    padding: 0.25rem 0;
+  }
+}
+
+/* ── Tabbed Panels ── */
+.tab-bar {
+  display: flex;
+  gap: 0.25rem;
+  border-bottom: 2px solid var(--dust-storm);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.tab-bar::-webkit-scrollbar {
+  display: none;
+}
+
+.tab-btn {
+  padding: 0.75rem 1.1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  min-height: 44px;
+  color: var(--black-cow);
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  color: var(--haiti);
+  background: rgba(221, 207, 195, 0.15);
+}
+
+.tab-btn.active {
+  color: var(--plantation);
+  border-bottom-color: var(--plantation);
+}
+
+.tab-panel {
+  display: none;
+  padding-top: 1.5rem;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+/* ── Code Blocks ── */
+.code-block {
+  position: relative;
+  background: rgba(32, 22, 58, 0.04);
+  border: 1px solid rgba(32, 22, 58, 0.1);
+  border-radius: 12px;
+  padding: 1.25rem;
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 0.8rem;
+  line-height: 1.65;
+  color: var(--haiti);
+  overflow-x: auto;
+}
+
+.code-block pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  margin: 0;
+}
+
+.code-block .code-label {
+  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--plantation);
+  margin-bottom: 0.75rem;
+  opacity: 0.7;
+}
+
+/* ── Skill Mini-Cards ── */
+.skill-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 0.75rem;
+}
+
+.skill-card {
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--dust-storm);
+  border-radius: 12px;
+  background: var(--white);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.skill-card:hover {
+  border-color: rgba(41, 74, 72, 0.3);
+  box-shadow: 0 4px 16px rgba(32, 22, 58, 0.06);
+}
+
+.skill-name {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--haiti);
+  margin-bottom: 0.25rem;
+}
+
+.skill-desc {
+  font-size: 0.8rem;
+  color: var(--black-cow);
+  line-height: 1.5;
+}
+
+/* ── Exclusive Accordion ── */
+.accordion-item {
+  border: 1px solid var(--dust-storm);
+  border-radius: 12px;
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.accordion-item.is-active {
+  border-color: rgba(41, 74, 72, 0.3);
+}
+
+.accordion-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 1rem 1.25rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--haiti);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+
+.accordion-trigger:hover {
+  background: rgba(221, 207, 195, 0.15);
+}
+
+.accordion-trigger .acc-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  background: var(--plantation);
+  color: var(--white);
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.accordion-trigger .acc-chevron {
+  margin-left: auto;
+  transition: transform 0.3s ease;
+  color: var(--black-cow);
+  opacity: 0.4;
+}
+
+.accordion-item.is-active .acc-chevron {
+  transform: rotate(180deg);
+}
+
+.accordion-body {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease-out;
+}
+
+.accordion-item.is-active .accordion-body {
+  max-height: 2000px;
+  transition: max-height 0.6s ease-in;
+}
+
+.accordion-content {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--black-cow);
+}
+
+/* ── Warning Card ── */
+.warning-card {
+  background: rgba(245, 158, 11, 0.06);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.warning-card .warning-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(245, 158, 11, 0.12);
+  color: #b45309;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Flow Diagram (Intent Layer / Solutions) ── */
+.flow-diagram {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+  padding: 1.5rem 0;
+  flex-wrap: wrap;
+}
+
+.flow-box {
+  padding: 0.75rem 1.25rem;
+  border: 2px solid var(--dust-storm);
+  border-radius: 12px;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 600;
+  font-size: 0.82rem;
+  color: var(--haiti);
+  background: var(--white);
+  text-align: center;
+}
+
+.flow-box.flow-highlight {
+  border-color: var(--plantation);
+  background: rgba(41, 74, 72, 0.06);
+}
+
+.flow-arrow {
+  padding: 0 0.6rem;
+  color: var(--dust-storm);
+  font-size: 1.2rem;
+}
+
+@media (max-width: 640px) {
+  .flow-diagram {
+    flex-direction: column;
+  }
+  .flow-arrow {
+    transform: rotate(90deg);
+    padding: 0.25rem 0;
+  }
+}
+
+/* ── Rule Card ── */
+.rule-card {
+  background: var(--white);
+  border: 1px solid var(--dust-storm);
+  border-radius: 16px;
+  padding: 1.5rem;
+  transition: box-shadow 0.3s ease;
+}
+
+.rule-card:hover {
+  box-shadow: 0 8px 30px rgba(32, 22, 58, 0.08);
+}
+
+/* ── Tables ── */
+.guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.82rem;
+}
+
+.guide-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--haiti);
+  background: rgba(221, 207, 195, 0.2);
+  border-bottom: 2px solid var(--dust-storm);
+}
+
+.guide-table td {
+  padding: 0.65rem 1rem;
+  border-bottom: 1px solid rgba(221, 207, 195, 0.4);
+  color: var(--black-cow);
+  vertical-align: top;
+}
+
+.guide-table tr:last-child td {
+  border-bottom: none;
+}
+
+.guide-table tr:hover td {
+  background: rgba(221, 207, 195, 0.1);
+}
+
+/* ── Section eyebrow ── */
+.section-eyebrow {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 700;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--plantation);
+}
+
+/* ── Prose ── */
+.guide-prose {
+  font-size: 0.95rem;
+  line-height: 1.8;
+  color: var(--black-cow);
+}
+
+.guide-prose strong {
+  color: var(--haiti);
+  font-weight: 600;
+}
+
+/* ── Focus Indicators ── */
+.toc-link:focus-visible,
+.tab-btn:focus-visible,
+.accordion-trigger:focus-visible,
+.expand-toggle:focus-visible,
+.copy-btn:focus-visible {
+  outline: 2px solid var(--plantation);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* ── Touch Target Minimums (44px) ── */
+.copy-btn {
+  min-height: 44px;
+  padding: 0.6rem 1rem;
+}
+
+.expand-toggle {
+  min-height: 44px;
+  padding: 0.6rem 0;
+}
+
+/* ── Inline Code Overflow Prevention ── */
+code {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+/* ── Steps List Mobile Fix ── */
+@media (max-width: 640px) {
+  .steps-list li {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .steps-list li::before {
+    margin-bottom: 0.25rem;
+  }
+}
+
+/* ── Reduced Motion ── */
+@media (prefers-reduced-motion: reduce) {
+  .animate-on-scroll {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .pipeline-step,
+  .accordion-body,
+  .collapsible-content,
+  .accordion-trigger .acc-chevron,
+  .expand-toggle .chevron {
+    transition: none;
+  }
+
+  .pipeline-step:hover {
+    transform: none;
+  }
+
+  .skill-card,
+  .rule-card,
+  .tool-card,
+  .prompt-card {
+    transition: none;
+  }
+}
+
+/* ── Screen Reader Only ── */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

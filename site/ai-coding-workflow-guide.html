@@ -1,0 +1,2317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Coding Workflow Guide — AI Foundation Levels</title>
+  <meta name="description" content="A planning-first approach to AI-assisted development. Learn the workflow, skills, rules, and tools that make vibe coding productive.">
+  <meta property="og:title" content="AI Coding Workflow Guide">
+  <meta property="og:description" content="A planning-first approach to AI-assisted development. Everything comes down to planning.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://ai-foundation-levels.pages.dev/ai-coding-workflow-guide.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="AI Coding Workflow Guide">
+  <meta name="twitter:description" content="A planning-first approach to AI-assisted development. Everything comes down to planning.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="workflow-guide.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            haiti: '#20163A',
+            plantation: '#294A48',
+            'black-cow': '#4F4C44',
+            'dust-storm': '#DDCFC3',
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-body">
+
+  <!-- Skip to content -->
+  <a href="#philosophy" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-haiti focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold">Skip to content</a>
+
+  <!-- ════════════════════════════════════════════
+       STICKY HEADER
+       ════════════════════════════════════════════ -->
+  <header class="site-header fixed top-0 left-0 right-0 z-50 bg-white/95">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="py-4 flex items-center justify-between">
+        <a href="index.html" class="font-heading font-bold text-haiti text-lg tracking-tight">AI Foundation Levels</a>
+
+        <!-- Desktop page tabs -->
+        <nav class="hidden md:flex items-center gap-1" aria-label="Main">
+          <a href="index.html" class="page-tab">AI Foundations</a>
+          <a href="ai-coding-workflow-guide.html" class="page-tab active">Coding Workflows</a>
+          <a href="systematic-programming-guide.html" class="page-tab">Systems Guide</a>
+        </nav>
+
+        <!-- Mobile hamburger -->
+        <button class="mobile-menu-toggle md:hidden" aria-expanded="false" aria-controls="mobile-menu-guide" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile dropdown menu -->
+    <div id="mobile-menu-guide" class="mobile-menu md:hidden" aria-label="Navigation">
+      <nav>
+        <a href="index.html" class="mobile-page-link">AI Foundations</a>
+        <a href="ai-coding-workflow-guide.html" class="mobile-page-link active">Coding Workflows</a>
+        <a href="systematic-programming-guide.html" class="mobile-page-link">Systems Guide</a>
+        <a href="#philosophy" class="mobile-section-link">Philosophy</a>
+        <a href="#workflow" class="mobile-section-link">The Workflow</a>
+        <a href="#skills" class="mobile-section-link">Skills System</a>
+        <a href="#rules" class="mobile-section-link">Rules</a>
+        <a href="#skill-checking" class="mobile-section-link">Skill Checking</a>
+        <a href="#bootstrap" class="mobile-section-link">Project Bootstrap</a>
+        <a href="#solutions" class="mobile-section-link">Solutions Library</a>
+        <a href="#slash-commands" class="mobile-section-link">Slash Commands</a>
+        <a href="#getting-started" class="mobile-section-link">Getting Started</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════
+       GUIDE LAYOUT: SIDEBAR + MAIN
+       ════════════════════════════════════════════ -->
+  <div class="guide-layout">
+
+    <!-- ── Sidebar TOC ── -->
+    <aside class="toc-sidebar" id="toc-sidebar" aria-label="Table of contents">
+      <p class="toc-title">On This Page</p>
+      <a href="#philosophy" class="toc-link">Philosophy</a>
+      <a href="#workflow" class="toc-link">The Workflow</a>
+      <a href="#skills" class="toc-link">Skills System</a>
+      <a href="#rules" class="toc-link">Rules</a>
+      <a href="#skill-checking" class="toc-link">Skill Checking</a>
+      <a href="#bootstrap" class="toc-link">Project Bootstrap</a>
+      <a href="#solutions" class="toc-link">Solutions Library</a>
+      <a href="#slash-commands" class="toc-link">Slash Commands</a>
+      <a href="#getting-started" class="toc-link">Getting Started</a>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="guide-main">
+
+      <!-- ════════════════════════════════════════════
+           HERO (condensed)
+           ════════════════════════════════════════════ -->
+      <section class="hero-bg pt-36 pb-24 sm:pt-44 sm:pb-28">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+          <p class="text-plantation font-semibold tracking-wide uppercase text-sm mb-4 animate-on-scroll">by The Digital Organizer</p>
+          <h1 class="font-heading text-5xl sm:text-6xl md:text-7xl font-extrabold text-haiti leading-[1.08] mb-6 animate-on-scroll">
+            AI Coding Workflow Guide
+          </h1>
+          <p class="text-black-cow text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto animate-on-scroll">
+            A planning-first approach to AI-assisted development. Everything comes down to planning.
+          </p>
+        </div>
+      </section>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 1: PHILOSOPHY
+           ════════════════════════════════════════════ -->
+      <section id="philosophy" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Foundation</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Everything Comes Down to Planning</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p class="mb-5">
+              Without a plan, AI-assisted coding is a random walk through your codebase. You might get lucky. More likely, you'll spend hours fixing what the AI broke because it didn't understand the bigger picture.
+            </p>
+            <p class="mb-5">
+              Planning is not overhead — it's the thing that makes everything else work. A good plan tells the AI what to build, why, and how it connects to everything else. It sets boundaries. It defines "done." It catches mistakes before they become bugs.
+            </p>
+            <p>
+              The system described on this page is built around one idea: <strong>the quality of your AI output is directly proportional to the quality of your planning input.</strong> Every skill, rule, and workflow exists to make planning easier, more consistent, and harder to skip.
+            </p>
+          </div>
+
+          <div class="comparison-grid animate-on-scroll">
+            <div class="comparison-before">
+              <span class="comparison-label bg-red-100 text-red-700">Without Planning</span>
+              <p class="text-sm leading-relaxed text-black-cow">
+                Vague prompts &rarr; generic code &rarr; constant corrections &rarr; spaghetti architecture &rarr; lost context between sessions &rarr; same bugs reappearing
+              </p>
+            </div>
+            <div class="comparison-after">
+              <span class="comparison-label bg-emerald-50 text-emerald-700">With Planning</span>
+              <p class="text-sm leading-relaxed text-black-cow">
+                Clear intent &rarr; targeted implementation &rarr; architectural consistency &rarr; context survives across sessions &rarr; bugs documented and prevented
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 2: THE WORKFLOW
+           ════════════════════════════════════════════ -->
+      <section id="workflow" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Pipeline</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">THINK &rarr; PLAN &rarr; WORK &rarr; LEARN &rarr; SHIP</h2>
+          </div>
+
+          <!-- Pipeline Diagram -->
+          <div class="pipeline mb-14 animate-on-scroll">
+            <span class="pipeline-step step-think">THINK</span>
+            <span class="pipeline-arrow">&rarr;</span>
+            <span class="pipeline-step step-plan">PLAN</span>
+            <span class="pipeline-arrow">&rarr;</span>
+            <span class="pipeline-step step-work">WORK</span>
+            <span class="pipeline-arrow">&rarr;</span>
+            <span class="pipeline-step step-learn">LEARN</span>
+            <span class="pipeline-arrow">&rarr;</span>
+            <span class="pipeline-step step-ship">SHIP</span>
+          </div>
+
+          <!-- Phase Cards -->
+          <div class="grid md:grid-cols-5 gap-4 mb-14 stagger-children">
+            <!-- THINK -->
+            <div class="rule-card animate-on-scroll">
+              <h3 class="font-heading font-bold text-haiti text-sm mb-2">THINK</h3>
+              <p class="text-xs text-black-cow leading-relaxed mb-3">
+                Brainstorm with one question at a time. Explore intent, approaches, and design decisions before committing to a path.
+              </p>
+              <p class="text-xs font-semibold text-plantation">
+                Output: <code class="text-xs">docs/plans/YYYY-MM-DD-&lt;topic&gt;-design.md</code>
+              </p>
+            </div>
+            <!-- PLAN -->
+            <div class="rule-card animate-on-scroll">
+              <h3 class="font-heading font-bold text-haiti text-sm mb-2">PLAN</h3>
+              <p class="text-xs text-black-cow leading-relaxed mb-3">
+                Structure your approach with an execution strategy, key decisions, and clear task breakdown. Every plan needs 'Why:' reasoning.
+              </p>
+              <p class="text-xs font-semibold text-plantation">
+                Output: <code class="text-xs">docs/plans/YYYY-MM-DD-&lt;feature&gt;-plan.md</code>
+              </p>
+            </div>
+            <!-- WORK -->
+            <div class="rule-card animate-on-scroll">
+              <h3 class="font-heading font-bold text-haiti text-sm mb-2">WORK</h3>
+              <p class="text-xs text-black-cow leading-relaxed mb-3">
+                Execute per the plan's strategy: direct implementation for small tasks, subagent-driven for medium, agent teams for large.
+              </p>
+              <p class="text-xs font-semibold text-plantation">
+                Output: Committed code on branch
+              </p>
+            </div>
+            <!-- LEARN -->
+            <div class="rule-card animate-on-scroll">
+              <h3 class="font-heading font-bold text-haiti text-sm mb-2">LEARN</h3>
+              <p class="text-xs text-black-cow leading-relaxed mb-3">
+                After every non-trivial fix, document what happened, why, and how to prevent it. This builds institutional memory.
+              </p>
+              <p class="text-xs font-semibold text-plantation">
+                Output: <code class="text-xs">docs/solutions/&lt;category&gt;/&lt;slug&gt;.md</code>
+              </p>
+            </div>
+            <!-- SHIP -->
+            <div class="rule-card animate-on-scroll">
+              <h3 class="font-heading font-bold text-haiti text-sm mb-2">SHIP</h3>
+              <p class="text-xs text-black-cow leading-relaxed mb-3">
+                Local CI pipeline: lint &rarr; test &rarr; build &rarr; changelog &rarr; commit &rarr; push &rarr; deploy &rarr; verify. Then classify and clean up the plan.
+              </p>
+              <p class="text-xs font-semibold text-plantation">
+                Output: Shipped code + plan archived or deleted
+              </p>
+            </div>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto animate-on-scroll">
+            <p>
+              <strong>Phase handoffs are files, not context.</strong> Each phase writes its output to a file and the next phase reads it fresh. Plans survive across sessions — you can <code>/clear</code> and pick up tomorrow.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 3: SKILLS SYSTEM
+           ════════════════════════════════════════════ -->
+      <section id="skills" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Tools</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Skills System</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <p>Skills are markdown files that give Claude Code domain expertise. They trigger automatically based on what you're doing, or you can invoke them directly. They're organized into categories — but be intentional about which you install.</p>
+          </div>
+
+          <!-- Tabbed Skills Panels -->
+          <div class="tab-container animate-on-scroll">
+            <div class="tab-bar" role="tablist" aria-label="Skill categories">
+              <button class="tab-btn active" data-tab="superpowers" role="tab" aria-selected="true" aria-controls="panel-superpowers" id="tab-superpowers">Superpowers</button>
+              <button class="tab-btn" data-tab="compound" role="tab" aria-selected="false" aria-controls="panel-compound" id="tab-compound">Compound Engineering</button>
+              <button class="tab-btn" data-tab="design-tools" role="tab" aria-selected="false" aria-controls="panel-design-tools" id="tab-design-tools">Design Tools</button>
+              <button class="tab-btn" data-tab="gsd" role="tab" aria-selected="false" aria-controls="panel-gsd" id="tab-gsd">GSD</button>
+              <button class="tab-btn" data-tab="domain" role="tab" aria-selected="false" aria-controls="panel-domain" id="tab-domain">Domain-Specific</button>
+            </div>
+
+            <!-- Tab 1: Superpowers -->
+            <div class="tab-panel active" data-panel="superpowers" role="tabpanel" id="panel-superpowers" aria-labelledby="tab-superpowers">
+              <div class="code-block mb-4" style="font-size: 0.75rem;">
+                <span class="code-label">How to install</span>
+                <pre>/plugin marketplace add obra/superpowers-marketplace
+/plugin install superpowers@superpowers-marketplace</pre>
+              </div>
+              <p class="text-xs text-black-cow mb-3"><a href="https://github.com/obra/superpowers" target="_blank" rel="noopener" class="text-plantation underline">GitHub</a> &middot; MIT License</p>
+              <p class="guide-prose mb-6">Core workflow discipline. These skills enforce the planning-first approach and ensure quality at every stage.</p>
+              <div class="skill-grid">
+                <div class="skill-card">
+                  <p class="skill-name">brainstorming</p>
+                  <p class="skill-desc">Explore intent and approaches before building anything</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">writing-plans</p>
+                  <p class="skill-desc">Structure plans with execution strategy and key decisions</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">executing-plans</p>
+                  <p class="skill-desc">Execute plans with review checkpoints and incremental commits</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">systematic-debugging</p>
+                  <p class="skill-desc">Four-phase debugging: investigate &rarr; analyze &rarr; hypothesize &rarr; implement</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">verification-before-completion</p>
+                  <p class="skill-desc">No completion claims without fresh evidence</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">requesting-code-review</p>
+                  <p class="skill-desc">Dispatch reviewers with git SHAs and scope</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">receiving-code-review</p>
+                  <p class="skill-desc">Verify feedback technically before implementing</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">test-driven-development</p>
+                  <p class="skill-desc">Write tests before implementation code</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">dispatching-parallel-agents</p>
+                  <p class="skill-desc">Run independent tasks concurrently</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">finishing-a-development-branch</p>
+                  <p class="skill-desc">Merge, PR, keep, or discard options</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">using-superpowers</p>
+                  <p class="skill-desc">The intent layer — routes every request to the right skill</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 2: Compound Engineering -->
+            <div class="tab-panel" data-panel="compound" role="tabpanel" id="panel-compound" aria-labelledby="tab-compound">
+              <div class="code-block mb-4" style="font-size: 0.75rem;">
+                <span class="code-label">How to install</span>
+                <pre>/plugin marketplace add EveryInc/compound-engineering-plugin
+/plugin install compound-engineering@every-marketplace</pre>
+              </div>
+              <p class="text-xs text-black-cow mb-3"><a href="https://github.com/EveryInc/compound-engineering-plugin" target="_blank" rel="noopener" class="text-plantation underline">GitHub</a> &middot; MIT License</p>
+              <p class="guide-prose mb-6">Advanced workflows for planning, execution, review, and knowledge capture.</p>
+              <div class="skill-grid">
+                <div class="skill-card">
+                  <p class="skill-name">workflows:brainstorm</p>
+                  <p class="skill-desc">Collaborative dialogue before planning</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">workflows:plan</p>
+                  <p class="skill-desc">Parallel research agents produce structured plans</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">workflows:work</p>
+                  <p class="skill-desc">Execute plans in batches with quality checkpoints</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">workflows:review</p>
+                  <p class="skill-desc">Multi-agent code review with security, performance, and architecture analysis</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">workflows:compound</p>
+                  <p class="skill-desc">Document solutions with parallel research agents</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">document-review</p>
+                  <p class="skill-desc">Refine brainstorm or plan docs before next step</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">frontend-design</p>
+                  <p class="skill-desc">Distinctive, production-grade interfaces</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">create-agent-skills</p>
+                  <p class="skill-desc">Expert guidance for writing skills and slash commands</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">agent-browser</p>
+                  <p class="skill-desc">Browser automation via CLI</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 3: Design Tools -->
+            <div class="tab-panel" data-panel="design-tools" role="tabpanel" id="panel-design-tools" aria-labelledby="tab-design-tools">
+              <div class="code-block mb-4" style="font-size: 0.75rem;">
+                <span class="code-label">How to install</span>
+                <pre>/plugin marketplace add pbakaus/impeccable
+/plugin install impeccable@impeccable</pre>
+              </div>
+              <p class="text-xs text-black-cow mb-3"><a href="https://impeccable.style" target="_blank" rel="noopener" class="text-plantation underline">impeccable.style</a> &middot; MIT License</p>
+              <p class="guide-prose mb-6">14 commands from the Impeccable design system for refining UI quality.</p>
+              <div class="skill-grid">
+                <div class="skill-card">
+                  <p class="skill-name">/i-critique</p>
+                  <p class="skill-desc">Evaluate design effectiveness from a UX perspective</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-audit</p>
+                  <p class="skill-desc">Comprehensive audit across accessibility, performance, theming</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-polish</p>
+                  <p class="skill-desc">Final quality pass: alignment, spacing, consistency</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-simplify</p>
+                  <p class="skill-desc">Strip to essence, remove unnecessary complexity</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-bolder</p>
+                  <p class="skill-desc">Amplify safe or boring designs</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-quieter</p>
+                  <p class="skill-desc">Tone down overly aggressive designs</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-animate</p>
+                  <p class="skill-desc">Add purposeful micro-interactions</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-delight</p>
+                  <p class="skill-desc">Add moments of joy and personality</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-colorize</p>
+                  <p class="skill-desc">Add strategic color to monochromatic designs</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-adapt</p>
+                  <p class="skill-desc">Adapt for different screen sizes and contexts</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-harden</p>
+                  <p class="skill-desc">Error handling, i18n, edge cases</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-clarify</p>
+                  <p class="skill-desc">Improve UX copy and microcopy</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-onboard</p>
+                  <p class="skill-desc">Onboarding flows and first-time experiences</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">/i-optimize</p>
+                  <p class="skill-desc">Performance across loading, rendering, bundle size</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 4: GSD -->
+            <div class="tab-panel" data-panel="gsd" role="tabpanel" id="panel-gsd" aria-labelledby="tab-gsd">
+              <div class="code-block mb-4" style="font-size: 0.75rem;">
+                <span class="code-label">How to install</span>
+                <pre>npm install -g get-shit-done-cc</pre>
+              </div>
+              <p class="text-xs text-black-cow mb-3"><a href="https://www.npmjs.com/package/get-shit-done-cc" target="_blank" rel="noopener" class="text-plantation underline">npm</a></p>
+              <p class="guide-prose mb-6">Full project lifecycle management — from roadmap to shipping.</p>
+              <div class="skill-grid">
+                <div class="skill-card">
+                  <p class="skill-name">new-project</p>
+                  <p class="skill-desc">Initialize with deep context gathering</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">plan-phase</p>
+                  <p class="skill-desc">Create detailed phase plans</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">execute-phase</p>
+                  <p class="skill-desc">Wave-based parallel execution</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">verify-work</p>
+                  <p class="skill-desc">Validate through conversational UAT</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">ship</p>
+                  <p class="skill-desc">Create PR, run review, prepare for merge</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">debug</p>
+                  <p class="skill-desc">Systematic debugging with persistent state</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">autonomous</p>
+                  <p class="skill-desc">Run all remaining phases automatically</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">discuss-phase</p>
+                  <p class="skill-desc">Gather context through adaptive questioning</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab 5: Domain-Specific -->
+            <div class="tab-panel" data-panel="domain" role="tabpanel" id="panel-domain" aria-labelledby="tab-domain">
+              <p class="text-xs text-black-cow mb-4 italic">These are standalone plugins or custom skills. Swift plugins install via /plugin install. iOS and infra skills are custom — set them up with Project Bootstrap.</p>
+              <p class="guide-prose mb-6">Optional skills for specific platforms. Only install what matches your stack.</p>
+              <div class="skill-grid">
+                <div class="skill-card">
+                  <p class="skill-name">swift-concurrency</p>
+                  <p class="skill-desc">Async/await, actors, Sendable, Swift 6 migration</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">swift-testing-expert</p>
+                  <p class="skill-desc">Swift Testing framework patterns and XCTest migration</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">core-data-expert</p>
+                  <p class="skill-desc">Core Data stack, migrations, CloudKit sync</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">ios:migrate-schema</p>
+                  <p class="skill-desc">SwiftData/Core Data schema migrations</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">ios:performance-check</p>
+                  <p class="skill-desc">Memory, CPU, energy profiling</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">ios:release-prep</p>
+                  <p class="skill-desc">Pre-release checklist</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">infra:wrangler</p>
+                  <p class="skill-desc">Cloudflare Workers/Pages deployment</p>
+                </div>
+                <div class="skill-card">
+                  <p class="skill-name">infra:web-perf</p>
+                  <p class="skill-desc">Web performance audits</p>
+                </div>
+              </div>
+            </div>
+          </div><!-- /.tab-container -->
+
+          <!-- Warning Card -->
+          <div class="warning-card mt-10 animate-on-scroll">
+            <div class="warning-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <p class="font-heading font-bold text-haiti text-sm mb-1">More Skills = More Overlap = More Confusion</p>
+            <p class="text-sm text-black-cow leading-relaxed">
+              Each skill has trigger conditions. When multiple skills trigger on the same task, they give conflicting guidance. Start with superpowers + compound-engineering workflows, then add domain-specific skills only when you feel the gap.
+            </p>
+          </div>
+
+          <div class="rule-card mt-6 animate-on-scroll" style="border-color: rgba(41, 74, 72, 0.2); background: rgba(41, 74, 72, 0.03);">
+            <p class="text-sm text-black-cow leading-relaxed mb-3">
+              <strong class="text-haiti">Auto-update your skills on every session.</strong> Create a hook file at <code>~/.claude/hooks/skills-check-update.js</code> that runs <code>npx skills update</code> at session start. This keeps all your skills current without manual checks.
+            </p>
+            <button class="expand-toggle" data-target="auto-update-hook" aria-expanded="false" aria-controls="auto-update-hook">
+              <span class="toggle-text">View auto-update hook</span>
+              <span class="chevron"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></span>
+            </button>
+            <div id="auto-update-hook" class="collapsible-content">
+              <div class="code-block mt-3">
+                <span class="code-label">~/.claude/hooks/skills-check-update.js</span>
+                <pre id="hook-auto-update">#!/usr/bin/env node
+// Auto-update skills on session start
+// Runs silently unless updates are applied
+
+const { execSync } = require("child_process");
+
+try {
+  const check = execSync("npx skills check 2&gt;/dev/null", {
+    timeout: 15000,
+    encoding: "utf-8",
+  });
+
+  const hasUpdates =
+    check.includes("update") ||
+    check.includes("new version") ||
+    check.includes("outdated");
+
+  if (hasUpdates) {
+    const result = execSync("npx skills update 2&gt;/dev/null", {
+      timeout: 30000,
+      encoding: "utf-8",
+    });
+    console.log("Skills auto-updated on session start.");
+  }
+} catch {
+  // Silently fail — don't block session start
+}</pre>
+              </div>
+              <div class="mt-3">
+                <button class="copy-btn" data-copy="hook-auto-update">
+                  <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                  <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                  <span class="btn-text">Copy Hook</span>
+                </button>
+              </div>
+              <p class="text-xs text-black-cow mt-3 leading-relaxed">Then register it in your <code>~/.claude/settings.json</code> under <code>hooks.SessionStart</code>:</p>
+              <div class="code-block mt-2" style="font-size: 0.75rem;">
+                <pre id="hook-settings-snippet">"hooks": {
+  "SessionStart": [
+    {
+      "hooks": [
+        {
+          "type": "command",
+          "command": "node \"~/.claude/hooks/skills-check-update.js\"",
+          "timeout": 30
+        }
+      ]
+    }
+  ]
+}</pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Reference Table -->
+          <div class="mt-8 animate-on-scroll">
+            <button class="expand-toggle" data-target="quick-ref-content" aria-expanded="false" aria-controls="quick-ref-content">
+              <span class="toggle-text">View Quick Reference Table</span>
+              <span class="chevron"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></span>
+            </button>
+            <div id="quick-ref-content" class="collapsible-content">
+              <div class="overflow-x-auto mt-4">
+                <table class="guide-table">
+                  <thead><tr><th>Task</th><th>Skills</th><th>Source</th></tr></thead>
+                  <tbody>
+                    <tr><td>Build web UI</td><td>ui-ux-pro-max, tailwind-design-system</td><td>compound-engineering plugin</td></tr>
+                    <tr><td>Clone website design</td><td>ui-cloner (5-stage pipeline)</td><td>custom skill</td></tr>
+                    <tr><td>Deploy to Cloudflare</td><td>wrangler</td><td>custom skill</td></tr>
+                    <tr><td>Pre-commit review</td><td>review-changes</td><td>custom skill</td></tr>
+                    <tr><td>Security scan</td><td>security-audit</td><td>custom skill</td></tr>
+                    <tr><td>Before refactoring</td><td>safe-refactor</td><td>custom skill</td></tr>
+                    <tr><td>Generate tests</td><td>generate-tests</td><td>custom skill</td></tr>
+                    <tr><td>iOS development</td><td>migrate-schema, performance-check</td><td>custom skill</td></tr>
+                    <tr><td>Claude API work</td><td>claude-api</td><td>custom skill</td></tr>
+                    <tr><td>New project setup</td><td>project-bootstrap</td><td>custom skill (below)</td></tr>
+                    <tr><td>Web performance</td><td>web-perf</td><td>custom skill</td></tr>
+                    <tr><td>Full project lifecycle</td><td>GSD commands</td><td>npm: get-shit-done-cc</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 4: RULES
+           ════════════════════════════════════════════ -->
+      <section id="rules" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Guardrails</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Auto-Loaded Rules</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <p>Rules are markdown files in <code>~/.claude/rules/</code> that load automatically — you don't invoke them. They enforce quality without you having to remember. Three rules form the foundation of the planning system.</p>
+          </div>
+
+          <!-- LLM Instruction Callout -->
+          <div class="rule-card mb-10 animate-on-scroll" style="border-color: rgba(41, 74, 72, 0.2); background: rgba(41, 74, 72, 0.03);">
+            <p class="text-sm text-black-cow leading-relaxed">
+              <strong class="text-haiti">How to create these:</strong> These are markdown files you place in <code>~/.claude/rules/</code>. Claude Code loads them automatically at the start of every session. To create them, just tell Claude: <em>"Create a rule file at <code>~/.claude/rules/plan-lifecycle.md</code> with this content"</em> and paste the rule. Or create the files manually — they're plain markdown.
+            </p>
+          </div>
+
+          <div class="grid md:grid-cols-1 lg:grid-cols-3 gap-6 animate-on-scroll">
+
+            <!-- Rule 1: Plan Lifecycle -->
+            <div class="rule-card">
+              <h3 class="font-heading font-bold text-haiti text-base mb-2">Plan Lifecycle</h3>
+              <p class="text-sm text-black-cow leading-relaxed mb-4">
+                Plans go in <code>docs/plans/</code> as <code>YYYY-MM-DD-&lt;slug&gt;.md</code>. After shipping, classify: small plans (&lt; 3 tasks, &lt; 5 files) get deleted. Large plans get archived to <code>docs/plans/archive/</code>. When in doubt, archive.
+              </p>
+              <button class="expand-toggle" data-target="rule-lifecycle-content" aria-expanded="false" aria-controls="rule-lifecycle-content">
+                <span class="toggle-text">View Plan Lifecycle rule</span>
+                <span class="chevron">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+                </span>
+              </button>
+              <div id="rule-lifecycle-content" class="collapsible-content">
+                <div class="code-block mt-3">
+                  <pre id="rule-lifecycle"># Plan Lifecycle
+
+All plans go in `docs/plans/` named `YYYY-MM-DD-&lt;slug&gt;.md`.
+
+## Classification
+
+### Small Plan (ALL must be true)
+- Single phase / fewer than 3 tasks
+- Fewer than 5 files touched
+- No architectural decisions
+- No Key Decisions section
+
+Action: Delete the plan file after the final commit.
+
+### Large Plan (ANY is true)
+- Multiple phases or 3+ tasks
+- 5+ files touched
+- Architectural decisions involved
+- Spans multiple sessions
+
+Action: Archive to `docs/plans/archive/`.
+
+When in doubt, archive. Deleting knowledge is worse than keeping a small file.</pre>
+                </div>
+                <div class="mt-3">
+                  <button class="copy-btn" data-copy="rule-lifecycle">
+                    <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                    <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                    <span class="btn-text">Copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rule 2: Plan Rationale -->
+            <div class="rule-card">
+              <h3 class="font-heading font-bold text-haiti text-base mb-2">Plan Rationale</h3>
+              <p class="text-sm text-black-cow leading-relaxed mb-4">
+                Every plan must contain enough reasoning for a fresh agent with zero context to understand why decisions were made. Requires inline 'Why:' lines and a Key Decisions section.
+              </p>
+              <button class="expand-toggle" data-target="rule-rationale-content" aria-expanded="false" aria-controls="rule-rationale-content">
+                <span class="toggle-text">View Plan Rationale rule</span>
+                <span class="chevron">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+                </span>
+              </button>
+              <div id="rule-rationale-content" class="collapsible-content">
+                <div class="code-block mt-3">
+                  <pre id="rule-rationale"># Plan Rationale Requirements
+
+Every plan must contain enough reasoning for a fresh agent
+with zero context to understand why decisions were made.
+
+## Inline Rationale
+
+Each phase or major step must have a "Why:" line —
+not just what to do, but why.
+
+### Step 2: Cache care info in Firestore
+Why: API calls are expensive and rate-limited. Caching prevents
+redundant calls and improves offline support.
+
+## Key Decisions Section
+
+Required at the end of every plan. A decision qualifies
+as "key" if:
+- Choosing between two or more reasonable approaches
+- Deleting code or removing functionality
+- Changing defaults or stored state schema
+- Imposing architectural constraints
+- Anything a reviewer might question
+
+## Handoff Notes
+
+When a plan spans multiple sessions, the handoff must:
+1. Reference the plan file by path
+2. Call out decisions made during execution NOT in original plan
+3. State current phase and next step clearly</pre>
+                </div>
+                <div class="mt-3">
+                  <button class="copy-btn" data-copy="rule-rationale">
+                    <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                    <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                    <span class="btn-text">Copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rule 3: Solution Search -->
+            <div class="rule-card">
+              <h3 class="font-heading font-bold text-haiti text-base mb-2">Solution Search</h3>
+              <p class="text-sm text-black-cow leading-relaxed mb-4">
+                Before planning, debugging, or reviewing, check <code>docs/solutions/</code> for prior art. This prevents you from solving the same problem twice or reintroducing a documented bug.
+              </p>
+              <button class="expand-toggle" data-target="rule-solution-content" aria-expanded="false" aria-controls="rule-solution-content">
+                <span class="toggle-text">View Solution Search rule</span>
+                <span class="chevron">
+                  <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+                </span>
+              </button>
+              <div id="rule-solution-content" class="collapsible-content">
+                <div class="code-block mt-3">
+                  <pre id="rule-solution"># Solution Search Before Work
+
+## The Rule
+
+Before planning, debugging, or reviewing any implementation,
+search docs/solutions/ for prior art related to the current task.
+
+## When to Search
+
+- Before starting any plan
+- At the start of any debugging session
+- When reviewing an implementation against a plan
+- When encountering an error message
+
+## How to Search
+
+1. Grep docs/solutions/ for keywords: component names,
+   error messages, file paths, symptoms
+2. Search the entire directory — never limit to one category
+3. Read frontmatter of matches to assess relevance
+4. Read full doc if relevant, apply prevention strategies
+
+## What to Do With Results
+
+- Reference relevant solutions in plans and reviews
+- Apply prevention strategies from past solutions
+- If current problem matches a documented one,
+  follow the existing solution</pre>
+                </div>
+                <div class="mt-3">
+                  <button class="copy-btn" data-copy="rule-solution">
+                    <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                    <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                    <span class="btn-text">Copy</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 5: AUTOMATIC SKILL CHECKING
+           ════════════════════════════════════════════ -->
+      <section id="skill-checking" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Safety Net</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Automatic Skill Checking</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <p class="mb-5">
+              The <code>using-superpowers</code> skill is a behavioral enforcement mechanism — not an automatic router. When installed, it tells Claude Code: "Before responding to anything, check if a skill applies. Even if there's a 1% chance, invoke the skill."
+            </p>
+            <p class="mb-5">
+              It includes a table of "rationalization red flags" — thoughts like "This is just a simple question" get countered with "Questions are tasks. Check for skills." This prevents Claude from skipping skills when they would help.
+            </p>
+            <p>
+              It also sets priority: process skills first (brainstorming, debugging), then implementation skills (frontend-design, MCP tools). The result is that you don't have to remember which skill to use — the enforcement mechanism catches it for you.
+            </p>
+          </div>
+
+          <!-- Flow Diagram -->
+          <div class="flow-diagram mb-10 animate-on-scroll">
+            <div class="flow-box">Your Request</div>
+            <span class="flow-arrow">&rarr;</span>
+            <div class="flow-box flow-highlight">Skill Check</div>
+            <span class="flow-arrow">&rarr;</span>
+            <div class="flow-box">Right Skill(s) Invoked</div>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto animate-on-scroll">
+            <p>
+              This comes with the superpowers plugin. Install it once and every session starts with automatic skill checking. It's the difference between hoping you remember to plan and knowing it will happen.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 6: PROJECT BOOTSTRAP
+           ════════════════════════════════════════════ -->
+      <section id="bootstrap" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Onramp</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Project Bootstrap</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <p>Project Bootstrap is the starting point for any new project — or for adding the planning workflow to an existing one. It interviews you about your project, detects your platform, sets up the folder structure, configures the workflow, and offers to install relevant skills.</p>
+          </div>
+
+          <!-- Accordion: 13 Phases -->
+          <div class="accordion-group animate-on-scroll">
+            <!-- Phase 1 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">1</span>
+                <span>Project Basics</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">What are you building? New or existing? Planning docs to review?</div>
+              </div>
+            </div>
+            <!-- Phase 2 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">2</span>
+                <span>Platform Detection</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">For existing projects: scans for package.json, Xcode projects, Cargo.toml, go.mod, wrangler.toml, firebase.json, etc. Reports detected stack and asks you to confirm.</div>
+              </div>
+            </div>
+            <!-- Phase 3 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">3</span>
+                <span>Stack Selection</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Frontend framework, styling, state management. Backend platform, database, auth. AI integration. Notes CLIs to install for each choice.</div>
+              </div>
+            </div>
+            <!-- Phase 4 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">4</span>
+                <span>Design Vibe Discovery</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Emotional tone, primary user profile, design inspirations. Produces color direction, typography direction, layout principles.</div>
+              </div>
+            </div>
+            <!-- Phase 5 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">5</span>
+                <span>Create Folder Structure</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Standard project structure with .claude/ (skills, commands, rules), docs/ (plans, solutions), src/, tests/.</div>
+              </div>
+            </div>
+            <!-- Phase 6 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">6</span>
+                <span>Git + GitHub</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Initialize git, create .gitignore, set up GitHub repo, configure branch strategy.</div>
+              </div>
+            </div>
+            <!-- Phase 7 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">7</span>
+                <span>Install CLIs</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Install and authenticate CLIs for chosen stack: firebase-tools, supabase, vercel, stripe, gh.</div>
+              </div>
+            </div>
+            <!-- Phase 8 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">8</span>
+                <span>Secrets Management</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Create .env.example, walk through getting API keys, verify .gitignore protects secrets.</div>
+              </div>
+            </div>
+            <!-- Phase 9 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">9</span>
+                <span>Generate CLAUDE.md</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Project-specific AI instructions with security protocols, coding conventions, and design principles.</div>
+              </div>
+            </div>
+            <!-- Phase 10 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">10</span>
+                <span>Create Documentation</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">docs/design-system.md, docs/architecture.md, docs/SOLUTION_GUIDE.md.</div>
+              </div>
+            </div>
+            <!-- Phase 11 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">11</span>
+                <span>Workflow Setup</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Create .claude/rules/workflow.md (unified THINK&rarr;PLAN&rarr;WORK&rarr;LEARN&rarr;SHIP) and .claude/commands/ship.md.</div>
+              </div>
+            </div>
+            <!-- Phase 12 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">12</span>
+                <span>Skill Installation</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Lists available skill categories, recommends based on your stack, warns about overlap. Core: superpowers + compound-engineering. Then stack-specific additions.</div>
+              </div>
+            </div>
+            <!-- Phase 13 -->
+            <div class="accordion-item">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">13</span>
+                <span>Initial Commit + Push</span>
+                <svg class="acc-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">Verify no secrets, commit everything, push to origin.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- PRD note + custom skill callout -->
+          <div class="guide-prose max-w-3xl mx-auto mt-10 mb-6 animate-on-scroll">
+            <p><strong>Have a PRD or spec?</strong> Mention it in Phase 1. Bootstrap reads your planning docs first and uses them to skip or pre-fill questions about stack, design, and architecture.</p>
+          </div>
+
+          <div class="rule-card mb-4 animate-on-scroll" style="border-color: rgba(41, 74, 72, 0.2); background: rgba(41, 74, 72, 0.03);">
+            <p class="text-sm text-black-cow leading-relaxed">
+              <strong class="text-haiti">This is a custom skill, not a plugin.</strong> Copy the content below and save it to <code>~/.claude/skills/workflow/project-bootstrap/SKILL.md</code>. An npx package is planned so updates propagate automatically — for now, check this page for the latest version.
+            </p>
+          </div>
+
+          <div class="animate-on-scroll">
+            <button class="expand-toggle" data-target="bootstrap-full-skill" aria-expanded="false" aria-controls="bootstrap-full-skill">
+              <span class="toggle-text">View Full Bootstrap Skill</span>
+              <span class="chevron"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6l4 4 4-4"/></svg></span>
+            </button>
+            <div id="bootstrap-full-skill" class="collapsible-content">
+              <div class="code-block mt-3" style="max-height: 600px; overflow-y: auto;">
+                <pre id="bootstrap-skill-content">---
+name: project-bootstrap
+description: Use when starting a new project or adding Claude Code to an existing project. Triggers on new project setup, initialize project, bootstrap, set up for development, configure claude for this project.
+---
+
+# Project Bootstrap
+
+Interactive setup that configures a project with your preferred structure, tools, security, and design principles.
+
+## What This Skill Does
+
+1. **Asks questions** about your project (stack, vibe, integrations)
+2. **Detects existing platform** if running on an existing codebase (scans for config files)
+3. **Creates folder structure** with industry-standard conventions
+4. **Initializes git + GitHub** with proper .gitignore and branch setup
+5. **Installs CLIs** for your chosen stack (Firebase, Supabase, Vercel, etc.)
+6. **Walks through secrets management** (never expose API keys)
+7. **Generates CLAUDE.md** with security protocols and project rules
+8. **Sets up documentation** in `docs/` with design narratives
+9. **Configures the unified workflow** (THINK &rarr; PLAN &rarr; WORK &rarr; LEARN &rarr; SHIP)
+10. **Offers skill installation** — lists available skills by category, recommends based on your stack
+11. **Establishes design principles** based on your app's "vibe"
+
+## Workflow
+
+```dot
+digraph bootstrap {
+    rankdir=TB;
+
+    "1. Project basics" [shape=box];
+    "2. Platform detection" [shape=box, style=dashed];
+    "3. Stack selection" [shape=box];
+    "4. Design vibe" [shape=box];
+    "5. Create structure" [shape=box];
+    "6. Git + GitHub" [shape=box];
+    "7. Install CLIs" [shape=box];
+    "8. Secrets setup" [shape=box];
+    "9. Generate CLAUDE.md" [shape=box];
+    "10. Create docs" [shape=box];
+    "11. Workflow setup" [shape=box];
+    "12. Skill installation" [shape=box, style=dashed];
+    "13. Initial commit + push" [shape=box];
+
+    "1. Project basics" -&gt; "2. Platform detection";
+    "2. Platform detection" -&gt; "3. Stack selection";
+    "3. Stack selection" -&gt; "4. Design vibe";
+    "4. Design vibe" -&gt; "5. Create structure";
+    "5. Create structure" -&gt; "6. Git + GitHub";
+    "6. Git + GitHub" -&gt; "7. Install CLIs";
+    "7. Install CLIs" -&gt; "8. Secrets setup";
+    "8. Secrets setup" -&gt; "9. Generate CLAUDE.md";
+    "9. Generate CLAUDE.md" -&gt; "10. Create docs";
+    "10. Create docs" -&gt; "11. Workflow setup";
+    "11. Workflow setup" -&gt; "12. Skill installation";
+    "12. Skill installation" -&gt; "13. Initial commit + push";
+}
+```
+
+&gt; **Dashed boxes** = new phases for existing project detection and skill setup. These are skipped or adapted based on your answers in Phase 1.
+
+---
+
+## Phase 1: Project Basics
+
+Ask these questions (2-3 at a time, wait for answers):
+
+**Round 1:**
+1. What are you building? (One sentence)
+2. New project or existing codebase?
+3. Do you have any planning docs I should review? (PRDs, specs, etc.)
+
+**Round 2:**
+4. What problem does this solve for your users?
+5. What does "done" look like for v1?
+
+---
+
+## Phase 2: Platform Detection (Existing Projects)
+
+**Skip this phase if the user said "new project" in Phase 1.**
+
+If the user has an existing codebase, scan the project root for platform indicators before asking stack questions. This avoids redundant questions about things you can detect.
+
+### Detection Matrix
+
+| File/Pattern | Detected Stack |
+|-------------|---------------|
+| `package.json` with `react` | React frontend |
+| `package.json` with `next` | Next.js |
+| `package.json` with `vue` | Vue |
+| `package.json` with `svelte` | Svelte/SvelteKit |
+| `*.xcodeproj` or `*.xcworkspace` | iOS/macOS (Xcode) |
+| `Package.swift` | Swift Package Manager |
+| `Podfile` | iOS (CocoaPods) |
+| `Cargo.toml` | Rust |
+| `go.mod` | Go |
+| `requirements.txt` or `pyproject.toml` | Python |
+| `Gemfile` | Ruby |
+| `wrangler.toml` or `wrangler.jsonc` | Cloudflare Workers/Pages |
+| `firebase.json` | Firebase |
+| `vercel.json` | Vercel |
+| `supabase/config.toml` | Supabase |
+| `tailwind.config.*` | Tailwind CSS |
+| `.env` or `.env.example` | Has secrets management |
+| `CLAUDE.md` | Already has Claude Code config |
+| `docs/` directory | Already has docs structure |
+| `.git/` | Already has git |
+
+### Detection Steps
+
+```bash
+# Run these checks silently and report findings
+ls package.json 2&gt;/dev/null &amp;&amp; echo "Found: package.json"
+ls *.xcodeproj 2&gt;/dev/null &amp;&amp; echo "Found: Xcode project"
+ls Package.swift 2&gt;/dev/null &amp;&amp; echo "Found: Swift package"
+ls Cargo.toml 2&gt;/dev/null &amp;&amp; echo "Found: Rust project"
+ls go.mod 2&gt;/dev/null &amp;&amp; echo "Found: Go project"
+ls requirements.txt pyproject.toml 2&gt;/dev/null &amp;&amp; echo "Found: Python project"
+ls wrangler.toml wrangler.jsonc 2&gt;/dev/null &amp;&amp; echo "Found: Cloudflare project"
+ls firebase.json 2&gt;/dev/null &amp;&amp; echo "Found: Firebase project"
+ls CLAUDE.md 2&gt;/dev/null &amp;&amp; echo "Found: Existing CLAUDE.md"
+ls -d docs/ 2&gt;/dev/null &amp;&amp; echo "Found: docs/ directory"
+ls -d .git/ 2&gt;/dev/null &amp;&amp; echo "Found: git repository"
+```
+
+### Report and Confirm
+
+Present detected stack to the user:
+
+&gt; "I detected the following in your project:
+&gt; - **Frontend:** React with Tailwind CSS
+&gt; - **Platform:** Firebase
+&gt; - **Git:** Already initialized
+&gt; - **CLAUDE.md:** Already exists
+&gt;
+&gt; Does this look right? Anything I should add or correct?"
+
+### Existing Project Adaptations
+
+Based on detection, adjust later phases:
+- **Has git?** &rarr; Skip git init in Phase 6
+- **Has CLAUDE.md?** &rarr; Offer to enhance (not overwrite) in Phase 9
+- **Has `docs/`?** &rarr; Skip creation, check for missing subdirectories (plans/, solutions/) in Phase 10
+- **Has `.env`?** &rarr; Skip creation, verify .gitignore has it in Phase 8
+
+---
+
+## Phase 3: Stack Selection (or Confirm Detected Stack)
+
+Ask about technical choices:
+
+**Frontend:**
+- Framework: React, Next.js, Vue, Svelte, vanilla?
+- Styling: Tailwind (recommended), CSS Modules, styled-components?
+- State: Context, Zustand, Redux, Jotai?
+
+**Backend:**
+- Platform: Firebase, Supabase, AWS, Vercel, custom Node?
+- Database: Firestore, PostgreSQL, MongoDB, SQLite?
+- Auth: Firebase Auth, Supabase Auth, NextAuth, Clerk?
+
+**AI Integration:**
+- Claude API, OpenAI, Gemini, local models?
+
+**For each selection, note the CLI to install:**
+
+| Platform | CLI | Install Command |
+|----------|-----|-----------------|
+| Firebase | firebase-tools | `npm install -g firebase-tools` |
+| Supabase | supabase | `npm install -g supabase` |
+| Vercel | vercel | `npm install -g vercel` |
+| GitHub | gh | `brew install gh` |
+| Stripe | stripe | `brew install stripe/stripe-cli/stripe` |
+
+**If user is unsure:** Review their planning docs (if any) and make suggestions with trade-offs explained. Always prefer asking over assuming.
+
+---
+
+## Phase 4: Design Vibe Discovery
+
+Design should match the app's purpose and audience. Ask:
+
+1. **What's the emotional tone of your app?**
+   - Serious/professional (banking, legal, enterprise)
+   - Warm/friendly (wellness, community, personal)
+   - Playful/energetic (gaming, social, creative)
+   - Clean/minimal (productivity, tools, dev)
+   - Bold/expressive (fashion, art, entertainment)
+
+2. **Who is your primary user?**
+   - Age range
+   - Technical sophistication
+   - Use context (mobile on-the-go, desktop focused work)
+
+3. **What apps do you admire the design of?**
+   - This gives concrete reference points
+
+### Mood Board Generation
+
+Based on answers, suggest:
+
+**Color direction:**
+- Warm neutrals vs cool neutrals
+- Accent color family (not purple or generic blue unless intentional)
+- Suggest searching for: "[app type] UI design Dribbble 2024"
+
+**Typography direction:**
+- Organic/humanist (plant app, wellness)
+- Geometric/modern (tech, productivity)
+- Classic/serif (editorial, luxury)
+- Suggest specific font pairings to explore
+
+**Layout principles:**
+- Dense vs spacious
+- Card-based vs flat
+- Mobile-first priorities
+
+### Anti-Patterns to Exclude
+
+Always exclude (per Impeccable design):
+- Inter font as default
+- Purple gradients
+- Cards nested in cards
+- Pure black (#000) or pure gray (#808080)
+- Bounce/elastic animations
+- Generic blue buttons without brand consideration
+
+Document design decisions in `docs/design-system.md`.
+
+---
+
+## Phase 5: Create Folder Structure
+
+### Standard Structure
+
+```
+project-name/
+├── .claude/
+│   ├── skills/           # Project-specific skills
+│   ├── commands/         # Custom slash commands
+│   │   └── ship.md       # Local CI + deploy pipeline
+│   ├── rules/            # Auto-loaded coding conventions
+│   │   ├── coding-conventions.md
+│   │   └── workflow.md   # Unified workflow rule
+│   └── settings.json     # Agent Teams config
+├── .github/
+│   └── workflows/        # CI/CD (optional)
+├── docs/
+│   ├── design-system.md  # Colors, fonts, spacing, principles
+│   ├── architecture.md   # Technical decisions
+│   ├── branding.md       # Voice, tone, personality
+│   ├── plans/            # Design docs and implementation plans
+│   ├── solutions/        # Compound learning library
+│   └── SOLUTION_GUIDE.md # Solution doc schema
+├── src/
+│   ├── components/
+│   ├── pages/ or routes/
+│   ├── services/
+│   ├── hooks/
+│   ├── utils/
+│   └── types/
+├── tests/
+├── .env.example          # Template for env vars (no real values)
+├── .gitignore
+├── CLAUDE.md             # AI assistant instructions
+├── CHANGELOG.md          # Version history
+└── README.md
+```
+
+### Create Commands
+
+```bash
+# Create directory structure
+mkdir -p .claude/skills .claude/commands .claude/rules docs/plans docs/solutions src/{components,pages,services,hooks,utils,types} tests
+
+# Create placeholder files
+touch CHANGELOG.md
+touch .env.example
+```
+
+---
+
+## Phase 6: Git + GitHub Setup
+
+### Initialize Git
+
+```bash
+git init
+```
+
+### Create .gitignore
+
+Generate based on stack selection. Always include:
+
+```gitignore
+# Environment (NEVER commit secrets)
+.env
+.env.local
+.env.*.local
+*.pem
+*credentials*.json
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+.vercel/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# Firebase
+.firebase/
+firebase-debug.log
+
+# Test coverage
+coverage/
+
+# Worktrees
+.worktrees/
+```
+
+### GitHub Repository
+
+```bash
+# Login if needed
+gh auth login
+
+# Create repo (ask user: public or private?)
+gh repo create [project-name] --private --source=. --remote=origin
+
+# Set up main branch
+git branch -M main
+```
+
+### Branch Strategy Guidance
+
+For solo developers or small teams:
+- **main**: Production-ready code
+- **Feature branches**: `feature/[feature-name]` for new work
+- PR to main when ready
+
+Explain: "You can work directly on main for small changes, or create feature branches for larger work. I'll commit and push with each change so nothing is lost."
+
+---
+
+## Phase 7: Install CLIs
+
+Based on stack selection, install required CLIs:
+
+```bash
+# GitHub CLI (always)
+which gh || brew install gh
+
+# Based on platform choice:
+# Firebase
+which firebase || npm install -g firebase-tools
+
+# Supabase
+which supabase || npm install -g supabase
+
+# Vercel
+which vercel || npm install -g vercel
+
+# Stripe (if payments)
+which stripe || brew install stripe/stripe-cli/stripe
+```
+
+After installation, authenticate:
+
+```bash
+# Firebase
+firebase login
+
+# Supabase
+supabase login
+
+# Vercel
+vercel login
+
+# GitHub (if not already)
+gh auth status || gh auth login
+```
+
+---
+
+## Phase 8: Secrets Management Walkthrough
+
+**Walk the user through this - never just tell them to do it.**
+
+### Step 1: Create .env.example
+
+```bash
+# Create template showing required vars (no real values)
+cat &gt; .env.example &lt;&lt; 'EOF'
+# Copy this to .env and fill in real values
+# NEVER commit .env to git
+
+# Firebase (get from Firebase Console &gt; Project Settings)
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+
+# API Keys (get from respective dashboards)
+ANTHROPIC_API_KEY=
+STRIPE_SECRET_KEY=
+SENDGRID_API_KEY=
+EOF
+```
+
+### Step 2: Create .env
+
+```bash
+cp .env.example .env
+```
+
+### Step 3: Guide User to Get Values
+
+For each service, provide exact steps:
+
+**Firebase:**
+1. Go to https://console.firebase.google.com
+2. Select your project (or create one)
+3. Click the gear icon &gt; Project settings
+4. Scroll to "Your apps" section
+5. If no web app exists, click "Add app" &gt; Web
+6. Copy the config values to .env
+
+**Claude API:**
+1. Go to https://console.anthropic.com
+2. Click API Keys in sidebar
+3. Create new key, copy to .env
+
+### Step 4: Verify .gitignore
+
+```bash
+# Confirm .env is ignored
+grep -q "^\.env$" .gitignore || echo ".env" &gt;&gt; .gitignore
+```
+
+### Platform-Specific Secrets
+
+**Firebase Functions:** Use Firebase environment config
+```bash
+firebase functions:secrets:set ANTHROPIC_API_KEY
+```
+
+**Vercel:** Use Vercel environment variables
+```bash
+vercel env add ANTHROPIC_API_KEY
+```
+
+---
+
+## Phase 9: Generate CLAUDE.md
+
+Generate project-specific CLAUDE.md. See `claude-md-template.md` for full template.
+
+Key sections:
+1. Project Overview
+2. Tech Stack Summary
+3. Quick Commands
+4. Security Protocols (CRITICAL)
+5. Coding Conventions
+6. Design Principles
+7. Development Workflow (unified: THINK &rarr; PLAN &rarr; WORK &rarr; LEARN &rarr; SHIP)
+
+### Security Protocols (Always Include)
+
+```markdown
+## Security Protocols
+
+### NEVER Do
+- Commit .env or any file containing secrets
+- Hardcode API keys, tokens, or credentials in code
+- Log sensitive data (passwords, tokens, PII)
+- Use `*` for CORS origins in production
+- Expose stack traces to users
+
+### ALWAYS Do
+- Use environment variables for all secrets
+- Check .gitignore before committing
+- Validate user input at boundaries
+- Use parameterized queries (no string concatenation for SQL)
+- Verify ownership before returning user data (prevent IDOR)
+
+### Before Every Deploy
+1. Verify .env exists and has required values
+2. Run `npm run build` and fix any errors
+3. Test locally with `npm run dev`
+4. Deploy using CLI (not manual console)
+5. Test deployed version with Chrome MCP
+```
+
+---
+
+## Phase 10: Create Documentation
+
+### docs/design-system.md
+
+```markdown
+# Design System
+
+## Brand Personality
+[From vibe discovery]
+
+## Colors
+- Primary: [hex]
+- Secondary: [hex]
+- Background: [hex]
+- Surface: [hex]
+- Text: [hex]
+- Text Muted: [hex]
+- Error: [hex]
+- Success: [hex]
+
+## Typography
+- Headings: [font family]
+- Body: [font family]
+- Scale: 12/14/16/18/20/24/30px
+
+## Spacing
+Base: 4px
+Scale: 4/8/12/16/20/24/32/40/48px
+
+## Components
+[Document as built]
+
+## Anti-Patterns to Avoid
+- [From Impeccable design principles]
+```
+
+### docs/architecture.md
+
+```markdown
+# Architecture
+
+## Tech Stack
+- Frontend: [framework]
+- Backend: [platform]
+- Database: [type]
+- Auth: [provider]
+- Payments: [if applicable]
+
+## Data Flow
+[Diagram or description]
+
+## Key Decisions
+| Decision | Choice | Rationale |
+|----------|--------|-----------|
+| [topic] | [choice] | [why] |
+```
+
+### docs/SOLUTION_GUIDE.md
+
+```markdown
+# Solution Guide
+
+Solution docs capture lessons learned from non-trivial fixes and features.
+
+## Schema
+
+Every solution doc uses this frontmatter:
+
+---
+title: Short descriptive title
+date: YYYY-MM-DD
+category: [api-issues|auth-bugs|infrastructure|integration-issues|pdf-issues|performance|refactoring|security|ui-bugs]
+tags: [relevant, tech, keywords]
+severity: [low|medium|high|critical]
+---
+
+## Sections
+
+1. **Problem** — What went wrong or what was needed
+2. **Root Cause** — Why it happened (dig past symptoms)
+3. **Solution** — What was done to fix it
+4. **Prevention** — How to avoid this in the future
+5. **Related** — Links to relevant files, PRs, or other solution docs
+```
+
+---
+
+## Phase 11: Workflow Setup
+
+Set up the unified development workflow infrastructure.
+
+### Create Workflow Rule
+
+Create `.claude/rules/workflow.md`:
+
+```markdown
+# Development Workflow (Auto-Loaded)
+
+## The Pipeline
+
+THINK &rarr; PLAN &rarr; WORK &rarr; LEARN &rarr; SHIP
+
+| Phase | Default Tool | Upgrade When |
+|-------|-------------|-------------|
+| Think | /superpowers:brainstorming | Need formal specs &rarr; + /speckit.specify |
+| Plan | /superpowers:writing-plans | Need API contracts &rarr; + /speckit.plan |
+| Work | Determined by Execution Strategy in plan doc | See framework below |
+| Learn | /workflows:compound | After non-obvious fixes |
+| Ship | /ship | Always |
+
+## When to Use the Full Loop
+
+- New features (any feat: work)
+- Bug fixes affecting multiple files
+- Refactoring or architectural changes
+- Security-sensitive changes
+
+## When to Skip Think/Plan
+
+- Single-file bug fixes
+- Dependency bumps
+- Documentation-only changes
+
+## Execution Strategy Framework
+
+Every plan must end with an Execution Strategy section. Decision framework:
+
+1. Count independent task groups (tasks that touch different files)
+   - 1 group or &lt; 3 tasks &rarr; DIRECT IMPLEMENTATION
+   - 2-3 groups, sequential or shared files &rarr; SUBAGENT-DRIVEN
+   - 3+ groups with clear file ownership &rarr; AGENT TEAMS
+
+2. Check for inter-task communication needs
+   - Tasks need to share findings or coordinate? &rarr; Agent Teams
+   - Tasks are fully independent? &rarr; Subagent-driven
+
+3. Check risk level
+   - Touching auth, payments, security? &rarr; Subagent-driven with mandatory review
+   - Low-risk feature work? &rarr; Agent Teams for speed
+
+## Agent Teams Quality Checklist
+
+When using Agent Teams:
+1. Enable delegate mode (Shift+Tab) — lead coordinates only
+2. Require plan approval — teammates plan before implementing
+3. Set up TeammateIdle hook — enforce lint/tests before idle
+4. Set up TaskCompleted hook — run quality checks before done
+5. Size tasks as self-contained units with clear file ownership
+6. Target 5-6 tasks per teammate
+7. Monitor and steer — don't leave unattended
+
+## Phase Handoffs
+
+Each phase writes output to a file and recommends the next step:
+
+THINK &rarr; docs/plans/YYYY-MM-DD-&lt;topic&gt;-design.md
+  Next: /clear &rarr; /superpowers:writing-plans
+
+PLAN &rarr; docs/plans/YYYY-MM-DD-&lt;feature&gt;-plan.md (includes Execution Strategy)
+  Next: /clear &rarr; execute per Execution Strategy
+
+WORK &rarr; Code changes committed to branch
+  Next: /clear &rarr; /workflows:compound (if non-trivial) or /ship
+
+LEARN &rarr; docs/solutions/&lt;category&gt;/&lt;slug&gt;.md
+  Next: /clear &rarr; /ship
+
+SHIP &rarr; Code deployed
+  Next: Done.
+
+Files are the handoff, not context. Each phase reads its input fresh.
+Plans survive across sessions. /clear and pick up tomorrow.
+
+## Learning Is Non-Negotiable
+
+After every non-trivial fix or feature, run /workflows:compound to capture:
+- What problem was solved
+- What was the root cause
+- What prevention strategies apply
+- Save to docs/solutions/&lt;category&gt;/ with proper frontmatter
+```
+
+### Create /ship Command
+
+Create `.claude/commands/ship.md` adapted to the project's stack:
+
+```markdown
+---
+name: ship
+description: Local CI + deploy pipeline — lint, test, build, changelog, commit, push, deploy
+---
+
+# /ship — Pre-Deploy Pipeline
+
+Run these steps in order. Stop on first failure.
+
+1. **Lint**: `npm run lint` (fix errors, don't skip)
+2. **Test**: `npm run test` (all tests must pass)
+3. **Build**: `npm run build` (fix type errors)
+4. **Changelog**: Update CHANGELOG.md if not already done
+5. **Commit**: Stage and commit with descriptive message
+6. **Push**: `git push`
+7. **Deploy**: `{{DEPLOY_COMMAND}}`
+8. **Verify**: Test deployed version with Chrome MCP
+```
+
+### Set Up Solution Library
+
+```bash
+mkdir -p docs/solutions
+```
+
+### Configure Agent Teams (Optional)
+
+If user wants parallel development capability, create `.claude/settings.json`:
+
+```json
+{
+  "env": {
+    "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"
+  }
+}
+```
+
+---
+
+## Phase 12: Skill Installation
+
+Present available skill categories and let the user choose what to install. Recommend based on the detected/chosen stack.
+
+### Core Skills (Recommended for Everyone)
+
+These provide the foundational workflow discipline:
+
+| Skill | What It Does | Install |
+|-------|-------------|---------|
+| **superpowers** | Workflow discipline — brainstorming, planning, debugging, verification, code review, TDD, parallel agents | `npx superpowers install` or follow plugin docs |
+| **compound-engineering** | Advanced workflows — brainstorm, plan, work, review, compound docs, frontend design | `npx compound-engineering install` or follow plugin docs |
+
+### Stack-Specific Recommendations
+
+Based on the user's stack, suggest relevant skills:
+
+**Web / Frontend projects:**
+| Skill | What It Does |
+|-------|-------------|
+| `design:ui-ux-pro-max` | Build distinctive web components and pages |
+| `design:tailwind-design-system` | Tailwind CSS design systems |
+| `infra:web-perf` | Web performance audits |
+| **impeccable (i-\*)** | 14 design refinement commands (critique, polish, animate, simplify, etc.) |
+
+**Cloudflare projects:**
+| Skill | What It Does |
+|-------|-------------|
+| `infra:wrangler` | Deploy Workers/Pages |
+| `infra:workers-best-practices` | Worker code patterns |
+| `infra:cloudflare` | General Cloudflare platform |
+| `infra:durable-objects` | Durable Objects patterns |
+
+**iOS / Apple projects:**
+| Skill | What It Does |
+|-------|-------------|
+| `ios:migrate-schema` | SwiftData/Core Data migrations |
+| `ios:performance-check` | Memory/CPU/energy profiling |
+| `ios:release-prep` | Pre-release checklist |
+| **swift-concurrency** | Swift 6 migration, async/await, actors |
+| **swift-testing-expert** | Swift Testing framework patterns |
+| **core-data-expert** | Core Data stack, migrations, CloudKit sync |
+
+**Full project lifecycle:**
+| Skill | What It Does |
+|-------|-------------|
+| **gsd** | Roadmap, phases, plan, execute, verify, ship — full project lifecycle |
+
+### The Overlap Warning
+
+&gt; **Important:** More skills = more overlap = more confusion. Each skill has trigger conditions, and when multiple skills trigger on the same task, they can give conflicting guidance.
+&gt;
+&gt; **Start lean.** Install the core skills (superpowers + compound-engineering), then add domain-specific skills only when you feel the gap. If you find yourself fighting skill recommendations, you probably have too many installed.
+&gt;
+&gt; **Custom slash commands** can help: create a `/plan` command that calls the specific planning skill you want, rather than letting multiple planning-related skills compete.
+
+### Installation
+
+For each selected skill, provide installation instructions. Skills are typically:
+- **Plugins:** Installed via npm/npx with a single command
+- **Custom skills:** Markdown files placed in `~/.claude/skills/&lt;category&gt;/`
+- **Project skills:** Placed in `.claude/skills/` within the project
+
+Ask the user which skills they'd like to install and walk them through each one.
+
+---
+
+## Phase 13: Initial Commit + Push
+
+```bash
+# Stage all files
+git add -A
+
+# Verify no secrets
+git diff --cached --name-only | xargs grep -l "sk_live\|sk_test\|AKIA\|password\s*=" || true
+
+# Commit
+git commit -m "Initial project setup
+
+- Created folder structure
+- Configured CLAUDE.md with security protocols
+- Set up documentation structure
+- Configured unified development workflow
+
+Co-Authored-By: Claude &lt;noreply@anthropic.com&gt;"
+
+# Push
+git push -u origin main
+```
+
+---
+
+## Phase 14: Chrome MCP Testing Setup
+
+Suggest testing workflow using Chrome MCP:
+
+### Basic Smoke Test
+
+After each deploy, verify:
+
+```
+1. Navigate to deployed URL
+2. Take snapshot - verify page loads
+3. Check for console errors
+4. Test primary user flow (login, main action, etc.)
+5. Verify no visual regressions
+```
+
+### Test Checklist Template
+
+```markdown
+## Deploy Verification Checklist
+
+- [ ] Page loads without errors
+- [ ] No console errors (check list_console_messages)
+- [ ] Primary navigation works
+- [ ] Auth flow works (if applicable)
+- [ ] Main feature works
+- [ ] Mobile viewport looks correct (resize_page to 375x667)
+```
+
+---
+
+## Ongoing Workflow Rules
+
+After setup, these rules apply to every session:
+
+### Commit Workflow
+Every meaningful change &rarr; commit &rarr; push
+```bash
+git add [files]
+git commit -m "feat: [description]"
+git push
+```
+
+### Deploy Workflow
+```
+1. npm run build (fix errors)
+2. Deploy via CLI
+3. Test with Chrome MCP
+4. Report results to user
+```
+
+### Ask Before Assuming
+If uncertain about:
+- Design choices
+- Architecture decisions
+- Feature scope
+- User preferences
+
+**Ask. Don't assume.**
+
+---
+
+## Quick Reference
+
+**Invoke:** "Bootstrap this project" / "Set up for development"
+
+**Output:**
+- Platform detected (existing projects) or stack chosen (new projects)
+- Folder structure created
+- Git + GitHub initialized
+- CLIs installed and authenticated
+- Secrets management configured
+- CLAUDE.md generated (or enhanced if existing)
+- Documentation structure created
+- Unified workflow configured (THINK &rarr; PLAN &rarr; WORK &rarr; LEARN &rarr; SHIP)
+- Skills installed based on stack
+- Solution library ready for compound learning
+- Initial commit pushed
+
+**Time:** Interactive setup, ~10-15 minutes with user</pre>
+              </div>
+              <div class="mt-3">
+                <button class="copy-btn" data-copy="bootstrap-skill-content">
+                  <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                  <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                  <span class="btn-text">Copy Full Skill</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 7: SOLUTIONS LIBRARY
+           ════════════════════════════════════════════ -->
+      <section id="solutions" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">Institutional Memory</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Solutions Library</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <p>The solutions library (<code>docs/solutions/</code>) is where you capture lessons learned. Every non-trivial fix or feature gets documented with problem, root cause, solution, and prevention strategies. Before starting new work, you search it first — so you never solve the same problem twice.</p>
+          </div>
+
+          <!-- Flow Diagram -->
+          <div class="flow-diagram mb-10 animate-on-scroll">
+            <div class="flow-box">Bug Found</div>
+            <span class="flow-arrow">&rarr;</span>
+            <div class="flow-box">Fix Applied</div>
+            <span class="flow-arrow">&rarr;</span>
+            <div class="flow-box flow-highlight">Solution Documented</div>
+            <span class="flow-arrow">&rarr;</span>
+            <div class="flow-box">Searched Before Future Work</div>
+          </div>
+
+          <!-- Solution Template -->
+          <div class="code-block animate-on-scroll">
+            <span class="code-label">Solution Doc Template</span>
+            <pre id="solution-template">---
+title: Short descriptive title
+date: YYYY-MM-DD
+category: [api-issues|auth-bugs|infrastructure|performance|security|ui-bugs]
+tags: [relevant, tech, keywords]
+severity: [low|medium|high|critical]
+---
+
+## Problem
+What went wrong or what was needed.
+
+## Root Cause
+Why it happened — dig past symptoms.
+
+## Solution
+What was done to fix it.
+
+## Prevention
+How to avoid this in the future.
+
+## Related
+Links to relevant files, PRs, or other solution docs.</pre>
+          </div>
+          <div class="mt-3 animate-on-scroll">
+            <button class="copy-btn" data-copy="solution-template">
+              <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+              <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+              <span class="btn-text">Copy Template</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 8: SLASH COMMANDS
+           ════════════════════════════════════════════ -->
+      <section id="slash-commands" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">Your Commands</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Custom Slash Commands</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p>When you have multiple skills that could trigger on similar tasks, custom slash commands give you precise control. Create a <code>.claude/commands/name.md</code> file and you get a <code>/name</code> command that does exactly what you defined.</p>
+          </div>
+
+          <!-- Example 1: /plan -->
+          <div class="mb-8 animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-base mb-3">Example: /plan command</h3>
+            <div class="code-block">
+              <span class="code-label">.claude/commands/plan.md</span>
+              <pre id="cmd-plan">---
+name: plan
+description: Start the planning workflow for a new feature or change
+---
+
+# /plan — Planning Workflow
+
+1. Search docs/solutions/ for prior art on the topic
+2. Use /superpowers:brainstorming to explore intent
+3. Write the plan to docs/plans/YYYY-MM-DD-&lt;slug&gt;.md
+4. Include:
+   - Execution Strategy (direct / subagent / agent teams)
+   - Key Decisions section with alternatives considered
+   - "Why:" line for every phase
+   - Acceptance criteria
+5. Review the plan with /compound-engineering:document-review</pre>
+            </div>
+            <div class="mt-3">
+              <button class="copy-btn" data-copy="cmd-plan">
+                <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                <span class="btn-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Example 2: /ship -->
+          <div class="mb-8 animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-base mb-3">Example: /ship command</h3>
+            <div class="code-block">
+              <span class="code-label">.claude/commands/ship.md</span>
+              <pre id="cmd-ship">---
+name: ship
+description: Local CI + deploy pipeline
+---
+
+# /ship — Pre-Deploy Pipeline
+
+Run these steps in order. Stop on first failure.
+
+1. **Lint**: Run linter and fix errors
+2. **Test**: Run all tests — they must pass
+3. **Build**: Build the project — fix any errors
+4. **Changelog**: Update CHANGELOG.md if not already done
+5. **Commit**: Stage and commit with descriptive message
+6. **Push**: git push
+7. **Deploy**: Run your deploy command
+8. **Verify**: Test the deployed version
+9. **Plan cleanup**: Classify plan as small or large,
+   then delete or archive accordingly</pre>
+            </div>
+            <div class="mt-3">
+              <button class="copy-btn" data-copy="cmd-ship">
+                <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                <span class="btn-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Example 3: /check-plan -->
+          <div class="mb-8 animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-base mb-1">/check-plan — Validate Before Coding</h3>
+            <p class="text-sm text-black-cow mb-3">Review the plan you just created before writing any code. Catches missing dependencies and risks on paper.</p>
+            <div class="code-block">
+              <span class="code-label">.claude/commands/check-plan.md</span>
+              <pre id="cmd-check-plan">---
+name: check-plan
+description: Review the current plan before implementation begins
+---
+
+# /check-plan — Pre-Implementation Review
+
+Review the most recent plan in docs/plans/ before any code is written.
+
+## 1. Solution search
+- Search docs/solutions/ for prior bugs related to every
+  component and file listed in the plan
+- Flag any documented pitfall the plan doesn't account for
+- If a past solution has prevention strategies, list them
+
+## 2. Blast radius prediction
+- For each file the plan modifies, grep for imports/dependencies
+- Read AGENTS.md in each touched directory
+- Check CLAUDE.md for cross-cutting contracts
+- Flag any dependency the plan doesn't address
+
+## 3. Plan quality
+- Are key decisions justified with alternatives?
+- Does every phase have a "Why:" line?
+- Are acceptance criteria measurable?
+- Is the execution strategy appropriate?
+
+## 4. Risk report
+| Risk | Source | Severity | Recommendation |
+|------|--------|----------|----------------|
+
+Only flag real risks. Don't pad the table.</pre>
+            </div>
+            <div class="mt-3">
+              <button class="copy-btn" data-copy="cmd-check-plan">
+                <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                <span class="btn-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Example 4: /review-impl -->
+          <div class="animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-base mb-1">/review-impl — Validate After Coding</h3>
+            <p class="text-sm text-black-cow mb-3">Check the implementation against the plan you were working from. Catches deviations and regressions.</p>
+            <div class="code-block">
+              <span class="code-label">.claude/commands/review-impl.md</span>
+              <pre id="cmd-review-impl">---
+name: review-impl
+description: Review implementation against the plan you were working from
+---
+
+# /review-impl — Post-Implementation Review
+
+Review the implementation against the plan you were working from.
+
+## 1. Context
+- Read the plan for intent and key decisions
+- Search docs/solutions/ for prior bugs on touched components
+- Read AGENTS.md in each touched directory
+
+## 2. Blast radius
+- For each changed file, grep for imports/dependencies
+- Check if dependent files need updates
+- Check CLAUDE.md cross-cutting contracts
+- Flag any contract not addressed
+
+## 3. Plan compliance
+- Does implementation match the plan?
+- Are deviations from key decisions justified?
+- Missing acceptance criteria?
+- Could changes reintroduce a documented bug?
+
+## 4. Verify
+- Run the build
+- Run tests
+- Report any failures
+
+Keep it concise. Only flag real problems, not style preferences.</pre>
+            </div>
+            <div class="mt-3">
+              <button class="copy-btn" data-copy="cmd-review-impl">
+                <span class="icon-copy"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="5" width="9" height="9" rx="1"/><path d="M2 10V2h8"/></svg></span>
+                <span class="icon-check"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8.5l3.5 3.5L13 4"/></svg></span>
+                <span class="btn-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mt-10 animate-on-scroll">
+            <p><strong>/check-plan</strong> and <strong>/review-impl</strong> pair together: the plan checker catches risks on paper (cheaper). The implementation reviewer catches deviations in code. Use both.</p>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- ════════════════════════════════════════════
+           SECTION 9: GETTING STARTED
+           ════════════════════════════════════════════ -->
+      <section id="getting-started" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">First Steps</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Getting Started</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <p>You don't need to install everything at once. Start with the foundation and add as you go.</p>
+          </div>
+
+          <div class="grid gap-4 max-w-3xl mx-auto mb-14 stagger-children">
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-3">
+                <span class="tool-number flex-shrink-0">1</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">Set up your rules</h3>
+                  <p class="text-sm text-black-cow leading-relaxed">Tell Claude: <em>"Create a rule file at <code>~/.claude/rules/plan-lifecycle.md</code> with this content"</em> and paste the rule from the <a href="#rules" class="text-plantation underline">Rules section</a> above. Repeat for <code>plan-rationale.md</code> and <code>solution-search.md</code>.</p>
+                </div>
+              </div>
+            </div>
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-3">
+                <span class="tool-number flex-shrink-0">2</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">Install superpowers</h3>
+                  <p class="text-sm text-black-cow leading-relaxed">In Claude Code, run:<br><code>/plugin marketplace add obra/superpowers-marketplace</code><br><code>/plugin install superpowers@superpowers-marketplace</code></p>
+                  <p class="text-xs text-black-cow mt-1">Core workflow discipline: brainstorming, planning, debugging, verification, code review. <a href="https://github.com/obra/superpowers" target="_blank" rel="noopener" class="text-plantation underline">GitHub</a></p>
+                </div>
+              </div>
+            </div>
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-3">
+                <span class="tool-number flex-shrink-0">3</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">Install compound-engineering</h3>
+                  <p class="text-sm text-black-cow leading-relaxed">In Claude Code, run:<br><code>/plugin marketplace add EveryInc/compound-engineering-plugin</code><br><code>/plugin install compound-engineering@every-marketplace</code></p>
+                  <p class="text-xs text-black-cow mt-1">Advanced workflows: brainstorm, plan, work, review, compound docs. <a href="https://github.com/EveryInc/compound-engineering-plugin" target="_blank" rel="noopener" class="text-plantation underline">GitHub</a></p>
+                </div>
+              </div>
+            </div>
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-3">
+                <span class="tool-number flex-shrink-0">4</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">Set up your project</h3>
+                  <p class="text-sm text-black-cow leading-relaxed">Copy the Project Bootstrap skill from the <a href="#bootstrap" class="text-plantation underline">section above</a> into <code>~/.claude/skills/workflow/project-bootstrap/SKILL.md</code>. Then tell Claude: <em>"Bootstrap this project."</em> If you have a PRD, mention it — bootstrap reads it first.</p>
+                </div>
+              </div>
+            </div>
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-3">
+                <span class="tool-number flex-shrink-0">5</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">Add more as needed</h3>
+                  <p class="text-sm text-black-cow leading-relaxed">
+                    GSD for full lifecycle: <code>npm install -g get-shit-done-cc</code><br>
+                    Impeccable for design: <code>/plugin install impeccable@impeccable</code><br>
+                    Domain skills for your platform — only when you feel the gap.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Warning Card -->
+          <div class="warning-card max-w-3xl mx-auto animate-on-scroll">
+            <div class="warning-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </div>
+            <p class="font-heading font-bold text-haiti text-sm mb-1">Start lean. Add skills only when you feel the gap.</p>
+            <p class="text-sm text-black-cow leading-relaxed">
+              If you install everything at once, skills will compete for attention and give conflicting advice. The core (superpowers + compound-engineering + rules) handles 90% of cases. Domain skills handle the last 10% — add them one at a time.
+            </p>
+          </div>
+        </div>
+      </section>
+
+    </main><!-- /.guide-main -->
+  </div><!-- /.guide-layout -->
+
+  <!-- ════════════════════════════════════════════
+       FOOTER
+       ════════════════════════════════════════════ -->
+  <footer class="site-footer py-12">
+    <div class="max-w-6xl mx-auto px-6 text-center">
+      <p class="text-sm">
+        Built with care by
+        <a href="https://thedigitalorganizer.com" target="_blank" rel="noopener noreferrer"
+           class="font-semibold underline underline-offset-2">The Digital Organizer</a>
+      </p>
+    </div>
+  </footer>
+
+  <script src="workflow-guide.js"></script>
+</body>
+</html>

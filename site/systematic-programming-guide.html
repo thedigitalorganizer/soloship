@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Systematic Programming Guide — AI Foundation Levels</title>
+  <meta name="description" content="A systems guide to building production software through AI agents. The research, the tools, and the framework — explained for non-coders who build with AI.">
+  <meta property="og:title" content="Systematic Programming Guide">
+  <meta property="og:description" content="Less tooling, not more. A research-backed system for building real software through AI agents.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://aifoundationlevels.com/systematic-programming-guide.html">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Systematic Programming Guide">
+  <meta name="twitter:description" content="Less tooling, not more. A research-backed system for building real software through AI agents.">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="workflow-guide.css">
+  <link rel="stylesheet" href="methodology-guide.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            haiti: '#20163A',
+            plantation: '#294A48',
+            'black-cow': '#4F4C44',
+            'dust-storm': '#DDCFC3',
+          },
+          fontFamily: {
+            heading: ['"Plus Jakarta Sans"', 'sans-serif'],
+            body: ['"Inter"', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="font-body">
+
+  <!-- Skip to content -->
+  <a href="#the-problem" class="sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-[100] focus:bg-haiti focus:text-white focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-semibold">Skip to content</a>
+
+  <!-- ════════════════════════════════════════════
+       STICKY HEADER
+       ════════════════════════════════════════════ -->
+  <header class="site-header fixed top-0 left-0 right-0 z-50 bg-white/95">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="py-4 flex items-center justify-between">
+        <a href="index.html" class="font-heading font-bold text-haiti text-lg tracking-tight">AI Foundation Levels</a>
+
+        <!-- Desktop page tabs -->
+        <nav class="hidden md:flex items-center gap-1" aria-label="Main">
+          <a href="index.html" class="page-tab">AI Foundations</a>
+          <a href="ai-coding-workflow-guide.html" class="page-tab">Coding Workflows</a>
+          <a href="systematic-programming-guide.html" class="page-tab active">Systems Guide</a>
+        </nav>
+
+        <!-- Mobile hamburger -->
+        <button class="mobile-menu-toggle md:hidden" aria-expanded="false" aria-controls="mobile-menu-guide" aria-label="Open menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile dropdown menu -->
+    <div id="mobile-menu-guide" class="mobile-menu md:hidden" aria-label="Navigation">
+      <nav>
+        <a href="index.html" class="mobile-page-link">AI Foundations</a>
+        <a href="ai-coding-workflow-guide.html" class="mobile-page-link">Coding Workflows</a>
+        <a href="systematic-programming-guide.html" class="mobile-page-link active">Systems Guide</a>
+        <a href="#the-problem" class="mobile-section-link">The Problem</a>
+        <a href="#philosophy" class="mobile-section-link">The Philosophy</a>
+        <a href="#three-layers" class="mobile-section-link">Three-Layer System</a>
+        <a href="#toolkit" class="mobile-section-link">The Toolkit</a>
+        <a href="#workflow" class="mobile-section-link">The Workflow</a>
+        <a href="#fomo-firewall" class="mobile-section-link">FOMO Firewall</a>
+        <a href="#adhd" class="mobile-section-link">Living With ADHD</a>
+        <a href="#codified-context" class="mobile-section-link">Codified Context</a>
+        <a href="#what-not-to-do" class="mobile-section-link">What NOT to Do</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- ════════════════════════════════════════════
+       GUIDE LAYOUT: SIDEBAR + MAIN
+       ════════════════════════════════════════════ -->
+  <div class="guide-layout">
+
+    <!-- ── Sidebar TOC ── -->
+    <aside class="toc-sidebar" id="toc-sidebar" aria-label="Table of contents">
+      <p class="toc-title">On This Page</p>
+      <a href="#the-problem" class="toc-link">The Problem</a>
+      <a href="#philosophy" class="toc-link">The Philosophy</a>
+      <a href="#three-layers" class="toc-link">Three-Layer System</a>
+      <a href="#toolkit" class="toc-link">The Toolkit</a>
+      <a href="#workflow" class="toc-link">The Workflow</a>
+      <a href="#fomo-firewall" class="toc-link">FOMO Firewall</a>
+      <a href="#adhd" class="toc-link">Living With ADHD</a>
+      <a href="#codified-context" class="toc-link">Codified Context</a>
+      <a href="#what-not-to-do" class="toc-link">What NOT to Do</a>
+    </aside>
+
+    <!-- ── Main Content ── -->
+    <main class="guide-main">
+
+      <!-- ════════════════════════════════════════════
+           HERO
+           ════════════════════════════════════════════ -->
+      <section class="hero-bg pt-36 pb-24 sm:pt-44 sm:pb-28">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+          <p class="text-plantation font-semibold tracking-wide uppercase text-sm mb-4 animate-on-scroll">by The Digital Organizer</p>
+          <h1 class="font-heading text-5xl sm:text-6xl md:text-7xl font-extrabold text-haiti leading-[1.08] mb-6 animate-on-scroll">
+            Systematic Programming
+          </h1>
+          <p class="text-black-cow text-lg sm:text-xl leading-relaxed max-w-2xl mx-auto animate-on-scroll">
+            A research-backed system for building production software through AI agents. Less tooling, not more. Depth over breadth. Architecture over speed.
+          </p>
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 1: THE PROBLEM
+           ════════════════════════════════════════════ -->
+      <section id="the-problem" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Paradox</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">The Tools That Feel Helpful Are Hurting You</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p class="mb-5">
+              Here is the most important thing this research uncovered: <strong>the tools that feel most productive are often the ones that cause the most damage.</strong>
+            </p>
+            <p class="mb-5">
+              A randomized controlled trial by METR found that experienced developers using AI coding tools were <strong>19% slower</strong> than developers working without them &mdash; despite <em>believing</em> they were 24% faster. Read that again. The gap between perception and reality was 43 percentage points.
+            </p>
+            <p>
+              This isn't a story about AI being bad. It's a story about AI being powerful enough to create the <em>illusion</em> of productivity while quietly eroding the architecture of your software. Without a system, every AI session is a fresh start &mdash; and fresh starts produce inconsistent, tangled, unmaintainable code.
+            </p>
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="grid md:grid-cols-3 gap-6 mb-14 stagger-children">
+            <div class="stat-card animate-on-scroll">
+              <div class="stat-number">19%</div>
+              <div class="stat-label">Slower with AI</div>
+              <p class="stat-desc">Experienced developers using AI tools completed tasks 19% slower in the METR randomized trial &mdash; while believing they were faster.</p>
+              <span class="stat-source">METR, 2025</span>
+            </div>
+            <div class="stat-card animate-on-scroll">
+              <div class="stat-number">8&times;</div>
+              <div class="stat-label">More duplicated code</div>
+              <p class="stat-desc">AI-generated code showed an 8-fold increase in copy-pasted code, with refactoring dropping from 25% to under 10% of all changes.</p>
+              <span class="stat-source">GitClear, 211M lines</span>
+            </div>
+            <div class="stat-card animate-on-scroll">
+              <div class="stat-number">1&ndash;3</div>
+              <div class="stat-label">Tools, then it drops</div>
+              <p class="stat-desc">Productivity peaks with 1&ndash;3 AI tools, then declines. BCG calls it "AI Brain Fry" &mdash; more tools means more mental overhead, not more output.</p>
+              <span class="stat-source">BCG, N=1,488</span>
+            </div>
+          </div>
+
+          <!-- The Army of Juniors -->
+          <div class="guide-prose max-w-3xl mx-auto mb-10 animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-xl mb-4">The "Army of Juniors" Problem</h3>
+            <p class="mb-5">
+              The security research firm Apiiro analyzed AI-generated code and found <strong>322% more privilege escalation paths</strong> and <strong>153% more design flaws</strong> compared to human-written code. The Ox Security report gave it a name: the "Army of Juniors" problem. AI-generated code is highly functional but systematically lacks architectural judgment.
+            </p>
+            <p>
+              Every time you start a new AI session without context, you're hiring a brilliant but amnesiac junior developer. They'll write working code. They'll write it fast. And they'll make decisions that contradict what the last session built &mdash; because they have no idea what the last session built.
+            </p>
+          </div>
+
+          <!-- Before/After comparison -->
+          <div class="comparison-grid animate-on-scroll">
+            <div class="comparison-before">
+              <span class="comparison-label bg-red-100 text-red-700">Without a System</span>
+              <p class="text-sm leading-relaxed text-black-cow">
+                Each AI session starts from zero &rarr; inconsistent patterns &rarr; code duplication &rarr; architectural drift &rarr; bugs compound &rarr; more time fixing than building
+              </p>
+            </div>
+            <div class="comparison-after">
+              <span class="comparison-label bg-emerald-50 text-emerald-700">With a System</span>
+              <p class="text-sm leading-relaxed text-black-cow">
+                Every session inherits context &rarr; consistent architecture &rarr; automated quality gates &rarr; bugs caught at commit &rarr; each session builds on the last
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 2: THE PHILOSOPHY
+           ════════════════════════════════════════════ -->
+      <section id="philosophy" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Foundation</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Four Thinkers Who Saw This Coming</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p>
+              The problems AI creates for software aren't new. Four thinkers &mdash; writing decades before ChatGPT existed &mdash; described exactly the failure modes we're seeing now. Their frameworks explain <em>why</em> AI-assisted development goes wrong and, more importantly, how to fix it.
+            </p>
+          </div>
+
+          <!-- Thinker Cards -->
+          <div class="space-y-6 stagger-children">
+
+            <!-- Ousterhout -->
+            <div class="thinker-card animate-on-scroll">
+              <div class="thinker-header">
+                <div class="thinker-icon bg-haiti/8">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-haiti"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+                </div>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">John Ousterhout</h3>
+                  <p class="text-xs text-plantation font-semibold tracking-wide uppercase">Strategic vs. Tactical Programming</p>
+                </div>
+              </div>
+              <div class="thinker-body">
+                <p class="mb-4">
+                  In April 2025, Ousterhout directly addressed AI coding tools, calling them <strong>"akin to tactical tornadoes &mdash; they code fast, fix issues fast, while creating new issues and adding tech debt."</strong> His framework, from <em>A Philosophy of Software Design</em>, draws a sharp line between two modes of building software.
+                </p>
+                <p class="mb-4">
+                  <strong>Tactical programming</strong> optimizes for the immediate goal: make it work, make it work now. This is exactly how AI operates &mdash; it optimizes for your current prompt, not your long-term system. <strong>Strategic programming</strong> optimizes for the design first: the primary goal is great architecture that also works.
+                </p>
+                <p>
+                  His key insight for AI-assisted work: <strong>software design is a decomposition problem</strong> &mdash; breaking large systems into pieces that can be built independently. AI is excellent at building the pieces. It cannot decide how to break the system apart. That's your job.
+                </p>
+              </div>
+            </div>
+
+            <!-- Hickey -->
+            <div class="thinker-card animate-on-scroll">
+              <div class="thinker-header">
+                <div class="thinker-icon bg-plantation/10">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-plantation"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">Rich Hickey</h3>
+                  <p class="text-xs text-plantation font-semibold tracking-wide uppercase">Simple vs. Easy</p>
+                </div>
+              </div>
+              <div class="thinker-body">
+                <p class="mb-4">
+                  Hickey makes a distinction that explains nearly every AI failure mode. <strong>"Simple" means one fold</strong> &mdash; it's objective, about lack of entanglement. <strong>"Easy" means near, familiar</strong> &mdash; it's subjective, about what's close to what you already know. AI makes everything <em>easy</em>. It does not make things <em>simple</em>.
+                </p>
+                <p class="mb-4">
+                  An AI agent will happily generate code that works but has deeply interleaved concerns, hidden coupling, and tangled state. The "complecting" (Hickey's term for tangling things together) is invisible because the code passes tests and appears functional. But every time you ask AI to modify one part, it breaks three others &mdash; because the parts were never truly separate.
+                </p>
+                <p>
+                  His "Hammock Driven Development" approach: <strong>state the problem clearly, research broadly, identify trade-offs, then sleep on it.</strong> Don't rush from idea to AI prompt. Write down the problem. Let the design marinate. Your background mind makes connections that a prompt can't capture.
+                </p>
+              </div>
+            </div>
+
+            <!-- Metz -->
+            <div class="thinker-card animate-on-scroll">
+              <div class="thinker-header">
+                <div class="thinker-icon bg-dust-storm/40">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-black-cow"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg>
+                </div>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">Sandi Metz</h3>
+                  <p class="text-xs text-plantation font-semibold tracking-wide uppercase">What Does Your Code Know About?</p>
+                </div>
+              </div>
+              <div class="thinker-body">
+                <p class="mb-4">
+                  Metz asks the question AI never considers: <strong>"What does this piece of code know about?"</strong> Every function, every file, every module has a set of things it "knows" &mdash; other parts of the system it depends on. The more it knows about, the more fragile it becomes. Change one thing, and everything that "knew about" it breaks.
+                </p>
+                <p class="mb-4">
+                  Her four rules are mechanical enough to be a checklist: <strong>Classes under 100 lines. Methods under 5 lines. No more than 4 parameters. No more than 4 instance variables.</strong> Break them only if you've tried not to. These rules catch exactly the kind of sprawl AI produces &mdash; oversized classes, methods doing too many things, deeply coupled parameter lists.
+                </p>
+                <p>
+                  For AI-assisted work, Metz's lens is the simplest code review tool you have: when the AI writes a function, ask "what does this function know about?" If the answer is "everything," it needs to be broken apart.
+                </p>
+              </div>
+            </div>
+
+            <!-- Meadows -->
+            <div class="thinker-card animate-on-scroll">
+              <div class="thinker-header">
+                <div class="thinker-icon bg-haiti/8">
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-haiti"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                </div>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">Donella Meadows</h3>
+                  <p class="text-xs text-plantation font-semibold tracking-wide uppercase">Leverage Points &mdash; Where to Intervene</p>
+                </div>
+              </div>
+              <div class="thinker-body">
+                <p class="mb-4">
+                  Meadows ranked 12 places to intervene in any system, from weak to powerful. Most attempts to improve AI-assisted development operate at the <strong>weakest leverage point</strong>: tweaking prompts and adjusting parameters. That's like adjusting the thermostat when the building has no insulation.
+                </p>
+                <p class="mb-4">
+                  More powerful interventions sit higher in her hierarchy. <strong>Information flows</strong> (Level 6): give every AI session access to architecture docs and design decisions &mdash; this is what CLAUDE.md files accomplish. <strong>Rules</strong> (Level 5): coding standards, linters, and automated tests that constrain AI output. <strong>Self-organization</strong> (Level 4): modular architectures that AI can extend without breaking. <strong>Goals</strong> (Level 3): shifting from "generate working code" to "generate maintainable, simple code."
+                </p>
+                <p>
+                  The deepest shift is at Level 2 &mdash; <strong>the paradigm itself</strong>. Moving from "AI writes code for me" to "I am the architect, AI implements my designs." Don't tweak prompts. Invest in architecture documentation, automated testing, and the mindset that you are the designer, not a prompt-writer.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 3: THE THREE-LAYER SYSTEM
+           ════════════════════════════════════════════ -->
+      <section id="three-layers" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Framework</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">The Three-Layer System</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p>
+              The research converges on a system with three layers, ordered by how much they actually enforce versus merely aspire. The bottom layer is weightless after setup. The middle layer takes a few minutes per session. The top layer is where the real thinking happens &mdash; and it's the only part that should require cognitive effort.
+            </p>
+          </div>
+
+          <!-- Three Layer Diagram -->
+          <div class="layer-stack mb-14 animate-on-scroll">
+            <div class="layer layer-strategic">
+              <div class="layer-badge">Layer 3</div>
+              <h3 class="layer-title">Strategic Design</h3>
+              <p class="layer-subtitle">The human's irreplaceable job</p>
+            </div>
+            <div class="layer layer-architectural">
+              <div class="layer-badge">Layer 2</div>
+              <h3 class="layer-title">Architectural Infrastructure</h3>
+              <p class="layer-subtitle">Update as the project evolves</p>
+            </div>
+            <div class="layer layer-mechanical">
+              <div class="layer-badge">Layer 1</div>
+              <h3 class="layer-title">Mechanical Enforcement</h3>
+              <p class="layer-subtitle">Set up once, never think about it</p>
+            </div>
+          </div>
+
+          <!-- Layer Detail Cards -->
+          <div class="space-y-6 stagger-children">
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4 mb-4">
+                <span class="tool-number">1</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">Mechanical Enforcement</h3>
+                  <p class="text-xs text-plantation font-semibold uppercase tracking-wide">Set up once, never think about it</p>
+                </div>
+              </div>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  These are <strong>forcing functions</strong> &mdash; they physically prevent violations regardless of what the AI or the human wants in the moment. Install them once with AI's help, and they become permanent quality gates on all future work.
+                </p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                  <li><strong>Husky + lint-staged</strong> &mdash; runs code quality checks on every commit. Commit literally fails if checks don't pass.</li>
+                  <li><strong>TypeScript strict mode</strong> &mdash; code that violates type rules won't compile. Zero maintenance.</li>
+                  <li><strong>Claude Code hooks</strong> &mdash; shell scripts that block dangerous commands before they execute.</li>
+                  <li><strong>GitHub Actions CI</strong> &mdash; tests run on every push. Failed tests block merges.</li>
+                </ul>
+                <p>
+                  Compliance: <strong>~95&ndash;100%</strong>. These can't be talked out of, forgotten, or deprioritized. That's the point.
+                </p>
+              </div>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4 mb-4">
+                <span class="tool-number">2</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">Architectural Infrastructure</h3>
+                  <p class="text-xs text-plantation font-semibold uppercase tracking-wide">Update as the project evolves</p>
+                </div>
+              </div>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  These are the <strong>context documents</strong> that give every fresh AI session the knowledge it needs without reading the entire codebase. A few minutes per session to maintain.
+                </p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                  <li><strong>CLAUDE.md</strong> &mdash; hot memory. Under 200 lines of conventions, commands, and structure. Loaded every session.</li>
+                  <li><strong>AGENTS.md files</strong> &mdash; per-directory intent. What this folder does, what contracts it follows, what breaks if you change it.</li>
+                  <li><strong>docs/ folder</strong> &mdash; cold memory. One spec per major feature, retrieved on demand.</li>
+                  <li><strong>Architecture Decision Records</strong> &mdash; simple markdown files: "we chose X because Y." Future sessions can understand <em>why</em>.</li>
+                  <li><strong>Progress log</strong> &mdash; updated at the end of each session: "state of work" and "next tiny action."</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4 mb-4">
+                <span class="tool-number">3</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-lg">Strategic Design</h3>
+                  <p class="text-xs text-plantation font-semibold uppercase tracking-wide">The human's irreplaceable job</p>
+                </div>
+              </div>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  This is the only layer that should require real cognitive effort. It's also the only layer AI cannot do for you.
+                </p>
+                <ul class="list-disc list-inside space-y-1 ml-2">
+                  <li><strong>Decompose problems before prompting</strong> &mdash; decide how the system should be broken apart (Ousterhout).</li>
+                  <li><strong>Demand simplicity, not just functionality</strong> &mdash; ask "is this simple or just easy?" (Hickey).</li>
+                  <li><strong>Review AI output against Metz's rules</strong> &mdash; classes under 100 lines, methods under 5 lines.</li>
+                  <li><strong>Use phase gates for multi-step features</strong> &mdash; don't let AI build everything in one shot.</li>
+                  <li><strong>Spend innovation tokens deliberately</strong> &mdash; one tool, mastered deeply.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <!-- Kathy Sierra callout -->
+          <div class="warning-card mt-10 animate-on-scroll">
+            <div class="warning-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            </div>
+            <h4 class="font-heading font-bold text-haiti text-sm mb-2">Why this layering matters: Kathy Sierra's Collapse Zone</h4>
+            <p class="text-sm text-black-cow leading-relaxed">
+              Sierra's research shows that under cognitive load, <strong>only fully automated or unconscious behaviors survive.</strong> Anything that requires you to "remember to check" will fail on your worst day. Layer 1 is automated. Layer 2 is near-automatic. Layer 3 is where you invest your limited cognitive energy &mdash; on the work that actually matters.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 4: THE TOOLKIT
+           ════════════════════════════════════════════ -->
+      <section id="toolkit" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Tools</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">What They Are and Why They're Here</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p>
+              Each tool below has a specific job. We explain what it <em>is</em> (in plain language), <em>why</em> it matters for AI-assisted development, and <em>how</em> it works. If you've never heard of npm or TypeScript, you'll still understand why each tool earns its place.
+            </p>
+          </div>
+
+          <!-- Tool Accordion -->
+          <div class="accordion-group space-y-3 stagger-children">
+
+            <!-- Husky -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">1</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">Husky</span>
+                  <span class="block text-xs text-black-cow mt-0.5">Git hook manager &mdash; the bouncer at the door</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What it is:</strong> Husky is a "git hook manager." Git (the version control system that tracks every change to your code) supports "hooks" &mdash; scripts that run automatically at specific moments, like right before you save a change. Husky makes it easy to set up and share these hooks across a project.</p>
+                  <p class="mb-3"><strong>Why it matters:</strong> Think of Husky as a bouncer at the door of your codebase. Before any change can be saved (committed), Husky runs your quality checks. If the checks fail, the commit is rejected. It doesn't matter if you're tired, if the AI forgot a rule, or if you're rushing before a deadline. The bouncer doesn't care about your reasons &mdash; either the code passes or it doesn't get in.</p>
+                  <p><strong>How it works:</strong> You install it once (by running <code>npm install -D husky</code> in your project). Then you tell it which checks to run before each commit. With 10 million weekly downloads, it's the industry standard. Ask Claude Code to set it up and you'll never think about it again.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- lint-staged -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">2</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">lint-staged</span>
+                  <span class="block text-xs text-black-cow mt-0.5">Fast quality checks on just what changed</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What it is:</strong> A tool that runs code quality checks (called "linters") only on the files you're about to commit &mdash; not the entire project. It's the partner to Husky: Husky triggers the check, lint-staged makes it fast by narrowing the scope.</p>
+                  <p class="mb-3"><strong>Why it matters:</strong> Without lint-staged, every commit would scan your entire codebase, which could take minutes on a large project. With it, checks run in seconds because they only look at what changed. This means you'll actually keep the checks turned on instead of disabling them because they're too slow.</p>
+                  <p><strong>How it works:</strong> Paired with Husky's pre-commit hook. When you commit code, Husky fires, lint-staged identifies which files are changing, and runs the configured linters on just those files. If any fail, the commit is blocked. Fast feedback, narrow scope.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ESLint + Prettier -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">3</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">ESLint + Prettier</span>
+                  <span class="block text-xs text-black-cow mt-0.5">Code style enforcement &mdash; consistency across sessions</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What they are:</strong> ESLint catches code <em>mistakes</em> (unused variables, unreachable code, potential bugs). Prettier enforces code <em>formatting</em> (indentation, line breaks, quote styles). Together, they ensure every piece of code follows the same conventions, regardless of which AI session wrote it.</p>
+                  <p class="mb-3"><strong>Why they matter:</strong> AI sessions don't have preferences &mdash; they'll write code in whatever style seems appropriate in the moment. Session 1 might use single quotes; Session 47 might use double quotes. ESLint + Prettier eliminate this drift. Every file looks the same, every variable follows the same naming pattern, every function is formatted identically.</p>
+                  <p><strong>How they work:</strong> Configuration files (<code>.eslintrc</code> and <code>.prettierrc</code>) define your rules. When triggered by Husky + lint-staged, Prettier auto-formats your code and ESLint flags any violations. Most violations are auto-fixed &mdash; no human intervention needed.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- TypeScript strict mode -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">4</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">TypeScript Strict Mode</span>
+                  <span class="block text-xs text-black-cow mt-0.5">The compiler catches what AI misses</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What it is:</strong> TypeScript is a version of JavaScript that adds "types" &mdash; labels that describe what kind of data a variable holds (a number, a string, a user object). "Strict mode" is a compiler setting that makes TypeScript much more rigorous about checking these types. Code that violates the type rules literally won't compile.</p>
+                  <p class="mb-3"><strong>Why it matters:</strong> Imagine you have a function that expects a user's email address. Without strict mode, you could accidentally pass it a number, and nothing would catch the error until a real user hit the bug. With strict mode, the compiler catches it <em>instantly</em> &mdash; before the code ever runs. For AI-generated code, this is critical because AI frequently makes type errors that look correct but break at runtime.</p>
+                  <p><strong>How it works:</strong> One setting in your <code>tsconfig.json</code> file: <code>"strict": true</code>. That's it. Zero ongoing maintenance. The compiler becomes your safety net, catching entire categories of bugs that AI would otherwise introduce silently.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- madge -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">5</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">madge</span>
+                  <span class="block text-xs text-black-cow mt-0.5">Dependency map &mdash; "if you change X, Y and Z are affected"</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What it is:</strong> madge scans your code's import statements and builds a complete map of which files depend on which other files. Think of it as an X-ray of your project &mdash; it shows the hidden connections between components that you can't see by reading individual files.</p>
+                  <p class="mb-3"><strong>Why it matters:</strong> When AI modifies a file, it can't see what <em>else</em> depends on that file. madge can. It answers the question every developer needs: "If I change this file, what else might break?" It also detects circular dependencies (A depends on B, B depends on A) and orphan files (code that nothing uses anymore).</p>
+                  <p><strong>How it works:</strong> One command: <code>npx madge --json src/ --ts-config tsconfig.json</code>. Wire it into an automated hook so it regenerates silently after every coding session. Auto-generated, auto-maintained &mdash; no documentation burden.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Claude Code Hooks -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">6</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">Claude Code Hooks</span>
+                  <span class="block text-xs text-black-cow mt-0.5">The only way to mechanically enforce rules Claude might ignore</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What they are:</strong> Shell scripts that run automatically when Claude Code does things &mdash; before it executes a command, after it edits a file, when it finishes responding. They're configured in a settings file and fire every single time, with no way for Claude to skip them.</p>
+                  <p class="mb-3"><strong>Why they matter:</strong> Writing rules in CLAUDE.md is aspirational &mdash; research shows even the best AI follows fewer than 30% of instructions perfectly under pressure. Hooks are mechanical. A <code>PreToolUse</code> hook that blocks dangerous commands fires 100% of the time. The Tsinghua AGENTIF benchmark confirmed: AI compliance drops as instructions get longer. Hooks don't have that problem.</p>
+                  <p class="mb-3"><strong>The three hook types:</strong></p>
+                  <ul class="list-disc list-inside space-y-1 ml-2 mb-3">
+                    <li><strong>PreToolUse</strong> &mdash; runs before Claude executes an action. Return exit code 2 to block it entirely.</li>
+                    <li><strong>PostToolUse</strong> &mdash; runs after Claude edits a file. Auto-run a linter on every edit.</li>
+                    <li><strong>Stop</strong> &mdash; runs when Claude finishes responding. Inject guidance for the next turn.</li>
+                  </ul>
+                  <p>Think of them as invisible guardrails. Claude can't bypass them, even with <code>--dangerously-skip-permissions</code>.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- claude-guardrails -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">7</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">claude-guardrails</span>
+                  <span class="block text-xs text-black-cow mt-0.5">Pre-built safety hooks &mdash; 15 deny rules in one command</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What it is:</strong> An open-source package (<code>dwarvesf/claude-guardrails</code>) that installs 3 hooks with 15 deny rules out of the box. It blocks things like deleting your home directory, hardcoding API keys, editing <code>.env</code> files, and force-pushing to protected branches.</p>
+                  <p class="mb-3"><strong>Why it matters:</strong> You shouldn't have to think about every possible destructive action AI might take. claude-guardrails is the "pit of success" pattern in action &mdash; a term from Microsoft Research meaning "make the correct behavior the easiest behavior." Install it and you fall into safe practices by default.</p>
+                  <p><strong>How it works:</strong> One command: <code>npx claude-guardrails</code>. It configures your Claude Code settings with PreToolUse hooks that regex-match dangerous bash commands and block them before execution. Setup time: about 30 seconds.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- ADRs -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">8</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">Architecture Decision Records</span>
+                  <span class="block text-xs text-black-cow mt-0.5">The "why" behind every non-obvious choice</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What they are:</strong> Simple markdown files that capture a decision, the context behind it, the alternatives you considered, and the consequences. Format: Title, Status (accepted/rejected/superseded), Context, Decision, Consequences. Recommended by AWS, Microsoft Azure, and Google Cloud as the standard for decision tracking.</p>
+                  <p class="mb-3"><strong>Why they matter:</strong> Code tells you <em>what</em> was built. Comments sometimes tell you <em>how</em>. Neither tells you <em>why</em>. Without ADRs, future AI sessions (and future you) will look at a design choice, not understand the reasoning, and change it &mdash; reintroducing the exact problem the original decision solved.</p>
+                  <p><strong>How they work:</strong> A folder of numbered markdown files: <code>docs/decisions/001-use-firebase-over-supabase.md</code>. Write one whenever you choose between two reasonable approaches, delete functionality, change defaults, or make any decision a future reader might question. Keep them in the same commit as the code they describe &mdash; decisions captured in the commit flow stick; separate documentation tasks don't.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- CLAUDE.md + AGENTS.md -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">9</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">CLAUDE.md + AGENTS.md</span>
+                  <span class="block text-xs text-black-cow mt-0.5">The three-tier knowledge system for AI context</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What they are:</strong> A tiered system that gives AI agents context about your project. <strong>CLAUDE.md</strong> sits at the project root &mdash; it's the "hot memory" loaded at the start of every session. It contains conventions, key commands, project structure, and rules. <strong>AGENTS.md</strong> files sit in subdirectories &mdash; they describe what that folder does, what contracts it follows, and what breaks if you change it.</p>
+                  <p class="mb-3"><strong>Why they matter:</strong> A companion study found that AGENTS.md presence is associated with a <strong>29% reduction in AI runtime</strong> and <strong>17% reduction in token usage</strong>. The Codified Context paper (arXiv 2602.20478) validated this exact pattern across 283 development sessions building a 108,000-line system. Documentation isn't optional overhead &mdash; it's load-bearing infrastructure that AI agents depend on.</p>
+                  <p><strong>How they work:</strong> CLAUDE.md under 200 lines. One AGENTS.md per major directory. Update them as the project evolves &mdash; when you add a new convention, change a contract, or discover a gotcha. Think of CLAUDE.md as the briefing a new team member gets on day one, and AGENTS.md files as the tribal knowledge each team has about their area.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- GitHub Actions CI -->
+            <div class="accordion-item animate-on-scroll">
+              <button class="accordion-trigger" aria-expanded="false">
+                <span class="acc-number">10</span>
+                <span class="flex-1">
+                  <span class="font-heading font-bold text-haiti">GitHub Actions CI</span>
+                  <span class="block text-xs text-black-cow mt-0.5">The ultimate forcing function &mdash; broken code can't merge</span>
+                </span>
+                <svg class="acc-chevron" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
+              </button>
+              <div class="accordion-body">
+                <div class="accordion-content">
+                  <p class="mb-3"><strong>What it is:</strong> GitHub Actions is a built-in automation system that runs tasks whenever code is pushed. "CI" stands for Continuous Integration &mdash; the practice of automatically testing every change before it enters the main codebase. You define the steps in a YAML file, and GitHub runs them on their servers.</p>
+                  <p class="mb-3"><strong>Why it matters:</strong> CI is the ultimate forcing function because it operates outside your local environment. Husky can theoretically be bypassed on your own machine. CI cannot. It runs on GitHub's servers, and you can configure it so that code with failing tests <em>physically cannot be merged</em> into your main branch. Research consistently shows: CI works because you can't bypass it. Checklists fail because they require willpower.</p>
+                  <p><strong>How it works:</strong> A file in <code>.github/workflows/</code> defines your pipeline: install dependencies, run linter, run tests, check types. Every push triggers it. A green checkmark means it passed; a red X means something broke. Configure branch protection rules to require passing CI before merges, and you have an automated quality gate that no one &mdash; human or AI &mdash; can circumvent.</p>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- end accordion-group -->
+
+          <!-- Enforcement Pyramid table -->
+          <div class="mt-14 animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-lg mb-4">The Enforcement Pyramid</h3>
+            <p class="text-sm text-black-cow leading-relaxed mb-6">
+              Not all enforcement is equal. The Tsinghua AGENTIF benchmark found that even the best AI follows fewer than 30% of instructions perfectly. Here's how each mechanism actually performs:
+            </p>
+            <div class="overflow-x-auto">
+              <table class="guide-table">
+                <thead>
+                  <tr>
+                    <th>Layer</th>
+                    <th>Mechanism</th>
+                    <th>Compliance</th>
+                    <th>Bypassable?</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Forcing function</strong></td>
+                    <td>TypeScript strict mode, CI gates</td>
+                    <td>~100%</td>
+                    <td>Code won't compile / merge</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Forcing function</strong></td>
+                    <td>PreToolUse hooks (block commands)</td>
+                    <td>~100%</td>
+                    <td>Cannot be bypassed</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Mechanical</strong></td>
+                    <td>PostToolUse hooks (auto-run linter)</td>
+                    <td>~95%</td>
+                    <td>Only by disabling hooks entirely</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Semi-mechanical</strong></td>
+                    <td>Skills with embedded shell commands</td>
+                    <td>~80%</td>
+                    <td>AI may not invoke them</td>
+                  </tr>
+                  <tr>
+                    <td><strong>Aspirational</strong></td>
+                    <td>CLAUDE.md rules (prose)</td>
+                    <td>~60%</td>
+                    <td>Context pressure, conflicting signals</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 5: THE WORKFLOW
+           ════════════════════════════════════════════ -->
+      <section id="workflow" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Process</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">How Phases Chain Together</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p class="mb-5">
+              The biggest source of chaos in AI-assisted development isn't bad code &mdash; it's bad handoffs. Session 1 makes decisions. Session 2 doesn't know about them. Session 3 contradicts both. The workflow solves this by turning each phase into a file that the next phase reads.
+            </p>
+            <p>
+              Native deterministic chaining doesn't exist in Claude Code &mdash; Anthropic confirmed this is by design. But three patterns create reliable phase transitions without it.
+            </p>
+          </div>
+
+          <!-- Pattern A: Slash Commands as Phase Gates -->
+          <div class="rule-card mb-6 animate-on-scroll">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="tool-number">A</span>
+              <div>
+                <h3 class="font-heading font-bold text-haiti text-lg">Slash Commands as Phase Gates</h3>
+                <p class="text-xs text-plantation font-semibold uppercase tracking-wide">Simplest &mdash; the human decides when to advance</p>
+              </div>
+            </div>
+            <div class="text-sm text-black-cow leading-relaxed space-y-3">
+              <p>
+                Create separate slash commands for each phase: <code>/phase1-data-model</code>, <code>/phase2-api</code>, <code>/phase3-ui</code>. Each command defines its scope, expected inputs, and deliverables. A Stop hook reads a state file and suggests what to run next: <em>"Phase 1 complete. Review the data model, then run /phase2-api."</em>
+              </p>
+              <p>
+                The human-in-the-loop gate is the act of typing the next command. You review the output, decide it's ready, and trigger the next phase. This maps directly to GitHub Actions' environment approval pattern &mdash; workflows pause between stages until a human approves.
+              </p>
+            </div>
+          </div>
+
+          <!-- Planning Depth Ladder -->
+          <div class="rule-card mb-6 animate-on-scroll">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="tool-number">B</span>
+              <div>
+                <h3 class="font-heading font-bold text-haiti text-lg">The Planning Depth Ladder</h3>
+                <p class="text-xs text-plantation font-semibold uppercase tracking-wide">Match process weight to task size</p>
+              </div>
+            </div>
+            <div class="text-sm text-black-cow leading-relaxed">
+              <p class="mb-4">Not everything needs the full pipeline. The key principle from Forever Alone Programming: <strong>"Process must be lighter than the work it governs."</strong></p>
+              <div class="overflow-x-auto">
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>Task Size</th>
+                      <th>Process</th>
+                      <th>Example</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Quick fix</strong></td>
+                      <td>Fix it &rarr; commit &rarr; ship</td>
+                      <td>Typo, dependency bump, small bug with obvious cause</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Small feature</strong></td>
+                      <td>Brief plan &rarr; implement &rarr; ship</td>
+                      <td>Add a button, modify a form, update a query</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Big feature</strong></td>
+                      <td>Think &rarr; Plan &rarr; Work &rarr; Learn &rarr; Ship</td>
+                      <td>New page, new API endpoint, multi-file refactor</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Architectural change</strong></td>
+                      <td>Deep research &rarr; ADR &rarr; Full pipeline</td>
+                      <td>Database migration, auth system swap, new infrastructure</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- Files Not Context -->
+          <div class="rule-card animate-on-scroll">
+            <div class="flex items-start gap-4 mb-4">
+              <span class="tool-number">C</span>
+              <div>
+                <h3 class="font-heading font-bold text-haiti text-lg">Files, Not Context</h3>
+                <p class="text-xs text-plantation font-semibold uppercase tracking-wide">Phase handoffs survive session boundaries</p>
+              </div>
+            </div>
+            <div class="text-sm text-black-cow leading-relaxed space-y-3">
+              <p>
+                Each phase writes its output to a file on disk, then recommends the next step. When you clear context and start a new session, the next agent reads the file. Nothing lives only in conversation memory.
+              </p>
+              <div class="overflow-x-auto">
+                <table class="guide-table">
+                  <thead>
+                    <tr>
+                      <th>Phase</th>
+                      <th>Output Artifact</th>
+                      <th>Next Step</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td><strong>Think</strong></td>
+                      <td>Design doc in <code>docs/plans/</code></td>
+                      <td>Clear context &rarr; Plan</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Plan</strong></td>
+                      <td>Plan file with execution strategy</td>
+                      <td>Clear context &rarr; Execute</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Work</strong></td>
+                      <td>Code committed to branch</td>
+                      <td>Clear context &rarr; Learn or Ship</td>
+                    </tr>
+                    <tr>
+                      <td><strong>Learn</strong></td>
+                      <td>Solution doc in <code>docs/solutions/</code></td>
+                      <td>Clear context &rarr; Ship</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p>
+                The McKinsey/QuantumBlack team found that agents <strong>routinely skip steps, create circular dependencies, or get stuck in analysis loops</strong> when allowed to self-orchestrate across phases. Their recommendation: use a "conventional, rule-based workflow engine" for phase transitions, with agents handling execution within each bounded phase.
+              </p>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 6: THE FOMO FIREWALL
+           ════════════════════════════════════════════ -->
+      <section id="fomo-firewall" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">Tool Evaluation</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">The FOMO Firewall</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p class="mb-5">
+              Dan McKinley's "Choose Boring Technology" argues that every developer gets about <strong>three innovation tokens.</strong> Each unfamiliar technology spends one. For a solo developer, you arguably get 1&ndash;2 &mdash; there's no team to absorb the learning curve.
+            </p>
+            <p>
+              The FOMO Firewall is a 5-minute decision protocol synthesized from the ThoughtWorks Technology Radar, Bezos's one-way/two-way door framework, McKinley's innovation tokens, and the IETF's "rough consensus and running code." Use it every time you're tempted by a new tool.
+            </p>
+          </div>
+
+          <!-- 5-Gate Checklist -->
+          <div class="space-y-4 mb-14 stagger-children">
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4">
+                <span class="prompt-number">1</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">The "Running Code" Test <span class="text-xs font-normal text-black-cow">(30 seconds)</span></h3>
+                  <p class="text-sm text-black-cow leading-relaxed">
+                    Have I seen this tool solve a real problem I actually have <em>right now</em>? Can I name the specific task it will improve this week? If both are "no," bookmark it and revisit in 30 days.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4">
+                <span class="prompt-number">2</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">The Bezos Door Test <span class="text-xs font-normal text-black-cow">(30 seconds)</span></h3>
+                  <p class="text-sm text-black-cow leading-relaxed">
+                    Is this a <strong>one-way door</strong> (deep integration, data migration, workflow restructuring) or a <strong>two-way door</strong> (easy to try, easy to remove)? Two-way doors get a timeboxed 2-hour trial. One-way doors require full evaluation.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4">
+                <span class="prompt-number">3</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">The Innovation Token Test <span class="text-xs font-normal text-black-cow">(1 minute)</span></h3>
+                  <p class="text-sm text-black-cow leading-relaxed">
+                    Does this spend one of my ~2 tokens? Does it overlap with something I already use? What's the cognitive overhead? If you're already carrying 2+ unfamiliar tools, stop.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4">
+                <span class="prompt-number">4</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">The Radar Placement <span class="text-xs font-normal text-black-cow">(1 minute)</span></h3>
+                  <p class="text-sm text-black-cow leading-relaxed">
+                    Place the tool explicitly on the <strong>Assess &rarr; Trial &rarr; Adopt &rarr; Hold</strong> spectrum. Write it down. A tool cannot jump from Assess to Adopt &mdash; it must prove itself in Trial first with real production usage.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-start gap-4">
+                <span class="prompt-number">5</span>
+                <div>
+                  <h3 class="font-heading font-bold text-haiti text-sm mb-1">The Exit Plan <span class="text-xs font-normal text-black-cow">(1 minute)</span></h3>
+                  <p class="text-sm text-black-cow leading-relaxed">
+                    Can I remove it in under an hour? Does it store data in a proprietary format? What happens if this tool disappears tomorrow? If you can't exit cleanly, you can't enter safely.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Red Flags -->
+          <div class="warning-card animate-on-scroll">
+            <div class="warning-icon">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+            </div>
+            <h4 class="font-heading font-bold text-haiti text-sm mb-2">Red flags that signal a FOMO spiral</h4>
+            <ul class="text-sm text-black-cow leading-relaxed list-disc list-inside space-y-1">
+              <li>Reading about tools instead of building with them</li>
+              <li>Three or more tools in "Trial" simultaneously</li>
+              <li>Comparing tools you haven't actually used</li>
+              <li>The appeal is "everyone uses it" rather than "this solves problem X"</li>
+            </ul>
+            <p class="text-sm text-black-cow leading-relaxed mt-3">
+              The IETF's principle: <strong>"rough consensus and running code."</strong> Don't adopt until you have running code &mdash; proven, working value in your actual workflow. Watching a demo doesn't count.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 7: LIVING WITH ADHD
+           ════════════════════════════════════════════ -->
+      <section id="adhd" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">Accessibility</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">Process That Survives Your Worst Day</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p class="mb-5">
+              This section isn't optional. It's core to the methodology. <strong>A system designed to survive cognitive depletion works for everyone.</strong> On your best day, these practices make you faster. On your worst day, they keep you from losing work. That's not an accessibility feature &mdash; it's the whole point.
+            </p>
+            <p>
+              These strategies come from developers with ADHD who reported what actually works in practice &mdash; not generic productivity advice, but specific patterns validated against the realities of executive function challenges.
+            </p>
+          </div>
+
+          <!-- ADHD Strategy Cards -->
+          <div class="grid md:grid-cols-2 gap-6 stagger-children">
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-plantation/10 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-plantation"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+                </div>
+                <h3 class="font-heading font-bold text-haiti text-base">TDD as External Memory</h3>
+              </div>
+              <p class="text-sm text-black-cow leading-relaxed">
+                Multiple ADHD developers called test-driven development "a career-saver." Tests serve as external working memory &mdash; they hold the definition of "done" so executive function doesn't have to. <strong>Write the test first, then make it pass.</strong> One small failing test at a time prevents the overwhelm of holding the whole picture in your head.
+              </p>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-haiti/8 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-haiti"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+                </div>
+                <h3 class="font-heading font-bold text-haiti text-base">Micro-Handoff Shutdown Ritual</h3>
+              </div>
+              <p class="text-sm text-black-cow leading-relaxed">
+                End every work block with two bullet points: <strong>"state of work"</strong> and <strong>"next tiny action."</strong> This prevents the blank-page restart that paralyzes ADHD brains. When you come back &mdash; whether in 10 minutes or 10 days &mdash; you know exactly what to do next. No decision fatigue, no "where was I?"
+              </p>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-dust-storm/40 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-black-cow"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                </div>
+                <h3 class="font-heading font-bold text-haiti text-base">The 50/10 Cadence</h3>
+              </div>
+              <p class="text-sm text-black-cow leading-relaxed">
+                Work 50 minutes, break 10. At every break point, write the single next step before stepping away. This exploits ADHD's relationship with novel starts &mdash; making "what do I do next?" trivially easy eliminates the restart paralysis. The break isn't optional. Neither is the next-action note.
+              </p>
+            </div>
+
+            <div class="rule-card animate-on-scroll">
+              <div class="flex items-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-plantation/10 flex items-center justify-center flex-shrink-0">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-plantation"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+                </div>
+                <h3 class="font-heading font-bold text-haiti text-base">Automation as Accessibility</h3>
+              </div>
+              <p class="text-sm text-black-cow leading-relaxed">
+                <strong>"Automate tasks you have to do frequently or on a schedule, especially if you'll forget them on your worst day."</strong> CI/CD pipelines, linters, formatters, dependency updates, deployment scripts. For someone with ADHD, "worst day" isn't hypothetical &mdash; it's any day where executive function is depleted. Automation isn't a nice-to-have. It's a requirement.
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Git hygiene callout -->
+          <div class="mt-10 guide-prose max-w-3xl mx-auto animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-lg mb-4">Git Hygiene as Impulse Control</h3>
+            <p>
+              Branch protections prevent impulsive pushes to main. <code>git stash</code> for messy experiments. Always work in feature branches that can be destroyed. These are mechanical guardrails against the ADHD tendency to ship half-finished work during a hyperfocus burst. The tooling doesn't judge or require willpower &mdash; it just makes the safe path the default path.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 8: THE CODIFIED CONTEXT PATTERN
+           ════════════════════════════════════════════ -->
+      <section id="codified-context" class="py-20 sm:py-28 section-alt">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Proof</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">The Codified Context Pattern</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p class="mb-5">
+              If you want proof that a non-engineer can build and maintain production software through AI agents, this is it.
+            </p>
+            <p>
+              Aristidis Vasilopoulos &mdash; a chemistry expert, not a software engineer &mdash; built a <strong>108,000-line C# distributed system across 283 development sessions</strong> using Claude Code as the sole code-generation tool. His paper (arXiv 2602.20478, February 2026) documents exactly how he did it, and his core thesis changes how you think about documentation: <strong>documentation is infrastructure &mdash; load-bearing artifacts that AI agents depend on.</strong>
+            </p>
+          </div>
+
+          <!-- Three-Tier Memory -->
+          <div class="grid md:grid-cols-3 gap-6 mb-14 stagger-children">
+            <div class="rule-card text-center animate-on-scroll">
+              <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 mb-4">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-red-500"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+              </div>
+              <h3 class="font-heading font-bold text-haiti text-base mb-2">Tier 1: Hot Memory</h3>
+              <p class="text-xs text-black-cow leading-relaxed">
+                A project constitution loaded every session. Conventions, retrieval hooks, orchestration protocols. Equivalent to CLAUDE.md &mdash; always in context.
+              </p>
+            </div>
+
+            <div class="rule-card text-center animate-on-scroll">
+              <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-amber-50 mb-4">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-amber-500"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+              </div>
+              <h3 class="font-heading font-bold text-haiti text-base mb-2">Tier 2: Warm Memory</h3>
+              <p class="text-xs text-black-cow leading-relaxed">
+                19 specialized domain-expert agents, each with embedded project-specific knowledge. The save system agent "knows" saves; the UI agent "knows" routing.
+              </p>
+            </div>
+
+            <div class="rule-card text-center animate-on-scroll">
+              <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 mb-4">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" class="text-blue-500"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              </div>
+              <h3 class="font-heading font-bold text-haiti text-base mb-2">Tier 3: Cold Memory</h3>
+              <p class="text-xs text-black-cow leading-relaxed">
+                34 on-demand specification documents in a <code>docs/</code> knowledge base. Retrieved via keyword triggers or explicit requests. Detailed but only loaded when needed.
+              </p>
+            </div>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto animate-on-scroll">
+            <p class="mb-5">
+              The pattern works because it matches how human organizations manage knowledge: everyone gets the company handbook (hot), each team has its own expertise (warm), and detailed specs live in a shared drive for when you need them (cold). AI agents operate under the same constraints &mdash; limited context windows, no persistent memory, fresh starts every session &mdash; so they benefit from the same tiered approach.
+            </p>
+            <p>
+              A companion study found that this approach yields a <strong>29% reduction in AI runtime</strong> and <strong>17% reduction in token usage.</strong> Your context documents aren't overhead &mdash; they're performance optimization. Every line of CLAUDE.md saves tokens downstream by preventing the AI from exploring dead ends, asking clarifying questions, or making wrong assumptions.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+
+      <!-- ════════════════════════════════════════════
+           SECTION 9: WHAT NOT TO DO
+           ════════════════════════════════════════════ -->
+      <section id="what-not-to-do" class="py-20 sm:py-28">
+        <div class="max-w-4xl mx-auto px-6">
+          <div class="text-center mb-14 animate-on-scroll">
+            <p class="section-eyebrow mb-3">The Failures</p>
+            <h2 class="font-heading text-3xl sm:text-4xl font-bold text-haiti mb-4">What NOT to Do</h2>
+          </div>
+
+          <div class="guide-prose max-w-3xl mx-auto mb-14 animate-on-scroll">
+            <p>
+              Success stories get the headlines. Failure patterns teach the lessons. These are documented cases where AI-assisted development went wrong &mdash; and the specific mistakes that caused it.
+            </p>
+          </div>
+
+          <!-- Failure Case Studies -->
+          <div class="space-y-6 stagger-children">
+
+            <!-- Roadtrip Ninja -->
+            <div class="rule-card animate-on-scroll" style="border-left: 3px solid #DC2626;">
+              <h3 class="font-heading font-bold text-haiti text-lg mb-2">The Roadtrip Ninja Case Study</h3>
+              <p class="text-xs text-red-600 font-semibold uppercase tracking-wide mb-3">100K+ lines &mdash; productivity cratered</p>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  A detailed case study of "Roadtrip Ninja" &mdash; a project built entirely with Claude Code &mdash; found that AI productivity gains <strong>"cratered" as the codebase grew.</strong> The developer spent more time managing Claude than building features.
+                </p>
+                <p>
+                  At 70,000 lines, Claude would "randomly decide to implement authentication differently, switch database patterns mid-feature" despite CLAUDE.md being referenced every prompt. The root cause: no mechanical enforcement. Rules were aspirational, compliance was voluntary, and as context pressure grew, the AI increasingly ignored its own instructions.
+                </p>
+              </div>
+            </div>
+
+            <!-- GitClear -->
+            <div class="rule-card animate-on-scroll" style="border-left: 3px solid #DC2626;">
+              <h3 class="font-heading font-bold text-haiti text-lg mb-2">The GitClear Data</h3>
+              <p class="text-xs text-red-600 font-semibold uppercase tracking-wide mb-3">211 million lines analyzed</p>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  GitClear analyzed 211 million lines of code across the 2020&ndash;2024 period and found an <strong>8-fold increase in code duplication</strong> coinciding with AI tool adoption. Copy-pasted code exceeded moved code for the first time in 20 years. Refactoring dropped from 25% to under 10% of all changed lines.
+                </p>
+                <p>
+                  The implication: AI doesn't refactor. It copies. Every time you ask AI to "add a feature like the one over there," it copies the code instead of extracting a shared component. Without the strategic layer (you deciding what to share and what to separate), duplication compounds session by session.
+                </p>
+              </div>
+            </div>
+
+            <!-- Tool Sprawl -->
+            <div class="rule-card animate-on-scroll" style="border-left: 3px solid #DC2626;">
+              <h3 class="font-heading font-bold text-haiti text-lg mb-2">Why More Tools Makes You Slower</h3>
+              <p class="text-xs text-red-600 font-semibold uppercase tracking-wide mb-3">BCG "AI Brain Fry" study</p>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  BCG's study of 1,488 workers found that high-oversight AI use produces <strong>14% more mental effort, 12% greater mental fatigue, and 19% greater information overload</strong> compared to non-AI tasks. Productivity peaks at 1&ndash;3 tools, then declines.
+                </p>
+                <p>
+                  Aaron Brethorst's 2025 update to "Choose Boring Technology" nailed it: <strong>"In the AI era, there's an additional risk: the false confidence that comes from having an AI tool that can generate seemingly professional code for any technology stack."</strong> Just because AI can use a tool doesn't mean you should add it to your stack.
+                </p>
+              </div>
+            </div>
+
+            <!-- Hand-maintained registries -->
+            <div class="rule-card animate-on-scroll" style="border-left: 3px solid #DC2626;">
+              <h3 class="font-heading font-bold text-haiti text-lg mb-2">Hand-Maintained Registries Always Rot</h3>
+              <p class="text-xs text-red-600 font-semibold uppercase tracking-wide mb-3">Registry maintenance research</p>
+              <div class="text-sm text-black-cow leading-relaxed space-y-3">
+                <p>
+                  Research into documentation systems found that <strong>manually maintained registries universally fail.</strong> Systems evolve faster than anyone can document manually. The only registries that survive long-term are either auto-generated from code (like madge's dependency graph) or updated in the same commit as the code they describe (like ADRs).
+                </p>
+                <p>
+                  If your system requires someone to "remember to update the documentation," it will decay. The ThoughtWorks study of successful organizations confirmed: only processes embedded in the commit flow persist. Everything else is a wish.
+                </p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- The ThoughtWorks conclusion -->
+          <div class="mt-14 guide-prose max-w-3xl mx-auto animate-on-scroll">
+            <h3 class="font-heading font-bold text-haiti text-lg mb-4">The Most Counterintuitive Finding</h3>
+            <p>
+              The path to professional-quality software through AI agents requires <strong>less tooling, not more.</strong> BCG's data on productivity decline, McKinley's innovation tokens, Sierra's collapse zone, and Ousterhout's "tactical tornado" critique all converge on the same point: <strong>depth with one well-constrained tool outperforms breadth across many.</strong> The Codified Context paper proves a non-engineer can build and maintain a 108,000-line production system &mdash; but only by treating documentation as infrastructure and investing in the architectural decomposition that AI cannot do for itself.
+            </p>
+          </div>
+
+        </div>
+      </section>
+
+
+      <!-- ════════════════════════════════════════════
+           FOOTER
+           ════════════════════════════════════════════ -->
+      <footer class="site-footer py-12 mt-10">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+          <p class="text-sm mb-3">
+            <a href="index.html" class="font-heading font-semibold">AI Foundation Levels</a> &mdash; by <a href="https://thedigitalorganizer.com">The Digital Organizer</a>
+          </p>
+          <p class="text-xs opacity-60">
+            Built with Claude Code. Research sources: METR RCT, BCG "AI Brain Fry" (N=1,488), GitClear (211M lines), Tsinghua AGENTIF, Codified Context (arXiv 2602.20478).
+          </p>
+        </div>
+      </footer>
+
+    </main><!-- end guide-main -->
+  </div><!-- end guide-layout -->
+
+  <script src="script.js"></script>
+  <script src="workflow-guide.js"></script>
+</body>
+</html>
