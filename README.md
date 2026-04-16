@@ -143,6 +143,19 @@ site/                  # Static methodology + workflow guides
 CLAUDE.md              # Internal working notes for the project
 ```
 
+## Prior art
+
+The AGENTS.md propagation logic inside `/soloship-learn` is adapted from [crafter-station/skills](https://github.com/crafter-station/skills)' [intent-layer](https://github.com/crafter-station/skills/tree/main/context-engineering/intent-layer) skill, which is in turn built on [The Intent Layer](https://www.intent-systems.com/learn/intent-layer) by Tyler Brandt. The core idea — distributed per-directory `AGENTS.md` files that let agents navigate the codebase the way a senior engineer would — comes from there.
+
+Soloship's adjustments:
+
+1. **Continuous, not one-shot.** crafter's intent-layer is a setup skill you run once. Soloship folds the AGENTS.md creation and update pass into `/soloship-learn`, which runs every time you capture knowledge from non-obvious work. The intent layer grows with the project's learning instead of being a bootstrap artifact.
+2. **Threshold-gated creation.** Soloship only materializes a new `AGENTS.md` when the directory has 3+ source files and no existing file. Small directories and config-only dirs don't get governance they don't need.
+3. **Append-only with dated attribution.** When an `AGENTS.md` already exists, `/learn` appends entries in a fixed shape (`### [Pitfall|Contract|Invariant]: title` with a dated `_Added by soloship-learn_` line). Never overwrites.
+4. **Scoped to solution-doc evidence.** Each propagation pass uses the `files` frontmatter of the solution doc just written as its scope. No speculative updates — only directories proven relevant by the current learning.
+5. **Anti-stub rule.** If real scope can't be inferred from the files in a directory, `/learn` skips it. A missing `AGENTS.md` is better than a wrong one that misleads future agents.
+6. **Tied to the architecture registry.** `/learn` also runs a drift check against `docs/architecture/REGISTRY.md` in the same pass, connecting per-directory intent with a project-wide component map.
+
 ## License
 
 MIT.
