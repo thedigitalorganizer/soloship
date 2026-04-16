@@ -42,7 +42,7 @@ Run it once per project.
 
 ### The skills
 
-16 Claude Code skills invoked as `/soloship-*` slash commands, organized by when you use them:
+15 Claude Code skills invoked as `/soloship-*` slash commands, organized by when you use them:
 
 **Setup & orientation**
 - `/soloship-audit` — deep 2-phase codebase investigation (understand before you govern)
@@ -66,7 +66,6 @@ Run it once per project.
 - `/soloship-qa` — headless browser QA testing
 - `/soloship-security` — OWASP / STRIDE security audit
 - `/soloship-design-review` — visual audit with AI-slop detection
-- `/soloship-retro` — weekly retrospective on commit history and work patterns
 
 The skills route to underlying workflows in [Superpowers](https://github.com/anthropics/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), [Impeccable](https://github.com/pbakaus/impeccable), and [gstack](https://github.com/garrytan/gstack) where those already exist. Soloship adds the routing, the enforcement gates, and the solo-operator defaults.
 
@@ -98,12 +97,12 @@ cd existing-project
 
 ## Status
 
-The installer works. The 16 skills are in place. The hooks and rules are wired up. You can use it today on a real project.
+The installer works. The 15 skills are in place. The hooks and rules are wired up. You can use it today on a real project.
 
 What's next:
 
 - **Safety floor hardening** — mechanical triggers, security scanning, rollback, artifact contracts
-- **Surface simplification** — consolidating the 16 skills into 3-4 meta-workflows with observable-fact checkpoints
+- **Surface simplification** — consolidating the 15 skills into 3-4 meta-workflows with observable-fact checkpoints
 - **CLAUDE.md governance** — a budget for CLAUDE.md size, priority tiers, an audit hook that fires every Nth commit
 - **Graduation system** — calibrated thresholds that tell you when to hire help
 
@@ -129,7 +128,7 @@ src/                   # TypeScript source for the installer
 skills/                # Claude Code skills, symlinked to ~/.claude/skills/soloship-*
   audit/ bootstrap/ brainstorm/ spec/ plan/ implement/ review/
   debug/ learn/ shipfast/ shipthorough/ qa/ security/
-  design-review/ retro/ onboard/ references/
+  design-review/ onboard/ references/
 docs/
   design/              # System design and command specs
 site/                  # Static methodology + workflow guides
