@@ -4,7 +4,7 @@
 
 **Two deliverables:**
 1. `npx soloship init` — npm CLI that installs mechanical enforcement + documentation infrastructure
-2. Soloship Claude Code plugin — 16 skills for audit, bootstrap, and daily workflow
+2. Soloship Claude Code plugin — 19 skills for audit, bootstrap, and daily workflow
 
 ## Status
 
@@ -20,7 +20,7 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 | 2. npm installer | Done | `npx soloship init` working |
 | 3. Audit tool | Done | `/soloship-audit` skill |
 | 4. Bootstrap | Done | `/soloship-bootstrap` skill |
-| 5. Workflow commands | Done | 14 additional skills (16 total) |
+| 5. Workflow commands | Done | 17 additional skills (19 total) |
 | 6. Hooks | Done | All 9 hooks implemented |
 | 7. Safety + Simplification | Not started | WS1: safety floor, WS2: surface simplification, WS3: CLAUDE.md governance |
 | 8. Graduation + Docs | Not started | WS4: graduation system, methodology page for aifoundationlevels.com |
@@ -59,7 +59,10 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── design-review/SKILL.md # Visual audit + AI Slop Detection
 │   ├── retro/SKILL.md         # Weekly retrospective
 │   ├── spec/SKILL.md          # Formal specification with acceptance criteria
-│   └── onboard/SKILL.md       # Codebase orientation briefing
+│   ├── onboard/SKILL.md       # Codebase orientation briefing
+│   ├── health/SKILL.md        # Codebase health score (0-10 composite, trend tracking)
+│   ├── checkpoint/SKILL.md    # Session state snapshots for /clear recovery
+│   └── autoplan/SKILL.md      # Auto-review pipeline (CEO + design + eng + DX in one pass)
 └── docs/
     ├── design/
     │   ├── 2026-04-06-foundation-system-design.md  # Full system design (source of truth)
@@ -144,5 +147,19 @@ Soloship skills route to these external skills:
 - `compound-engineering:workflows:compound`
 - `office-hours`, `plan-eng-review`, `plan-ceo-review`, `plan-design-review` (gstack, kept as symlinks)
 - `qa`, `cso`, `design-review`, `retro` (gstack, kept as symlinks)
+- `health`, `checkpoint`, `autoplan` (gstack, added 2026-04-17)
 
 If any of these are renamed or removed by their maintainers, the Soloship routers that reference them will need updating.
+
+## Recommended MCP: Serena
+
+[Serena](https://github.com/oraios/serena) provides symbol-level code navigation, refactoring, and surgical editing via LSP (40+ languages). Not needed for small projects, but recommended once a codebase grows beyond what file-level tools handle reliably. Soloship's dependency graph hooks were removed in favor of Serena's live LSP-backed tracking.
+
+Install per-project (not globally) so it only activates where needed:
+```bash
+uv tool install -p 3.13 serena-agent@latest --prerelease=allow
+serena init
+# Then configure your client: https://oraios.github.io/serena/02-usage/030_clients.html
+```
+
+**Do not install via MCP/plugin marketplaces** — they contain outdated install commands (per Serena's own README).

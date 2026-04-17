@@ -35,6 +35,26 @@ Both must pass. If tests fail, triage:
 - Your changes broke it → fix before proceeding
 - Pre-existing failure → note it, but don't block ship for unrelated failures
 
+### Step 3.5: Health Gate
+Run `/health` to get the composite quality score. Present the result:
+
+```
+Health: [N]/10 (was [M]/10 last check)
+  TypeScript:  pass/fail
+  Linter:      pass/fail
+  Tests:       pass/fail
+  Dead code:   pass/fail
+```
+
+- **Score 5+:** Proceed to Step 4.
+- **Below 5:** Block. Show what's dragging the score down and ask:
+  "Health score is [N]/10. Fix issues before shipping, or override?"
+  If the user overrides, note it in the PR body under a "Health Override" section.
+
+**Why:** Tests passing doesn't mean the codebase is healthy. A passing test suite
+with 200 linter errors and dead code everywhere is not shippable. The health
+score catches the category of rot that individual checks miss.
+
 ### Step 4: Coverage Audit
 Assess test coverage for the changed code:
 - Which changed files have tests?
@@ -158,6 +178,7 @@ Ship thorough is not complete until ALL of these are true:
 - [ ] Lint passes (show output)
 - [ ] Tests pass (show output)
 - [ ] Build succeeds (show output)
+- [ ] Health score computed (5+ to proceed, or user override documented)
 - [ ] Coverage audit presented (ASCII chart with per-file assessment)
 - [ ] Code review ran (3-pass) and no unresolved Critical/Important findings
 - [ ] CHANGELOG updated for all feat:/fix:/refactor: changes

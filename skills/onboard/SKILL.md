@@ -11,6 +11,30 @@ Your job is to quickly orient someone (human or AI agent) to this codebase.
 Produce a concise briefing that answers: "What is this, how does it work, and
 where do I start?"
 
+## Step 0: Check for Checkpoint
+
+Before reading anything else, check if a gstack checkpoint exists for the
+current branch:
+
+```bash
+eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)" 2>/dev/null || true
+CHECKPOINT_DIR="${GSTACK_HOME:-$HOME/.gstack}/projects/${SLUG:-unknown}/checkpoints"
+BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
+```
+
+If a checkpoint exists for this branch:
+1. Read it first — it has the most relevant context (what was being worked on,
+   decisions made, what's left to do)
+2. Check freshness: if older than 7 days, note "Checkpoint is N days old —
+   codebase may have changed. Cross-referencing with current git history."
+3. Present the checkpoint summary before the full briefing: "Last session on
+   this branch: [summary]. Picking up from there."
+
+If no checkpoint exists, proceed directly to Step 1.
+
+**Why:** A returning user doesn't need the full tour. They need to know where
+they left off. The checkpoint is the fastest path to productive work.
+
 ## Step 1: Read Everything Available
 
 In parallel, read:
@@ -60,6 +84,7 @@ Pull from solution docs if they exist.]
 
 Onboard is not complete until ALL of these are true:
 
+- [ ] Checkpoint checked for current branch (present summary if found, note if stale)
 - [ ] All available sources read (CLAUDE.md, AGENTS.md, README, audit, git log, registry)
 - [ ] Briefing contains all 7 sections (What, How Organized, Important Files, Connections, Active Work, How to Work, Watch Out)
 - [ ] Next steps offered
