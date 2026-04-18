@@ -1,4 +1,4 @@
-import { input, confirm } from "@inquirer/prompts";
+import { input } from "@inquirer/prompts";
 import { execSync } from "node:child_process";
 import chalk from "chalk";
 import { detectProject, type ProjectInfo } from "./detect.js";
