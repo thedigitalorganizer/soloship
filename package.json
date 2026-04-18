@@ -9,7 +9,8 @@
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
-    "start": "node dist/cli.js"
+    "start": "node dist/cli.js",
+    "prepare": "tsc"
   },
   "keywords": [
     "claude-code",
@@ -27,9 +28,9 @@
     "templates"
   ],
   "dependencies": {
+    "@inquirer/prompts": "^7.10.0",
     "chalk": "^5.4.0",
-    "commander": "^13.1.0",
-    "inquirer": "^12.6.0"
+    "commander": "^13.1.0"
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
