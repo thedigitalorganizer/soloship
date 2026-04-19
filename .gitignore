@@ -1,11 +1,15 @@
 node_modules/
 dist/
 .ai/
-.DS_Store
+**/.DS_Store
 
 # Wrangler local state — not for version control
 .wrangler/
 
+# Serena MCP local state — not for version control
+.serena/
+
 # Internal strategy + research — excluded from public repo
 docs/research/
 docs/plans/
+docs/solutions/

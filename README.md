@@ -205,7 +205,7 @@ Soloship builds on top of four Claude Code skill ecosystems rather than replacin
 
 [Impeccable](https://github.com/pbakaus/impeccable) — `/design-review` adds an AI slop detection pass inspired by Impeccable's design quality philosophy, checking for generic AI-generated visual, content, and layout patterns.
 
-[Serena](https://github.com/oraios/serena) (recommended MCP) — Symbol-level code navigation, refactoring, and surgical editing powered by language servers (40+ languages). Serena gives the agent IDE-like capabilities — cross-file renames, reference lookups, and symbol-aware edits that collapse multi-step text surgery into single atomic operations. Not required for small projects, but recommended once a codebase grows beyond what file-level tools handle reliably. Install with `uv tool install -p 3.13 serena-agent@latest --prerelease=allow && serena init`, then configure per-project (not globally) so it only activates where needed.
+[Serena](https://github.com/oraios/serena) — symbol-level LSP code navigation. Optional. Worth adding once a codebase outgrows file-level tools; see Serena's README for install instructions.
 
 The broader design traces back to a research pass across: Ousterhout on strategic vs tactical programming (you are the architect, the agent implements), Hickey on simple vs easy, Metz on dependency awareness and sizing rules, Meadows on leverage points in systems, the BCG "AI Brain Fry" finding that productivity drops past three tools, Kathy Sierra on the collapse zone (only automated process survives when things break), and the Codified Context paper that validated the CLAUDE.md + AGENTS.md + docs/ three-tier pattern.
 

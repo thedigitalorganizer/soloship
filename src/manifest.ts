@@ -96,15 +96,6 @@ export const SOLOSHIP_MANIFEST: DependencyManifest = {
 
   mcpServers: [
     {
-      name: "serena",
-      severity: "recommended",
-      purpose:
-        "Symbol-level code navigation and surgical editing via LSP. Makes refactors safer and faster.",
-      install:
-        "claude mcp add -s user serena -- uvx --from git+https://github.com/oraios/serena serena start-mcp-server",
-      notes: "Requires `uv` (https://docs.astral.sh/uv/).",
-    },
-    {
       name: "obsidian",
       severity: "recommended",
       purpose: "Cross-project read/search access to an Obsidian vault.",

@@ -151,15 +151,3 @@ Soloship skills route to these external skills:
 
 If any of these are renamed or removed by their maintainers, the Soloship routers that reference them will need updating.
 
-## Recommended MCP: Serena
-
-[Serena](https://github.com/oraios/serena) provides symbol-level code navigation, refactoring, and surgical editing via LSP (40+ languages). Not needed for small projects, but recommended once a codebase grows beyond what file-level tools handle reliably. Soloship's dependency graph hooks were removed in favor of Serena's live LSP-backed tracking.
-
-Install per-project (not globally) so it only activates where needed:
-```bash
-uv tool install -p 3.13 serena-agent@latest --prerelease=allow
-serena init
-# Then configure your client: https://oraios.github.io/serena/02-usage/030_clients.html
-```
-
-**Do not install via MCP/plugin marketplaces** — they contain outdated install commands (per Serena's own README).

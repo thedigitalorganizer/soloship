@@ -252,8 +252,7 @@ for plan in docs/plans/$(date +%Y)*.md; do
   fi
 done
 
-# Dependency graph generation removed — Serena MCP provides
-# superior live LSP-backed dependency tracking on demand.
+# Dependency graph generation removed.
 
 # Workflow navigator: detect what just happened and suggest next step
 LAST_COMMIT=$(git log -1 --pretty=%s 2>/dev/null || true)
@@ -344,8 +343,7 @@ fi
 
 function buildSessionStartScript(): string {
   return `bash -c '
-# Dependency graph injection removed — Serena MCP provides
-# live LSP-backed dependency tracking on demand.
+# Dependency graph injection removed.
 '`;
 }
 
