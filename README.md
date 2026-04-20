@@ -10,10 +10,17 @@ Soloship is guardrails for non-coders building software through AI agents. It's 
 
 Soloship is a [Claude Code](https://claude.com/claude-code) plugin. If you don't have Claude Code installed yet, install it first — then come back here.
 
-Inside any Claude Code session, run these two commands:
+Inside any Claude Code session, run these two commands **one at a time** — run the first, wait for it to finish, then run the second:
+
+**1. Add the marketplace:**
 
 ```
 /plugin marketplace add thedigitalorganizer/soloship
+```
+
+**2. Install the plugin:**
+
+```
 /plugin install soloship@soloship
 ```
 
