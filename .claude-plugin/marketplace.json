@@ -7,9 +7,13 @@
   "plugins": [
     {
       "name": "soloship",
-      "source": ".",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/thedigitalorganizer/soloship.git"
+      },
       "description": "Ship solo, safely. Guardrails for non-coders building software through AI agents.",
-      "version": "0.1.0"
+      "version": "0.1.0",
+      "strict": true
     }
   ]
 }
