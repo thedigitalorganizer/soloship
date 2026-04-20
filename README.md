@@ -95,6 +95,9 @@ Others are routers — Soloship adds enforcement and routing logic, then dispatc
 | `/qa` | gstack `qa` / `qa-only` | Mode selection (fix vs report-only) |
 | `/security` | gstack `cso` | Post-audit triage routing |
 | `/design-review` | gstack `design-review` | Adds AI slop detection pass (visual/content/layout patterns) |
+| `/autoplan` | gstack `autoplan` | Chains CEO + design + eng + DX reviews with auto-decisions |
+| `/checkpoint` | gstack `checkpoint` | Session state snapshots for `/clear` recovery; pairs with `/onboard` |
+| `/health` | gstack `health` | Composite 0-10 quality score with trend tracking; pre-ship gate |
 
 ## What you get
 
@@ -119,6 +122,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 - `/soloship:audit` — Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 6 more to assess quality, entanglement, security, dependencies, gaps, and leverage points. Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
 - `/soloship:bootstrap` — Configures governance from audit findings or interactive questions. Creates CLAUDE.md, AGENTS.md files (3+ source file threshold), installs 4 core rules, and wires up hooks. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard` — Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. No external routing — fully self-contained.
+- `/soloship:checkpoint` — Saves working state (git status, decisions, remaining work) so any future session can resume cleanly. Routes to gstack `checkpoint`. Pairs with `/soloship:onboard` for `/clear` recovery.
 
 **Daily work**
 
@@ -141,6 +145,8 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 - `/soloship:qa` — Routes to gstack `qa` (test and fix) or `qa-only` (report only). Uses accessibility checklist as baseline.
 - `/soloship:security` — Routes to gstack `cso` for infrastructure-first security scanning: OWASP Top 10, STRIDE threat modeling, secrets archaeology, dependency supply chain, npm audit.
 - `/soloship:design-review` — Two-pass visual audit. Pass 1 routes to gstack `design-review` for spacing, hierarchy, and consistency. Pass 2 is Soloship's own AI slop detection — flags generic gradients, default shadows, "Welcome to" copy, 3-column feature grids, and other patterns that mark AI-generated design. Each fix committed atomically with before/after screenshots.
+- `/soloship:health` — Routes to gstack `health` for a composite 0-10 codebase quality score (type check, lint, tests, dead code) with trend tracking across runs. Intended as a pre-ship gate inside `/soloship:shipthorough`.
+- `/soloship:autoplan` — Routes to gstack `autoplan` to run the full plan-review gauntlet (CEO, design, engineering, DX) in a single pass with auto-decisions. Use when you want every review lens applied without stepping through them individually.
 
 ## Quick start
 
@@ -185,11 +191,11 @@ Most people should use `/soloship:bootstrap` — it's the supported path and it 
 |-------|--------|-------------------|
 | 1-2 | Done | Cleanup + `npx soloship init` with stack detection |
 | 3-4 | Done | `/audit` + `/bootstrap` skills |
-| 5-6 | Done | 14 more skills (16 total) + 9 hooks + 4 rules |
+| 5-6 | Done | 17 more skills (19 total) + 9 hooks + 4 rules |
 | 7 | Not started | Safety floor hardening, surface simplification, CLAUDE.md governance |
 | 8 | Not started | Graduation system, methodology documentation |
 
-Phases 1-6 are shipped and usable today. Phases 7-8 were restructured after a [3-round adversarial review](docs/research/2026-04-08-adversarial-review-synthesis.md) that identified rationalization traps in the original design. Phase 7 adds mechanical safety enforcement (Semgrep scanning, automated rollback, phone-a-friend triggers) and consolidates the 16 skills into 3-4 meta-workflows. Phase 8 adds a graduation system with calibrated thresholds that tell you when your project has outgrown solo mode.
+Phases 1-6 are shipped and usable today. Phases 7-8 were restructured after a 3-round adversarial review that identified rationalization traps in the original design. Phase 7 adds mechanical safety enforcement (Semgrep scanning, automated rollback, phone-a-friend triggers) and consolidates the 19 skills into 3-4 meta-workflows. Phase 8 adds a graduation system with calibrated thresholds that tell you when your project has outgrown solo mode.
 
 ## Prior art & influences
 
@@ -212,6 +218,7 @@ The broader design traces back to a research pass across: Ousterhout on strategi
 ## Repo layout
 
 ```
+.claude-plugin/        # Plugin manifest (plugin.json, marketplace.json)
 bin/soloship.js        # CLI entry point
 src/                   # TypeScript source for the installer
   cli.ts               # Commander CLI definition
@@ -222,14 +229,11 @@ src/                   # TypeScript source for the installer
   rules.ts             # Workflow rule installation
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
-skills/                # Claude Code skills, symlinked to ~/.claude/skills/soloship-*
-  audit/ bootstrap/ brainstorm/ spec/ plan/ implement/ review/
-  cleanup/ debug/ learn/ shipfast/ shipthorough/ qa/ security/
-  design-review/ onboard/ references/
-docs/
-  design/              # System design and command specs
-site/                  # Static methodology + workflow guides
-CLAUDE.md              # Internal working notes for the project
+skills/                # Claude Code skills shipped by the plugin
+  audit/ autoplan/ bootstrap/ brainstorm/ checkpoint/ cleanup/
+  debug/ design-review/ health/ implement/ learn/ onboard/
+  plan/ qa/ review/ security/ shipfast/ shipthorough/ spec/
+  references/          # Shared checklists (a11y, code review, perf, security, testing)
 ```
 
 ## License

@@ -9,7 +9,7 @@ dist/
 # Serena MCP local state — not for version control
 .serena/
 
-# Internal strategy + research — excluded from public repo
-docs/research/
-docs/plans/
-docs/solutions/
+# Internal working files — excluded from public repo
+CLAUDE.md
+docs/
+site/
