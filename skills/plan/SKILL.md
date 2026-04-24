@@ -1,9 +1,10 @@
 ---
 name: plan
 description: |
-  Create an implementation plan with enforcement gates. Routes to writing-plans
-  for standard features or plan-eng-review for architectural work. Searches
-  solutions for prior art and validates plan compliance before completion.
+  Create an implementation plan with enforcement gates. Routes to
+  compound-engineering:workflows:plan for standard features or plan-eng-review
+  for architectural work. Searches solutions for prior art and validates plan
+  compliance before completion.
 ---
 
 # Soloship Plan
@@ -17,6 +18,10 @@ Before planning anything, search `docs/solutions/` for prior art:
 1. Grep for component names, file paths, and keywords related to this work
 2. Search the entire directory — never limit to one category
 3. If matches are found, read them and note any prevention strategies or pitfalls
+
+Note: `compound-engineering:workflows:plan` also runs a `learnings-researcher`
+agent that searches `docs/solutions/`. Doing it up front here makes the findings
+explicit in the conversation before the CE workflow starts.
 
 ## Step 2: Read Architecture Context (with Freshness Check)
 
@@ -35,15 +40,21 @@ If `docs/audit/audit-findings.json` exists:
 Assess the scope:
 
 **Standard feature** (< 5 files, clear scope, no architectural decisions):
-→ Invoke `superpowers:writing-plans`
+→ Invoke `compound-engineering:workflows:plan`. It handles repo research,
+learnings research, optional external research, and produces a plan file that
+follows project conventions.
 
 **Architectural work** (data flow changes, new services, schema changes, 5+ files):
 → Invoke `plan-eng-review` — it walks through architecture, data flow, edge cases,
-test coverage, and performance interactively.
+test coverage, and performance interactively. For the largest changes, run CE's
+plan first and then hand it to `plan-eng-review` for the architecture deep-dive.
 
 ## Artifact Contract (Plan Files)
 
-Plan files must start with YAML frontmatter:
+CE's workflow writes to its own location (often `docs/plans/` or
+`docs/brainstorms/` depending on phase). Regardless of which tool produced it,
+the final plan file must live at `docs/plans/YYYY-MM-DD-<slug>.md` and start
+with YAML frontmatter:
 ```
 ---
 date: YYYY-MM-DD
@@ -55,6 +66,10 @@ ttl_days: 14
 ```
 
 After writing, compute and insert content_hash (first 12 chars of SHA-256 of the body below frontmatter).
+
+If CE wrote the plan elsewhere, move/rename it into `docs/plans/` and add the
+frontmatter above so the rest of the Soloship workflow (implement, shipthorough,
+cleanup) can find it.
 
 ## Step 4: Enforcement Gate
 
@@ -80,6 +95,7 @@ proceed to implementation with an incomplete plan.
 | "The scope is obvious, I don't need an Execution Strategy" | Without an explicit strategy, agents default to "just start coding." This is how 3-file changes become 12-file refactors. |
 | "I'll skip the enforcement gate — the plan looks good" | The gate exists because plans always look good to their author. Check the boxes. Every unchecked box is a failure mode in execution. |
 | "I don't need to read the architecture registry" | The registry tells you what depends on what you're changing. Skipping it means surprise breakage in components you didn't know existed. |
+| "CE's workflow already produced a plan, so I'm done" | CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done. |
 
 ---
 
