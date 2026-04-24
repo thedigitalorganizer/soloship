@@ -13,3 +13,4 @@ dist/
 CLAUDE.md
 docs/
 site/
+.claude/settings.local.json

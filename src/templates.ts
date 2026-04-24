@@ -19,6 +19,10 @@ export function generateClaudeMd(project: ProjectInfo): string {
 **${project.name}**${project.description ? ` — ${project.description}` : ""}
 
 ${stackLine ? `**Stack:** ${stackLine}\n` : ""}
+> **Audience note:** The maintainer of this project may not be a traditional coder — Soloship is built for people who ship software through AI agents. When explaining anything technical (architecture, protocols, tooling, tradeoffs), lead with a plain-English analogy before introducing jargon. Define a technical term once with its meaning, then use it freely. Default to recommendations with tradeoffs, not term-paper breakdowns.
+>
+> If the maintainer signals they want the technical version ("go deeper," "show me the code"), switch registers. Otherwise, keep it concrete.
+
 ## Related Documentation
 
 | Document | Location | Purpose |

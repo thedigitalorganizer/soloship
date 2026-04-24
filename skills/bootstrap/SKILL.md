@@ -46,6 +46,7 @@ Check if `docs/audit/audit-findings.json` exists.
 **If CLAUDE.md doesn't exist:** Generate one with:
 - Project name and description (from audit or answers)
 - Stack line
+- **Audience note** (see below — always include in new CLAUDE.md files)
 - Related Documentation table (point to all docs that exist)
 - Project Structure (from actual file tree — run `ls` or `find`)
 - Quick Commands (parse from package.json scripts)
@@ -55,8 +56,17 @@ Check if `docs/audit/audit-findings.json` exists.
 - Global Invariants (from audit conventions or placeholder)
 - Workflow section (Soloship workflow: THINK → PLAN → WORK → LEARN → SHIP)
 
+**Audience note (place directly after the stack line):**
+
+```markdown
+> **Audience note:** The maintainer of this project may not be a traditional coder — Soloship is built for people who ship software through AI agents. When explaining anything technical (architecture, protocols, tooling, tradeoffs), lead with a plain-English analogy before introducing jargon. Define a technical term once with its meaning, then use it freely. Default to recommendations with tradeoffs, not term-paper breakdowns.
+>
+> If the maintainer signals they want the technical version ("go deeper," "show me the code"), switch registers. Otherwise, keep it concrete.
+```
+
 **If CLAUDE.md already exists:** Read it. Check for:
 - Missing sections (add them)
+- Missing audience note (add it right after the stack line or project description — this is a Soloship default)
 - Stale project structure (update if audit shows it's wrong)
 - Missing key files (add from audit component map)
 - Do NOT overwrite existing content — only add what's missing
