@@ -1,0 +1,20 @@
+{
+  "name": "soloship-gs-browse",
+  "version": "1.31.1.0-soloship.0",
+  "private": true,
+  "description": "Soloship-native vendoring of gstack's headless browser daemon. Re-vendored from gstack v1.31.1.0 with path rewrites so it works standalone.",
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "scripts/build-soloship.sh",
+    "test": "bun test test/"
+  },
+  "dependencies": {
+    "diff": "^7.0.0",
+    "playwright": "^1.58.2",
+    "socks": "^2.8.8"
+  },
+  "engines": {
+    "bun": ">=1.3.0"
+  }
+}

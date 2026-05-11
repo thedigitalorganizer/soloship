@@ -97,7 +97,7 @@ Thank you, nextlevelbuilder. When the agent needs a font pairing or a palette, t
 
 **Author:** [Garry Tan](https://x.com/garrytan) (Y Combinator)
 **License:** MIT ([`skills/vendored/gstack/LICENSE`](skills/vendored/gstack/LICENSE))
-**Version pinned:** 1.12.1.0
+**Version pinned:** 1.31.1.0
 **Source:** https://github.com/garrytan/gstack
 
 **Vendored into Soloship:** `autoplan`, `checkpoint`, `browse`, `qa`, `design-review`, `plan-ceo-review`, `plan-eng-review`, `plan-design-review`, `plan-devex-review`, `office-hours`, `cso` (11 skills).

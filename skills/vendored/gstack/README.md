@@ -2,7 +2,7 @@
 
 **Source:** [gstack](https://github.com/garrytan/gstack) by [Garry Tan](https://x.com/garrytan) (Y Combinator)
 **License:** MIT — see `LICENSE` in this directory
-**Version pinned:** 1.12.1.0
+**Version pinned:** 1.31.1.0 (re-vendored 2026-05-11 — bumped from 1.12.1.0 to refresh `browse/` with the Soloship-native path rewrite)
 
 Thank you, Garry, for building and open-sourcing the toolkit of a solo builder who ships like a team. gstack does a huge amount of the heavy lifting for Soloship — the plan-review trio, the headless browser, the design-review checklist, the security audit, and especially the `autoplan` pipeline that chains four reviews into one command.
 

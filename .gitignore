@@ -1,5 +1,10 @@
 node_modules/
 dist/
+# The gs-browse skill ships its compiled launcher binary inside the plugin —
+# users get the prebuilt artifact via the Claude Code plugin clone, so dist/
+# must be checked in for that skill specifically. Other dist/ dirs stay ignored.
+!skills/gs-browse/dist/
+!skills/gs-browse/dist/**
 .ai/
 **/.DS_Store
 
@@ -14,3 +19,5 @@ CLAUDE.md
 docs/
 site/
 .claude/settings.local.json
+.gstack/
+.soloship/
