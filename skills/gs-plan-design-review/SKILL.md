@@ -269,23 +269,27 @@ if [ -x "$D" ]; then
 else
   echo "DESIGN_NOT_AVAILABLE"
 fi
-B=""
-# Discover the Soloship-bundled browse binary across common install paths.
+[ -d "$HOME/.bun/bin" ] && export PATH="$HOME/.bun/bin:$PATH"
+GSB_DIR=""
 for CANDIDATE in \
-  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
-  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
-  "$HOME/.claude/skills/gs-browse/dist/browse" \
-  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
-  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse" \
+  "$HOME/.claude/skills/gs-browse" \
+  ".claude/skills/soloship/skills/gs-browse"; do
+  if [ -d "$CANDIDATE" ]; then GSB_DIR="$CANDIDATE"; break; fi
 done
-if [ -z "$B" ]; then
-  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
-               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
-    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+if [ -z "$GSB_DIR" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse; do
+    if [ -d "$FOUND" ]; then GSB_DIR="$FOUND"; break; fi
   done
 fi
-if [ -n "$B" ] && [ -x "$B" ]; then
+B=""
+if [ -n "$GSB_DIR" ] && [ -x "$GSB_DIR/dist/browse" ]; then
+  B="$GSB_DIR/dist/browse"
   echo "BROWSE_READY: $B"
+elif [ -n "$GSB_DIR" ]; then
+  echo "BROWSE_NEEDS_SETUP: $GSB_DIR/scripts/build-soloship.sh (will use 'open' until built)"
 else
   echo "BROWSE_NOT_AVAILABLE (will use 'open' to view comparison boards)"
 fi

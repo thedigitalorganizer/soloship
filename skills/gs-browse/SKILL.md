@@ -29,34 +29,42 @@ State persists between calls (cookies, tabs, login sessions).
 ## SETUP (run this check BEFORE any browse command)
 
 ```bash
-B=""
-# Likely-paths: Claude Code plugin install, then user-level skill install, then project-vendored.
+# Bash tool subshells skip ~/.zshrc, so ensure bun is reachable explicitly.
+[ -d "$HOME/.bun/bin" ] && export PATH="$HOME/.bun/bin:$PATH"
+
+# Discover the Soloship-bundled gs-browse skill directory.
+GSB_DIR=""
 for CANDIDATE in \
-  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
-  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
-  "$HOME/.claude/skills/gs-browse/dist/browse" \
-  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
-  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse" \
+  "$HOME/.claude/skills/gs-browse" \
+  ".claude/skills/soloship/skills/gs-browse"; do
+  if [ -d "$CANDIDATE" ]; then GSB_DIR="$CANDIDATE"; break; fi
 done
-# Glob fallback for non-standard plugin install paths.
-if [ -z "$B" ]; then
-  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
-               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
-    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+if [ -z "$GSB_DIR" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse; do
+    if [ -d "$FOUND" ]; then GSB_DIR="$FOUND"; break; fi
   done
 fi
-if [ -n "$B" ] && [ -x "$B" ]; then
+
+B=""
+if [ -n "$GSB_DIR" ] && [ -x "$GSB_DIR/dist/browse" ]; then
+  B="$GSB_DIR/dist/browse"
   echo "READY: $B"
+elif [ -n "$GSB_DIR" ]; then
+  echo "NEEDS_SETUP: $GSB_DIR/scripts/build-soloship.sh"
 else
-  echo "NEEDS_SETUP"
+  echo "NEEDS_SETUP_NO_DIR: gs-browse skill directory not found under \$HOME/.claude/"
 fi
 ```
 
-If `NEEDS_SETUP`:
-1. Find the Soloship-bundled gs-browse source dir (look for `skills/gs-browse/scripts/build-soloship.sh` under `~/.claude/plugins/` or `~/.claude/skills/`).
-2. Tell the user: "Soloship's browse daemon needs a one-time build (~30 seconds — bundles a 110MB Chromium driver binary). OK to proceed?" Then STOP and wait.
-3. With user approval, run: `cd <gs-browse-dir> && ./scripts/build-soloship.sh`. That script installs bun if missing (pinned version + SHA check), resolves node_modules, and compiles `dist/browse`, `dist/find-browse`, and `dist/server-node.mjs`.
-4. Re-run the SETUP check.
+If `NEEDS_SETUP: <path>`:
+1. Tell the user: "Soloship's browse daemon needs a one-time setup on this machine (~2 minutes — installs bun if missing, compiles for your CPU architecture, downloads Chromium). OK to proceed?" Then STOP and wait for confirmation.
+2. With user approval, run: `bash <path>` (the path reported in `NEEDS_SETUP`). The script is self-sufficient — installs bun (SHA-pinned), runs `bun install`, compiles the launcher for the current architecture, and downloads Playwright Chromium. Don't run it on every invocation; it's idempotent but takes ~2 min first time, near-instant after.
+3. After the script completes, re-run the SETUP check. Should now print `READY:`.
+
+If `NEEDS_SETUP_NO_DIR`: the gs-browse skill isn't installed — tell the user the Soloship plugin appears to be missing or partially installed. Don't try to fix this from inside another skill.
 
 ## Core QA Patterns
 
@@ -371,6 +379,8 @@ $B prettyscreenshot --cleanup --scroll-to ".pricing" --width 1440 ~/Desktop/hero
 | `cookie <name>=<value>` | Set cookie on current page domain |
 | `cookie-import <json>` | Import cookies from JSON file |
 | `cookie-import-browser [browser] [--domain d]` | Import cookies from installed Chromium browsers (opens picker, or use --domain for direct import) |
+
+> **No `cookie-clear` command.** To reset session state between tests, either: (a) explicitly sign out via the app's UI, (b) use `state save <empty>` then `state load <empty>` to swap to a fresh state, or (c) clear by JS: `$B js "document.cookie.split(';').forEach(c => document.cookie = c.replace(/^ +/, '').replace(/=.*/, '=;expires=' + new Date(0).toUTCString() + ';path=/'))"`. The `$B cookies` command is read-only; `cookie <name>=<value>` sets one cookie at a time.
 | `dialog-accept [text]` | Auto-accept next alert/confirm/prompt. Optional text is sent as the prompt response |
 | `dialog-dismiss` | Auto-dismiss next dialog |
 | `fill <sel> <val>` | Fill input |

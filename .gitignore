@@ -1,10 +1,13 @@
 node_modules/
 dist/
-# The gs-browse skill ships its compiled launcher binary inside the plugin —
-# users get the prebuilt artifact via the Claude Code plugin clone, so dist/
-# must be checked in for that skill specifically. Other dist/ dirs stay ignored.
+# gs-browse builds its launcher binaries on first invocation (per-arch) rather
+# than shipping them. dist/server-node.mjs is the Windows fallback bundle —
+# small and arch-neutral, so we do ship it. The arch-specific compiled binaries
+# (dist/browse, dist/find-browse, dist/.version) stay out of git.
 !skills/gs-browse/dist/
-!skills/gs-browse/dist/**
+skills/gs-browse/dist/browse
+skills/gs-browse/dist/find-browse
+skills/gs-browse/dist/.version
 .ai/
 **/.DS_Store
 
@@ -17,6 +20,8 @@ dist/
 # Internal working files — excluded from public repo
 CLAUDE.md
 docs/
+!docs/known-issues/
+!docs/known-issues/**
 site/
 .claude/settings.local.json
 .gstack/

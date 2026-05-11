@@ -125,34 +125,38 @@ After the user chooses, execute their choice (commit or stash), then continue wi
 ## SETUP (run this check BEFORE any browse command)
 
 ```bash
-B=""
-# Discover the Soloship-bundled browse binary across common install paths.
+[ -d "$HOME/.bun/bin" ] && export PATH="$HOME/.bun/bin:$PATH"
+GSB_DIR=""
 for CANDIDATE in \
-  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
-  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
-  "$HOME/.claude/skills/gs-browse/dist/browse" \
-  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
-  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse" \
+  "$HOME/.claude/skills/gs-browse" \
+  ".claude/skills/soloship/skills/gs-browse"; do
+  if [ -d "$CANDIDATE" ]; then GSB_DIR="$CANDIDATE"; break; fi
 done
-if [ -z "$B" ]; then
-  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
-               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
-    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+if [ -z "$GSB_DIR" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse; do
+    if [ -d "$FOUND" ]; then GSB_DIR="$FOUND"; break; fi
   done
 fi
-if [ -n "$B" ] && [ -x "$B" ]; then
+B=""
+if [ -n "$GSB_DIR" ] && [ -x "$GSB_DIR/dist/browse" ]; then
+  B="$GSB_DIR/dist/browse"
   echo "READY: $B"
+elif [ -n "$GSB_DIR" ]; then
+  echo "NEEDS_SETUP: $GSB_DIR/scripts/build-soloship.sh"
 else
-  echo "NEEDS_SETUP"
+  echo "NEEDS_SETUP_NO_DIR: gs-browse skill directory not found under \$HOME/.claude/"
 fi
 ```
 
-If `NEEDS_SETUP`:
-1. Find the Soloship-bundled gs-browse skill dir (look for `skills/gs-browse/scripts/build-soloship.sh` under `~/.claude/plugins/` or `~/.claude/skills/`).
-2. Tell the user: "Soloship's browse daemon needs a one-time build (~1 minute — installs Playwright + compiles the launcher). OK to proceed?" Then STOP and wait.
-3. With approval, run: `cd <gs-browse-dir> && ./scripts/build-soloship.sh` (bun is auto-installed if missing).
-4. If Chromium isn't yet downloaded for Playwright (first install), also run: `cd <gs-browse-dir> && bun x playwright install chromium` (~100MB).
-5. Re-run the SETUP check.
+If `NEEDS_SETUP: <path>`:
+1. Tell the user: "Soloship's browse daemon needs a one-time setup on this machine (~2 minutes — installs bun if missing, compiles for your CPU architecture, downloads Chromium). OK to proceed?" Then STOP and wait for confirmation.
+2. With user approval, run: `bash <path>` (the path reported in `NEEDS_SETUP`). The script installs bun (SHA-pinned), `bun install`s deps, compiles the launcher for the current architecture, and downloads Playwright Chromium.
+3. After the script completes, re-run the SETUP check.
+
+If `NEEDS_SETUP_NO_DIR`: tell the user the Soloship plugin appears to be missing or partially installed.
 
 **Check test framework (bootstrap if needed):**
 
