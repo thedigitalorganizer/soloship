@@ -37,10 +37,22 @@ triggers:
 ## SETUP (run this check BEFORE any browse command)
 
 ```bash
-_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 B=""
-# browse daemon is not bundled with Soloship 0.1.x. Install gstack separately to get /browse: https://github.com/garrytan/gstack
-if [ -x "$B" ]; then
+# Discover the Soloship-bundled browse binary across common install paths.
+for CANDIDATE in \
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/gs-browse/dist/browse" \
+  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
+  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+done
+if [ -z "$B" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
+    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+  done
+fi
+if [ -n "$B" ] && [ -x "$B" ]; then
   echo "READY: $B"
 else
   echo "NEEDS_SETUP"
@@ -48,8 +60,10 @@ fi
 ```
 
 If `NEEDS_SETUP`:
-1. Tell the user: "browse needs a one-time build (~10 seconds). OK to proceed?" Then STOP and wait.
-2. Run: `cd <SKILL_DIR> && ./setup`
+1. Find the Soloship-bundled gs-browse skill dir (look for `skills/gs-browse/scripts/build-soloship.sh` under `~/.claude/plugins/` or `~/.claude/skills/`).
+2. Tell the user: "Soloship's browse daemon needs a one-time build (~1 minute — installs Playwright + compiles the launcher). OK to proceed?" Then STOP and wait.
+3. With approval, run: `cd <gs-browse-dir> && ./scripts/build-soloship.sh` (bun is auto-installed if missing).
+4. If Chromium isn't yet downloaded for Playwright (first install), also run: `cd <gs-browse-dir> && bun x playwright install chromium` (~100MB).
 3. If `bun` is not installed:
    ```bash
    if ! command -v bun >/dev/null 2>&1; then

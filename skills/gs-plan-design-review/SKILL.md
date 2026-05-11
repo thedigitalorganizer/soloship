@@ -270,8 +270,21 @@ else
   echo "DESIGN_NOT_AVAILABLE"
 fi
 B=""
-# browse daemon is not bundled with Soloship 0.1.x. Install gstack separately to get /browse: https://github.com/garrytan/gstack
-if [ -x "$B" ]; then
+# Discover the Soloship-bundled browse binary across common install paths.
+for CANDIDATE in \
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/gs-browse/dist/browse" \
+  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
+  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+done
+if [ -z "$B" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
+    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+  done
+fi
+if [ -n "$B" ] && [ -x "$B" ]; then
   echo "BROWSE_READY: $B"
 else
   echo "BROWSE_NOT_AVAILABLE (will use 'open' to view comparison boards)"

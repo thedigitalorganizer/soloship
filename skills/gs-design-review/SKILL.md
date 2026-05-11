@@ -81,10 +81,22 @@ After the user chooses, execute their choice (commit or stash), then continue wi
 ## SETUP (run this check BEFORE any browse command)
 
 ```bash
-_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 B=""
-# browse daemon is not bundled with Soloship 0.1.x. Install gstack separately to get /browse: https://github.com/garrytan/gstack
-if [ -x "$B" ]; then
+# Discover the Soloship-bundled browse binary across common install paths.
+for CANDIDATE in \
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/gs-browse/dist/browse" \
+  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
+  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+done
+if [ -z "$B" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
+    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+  done
+fi
+if [ -n "$B" ] && [ -x "$B" ]; then
   echo "READY: $B"
 else
   echo "NEEDS_SETUP"
@@ -92,26 +104,11 @@ fi
 ```
 
 If `NEEDS_SETUP`:
-1. Tell the user: "browse needs a one-time build (~10 seconds). OK to proceed?" Then STOP and wait.
-2. Run: `cd <SKILL_DIR> && ./setup`
-3. If `bun` is not installed:
-   ```bash
-   if ! command -v bun >/dev/null 2>&1; then
-     BUN_VERSION="1.3.10"
-     BUN_INSTALL_SHA="bab8acfb046aac8c72407bdcce903957665d655d7acaa3e11c7c4616beae68dd"
-     tmpfile=$(mktemp)
-     curl -fsSL "https://bun.sh/install" -o "$tmpfile"
-     actual_sha=$(shasum -a 256 "$tmpfile" | awk '{print $1}')
-     if [ "$actual_sha" != "$BUN_INSTALL_SHA" ]; then
-       echo "ERROR: bun install script checksum mismatch" >&2
-       echo "  expected: $BUN_INSTALL_SHA" >&2
-       echo "  got:      $actual_sha" >&2
-       rm "$tmpfile"; exit 1
-     fi
-     BUN_VERSION="$BUN_VERSION" bash "$tmpfile"
-     rm "$tmpfile"
-   fi
-   ```
+1. Find the Soloship-bundled gs-browse skill dir (look for `skills/gs-browse/scripts/build-soloship.sh` under `~/.claude/plugins/` or `~/.claude/skills/`).
+2. Tell the user: "Soloship's browse daemon needs a one-time build (~1 minute — installs Playwright + compiles the launcher). OK to proceed?" Then STOP and wait.
+3. With approval, run: `cd <gs-browse-dir> && ./scripts/build-soloship.sh` (bun is auto-installed if missing).
+4. If Chromium isn't yet downloaded for Playwright (first install), also run: `cd <gs-browse-dir> && bun x playwright install chromium` (~100MB).
+5. Re-run the SETUP check.
 
 **Check test framework (bootstrap if needed):**
 
@@ -283,8 +280,21 @@ else
   echo "DESIGN_NOT_AVAILABLE"
 fi
 B=""
-# browse daemon is not bundled with Soloship 0.1.x. Install gstack separately to get /browse: https://github.com/garrytan/gstack
-if [ -x "$B" ]; then
+# Discover the Soloship-bundled browse binary across common install paths.
+for CANDIDATE in \
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse" \
+  "$HOME/.claude/skills/gs-browse/dist/browse" \
+  ".claude/skills/soloship/skills/gs-browse/dist/browse"; do
+  if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
+done
+if [ -z "$B" ]; then
+  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
+               "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
+    if [ -x "$FOUND" ]; then B="$FOUND"; break; fi
+  done
+fi
+if [ -n "$B" ] && [ -x "$B" ]; then
   echo "BROWSE_READY: $B"
 else
   echo "BROWSE_NOT_AVAILABLE (will use 'open' to view comparison boards)"
