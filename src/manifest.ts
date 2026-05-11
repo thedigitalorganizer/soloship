@@ -121,14 +121,6 @@ export const SOLOSHIP_MANIFEST: DependencyManifest = {
 
   skills: [
     {
-      name: "gstack",
-      severity: "recommended",
-      purpose:
-        "Command bundle that provides office-hours, plan reviews (eng/CEO/design), QA, CSO, design-review, retro, and others. Soloship skills delegate to gstack for review and QA workflows.",
-      install:
-        "gstack has its own install path — check its README. It typically deploys as a directory under ~/.claude/skills/gstack plus individual symlinked skills (office-hours, plan-eng-review, qa, cso, etc.).",
-    },
-    {
       name: "log",
       severity: "recommended",
       purpose: "Session capture with decisions, rationale, and alternatives.",

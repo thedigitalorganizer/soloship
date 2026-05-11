@@ -13,12 +13,12 @@ where do I start?"
 
 ## Step 0: Check for Checkpoint
 
-Before reading anything else, check if a gstack checkpoint exists for the
-current branch:
+Before reading anything else, check if a Soloship checkpoint exists for the
+current branch (written by `/gs-context-save`):
 
 ```bash
-eval "$(~/.claude/skills/gstack/bin/gstack-slug 2>/dev/null)" 2>/dev/null || true
-CHECKPOINT_DIR="${GSTACK_HOME:-$HOME/.gstack}/projects/${SLUG:-unknown}/checkpoints"
+SLUG=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")
+CHECKPOINT_DIR="$HOME/.soloship/projects/$SLUG/checkpoints"
 BRANCH=$(git branch --show-current 2>/dev/null || echo "unknown")
 ```
 
