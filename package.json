@@ -24,8 +24,7 @@
   },
   "files": [
     "dist",
-    "bin",
-    "templates"
+    "bin"
   ],
   "dependencies": {
     "@inquirer/prompts": "^7.10.0",
