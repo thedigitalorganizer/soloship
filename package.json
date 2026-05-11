@@ -4,13 +4,14 @@
   "description": "Systematic programming methodology for AI-assisted development",
   "type": "module",
   "bin": {
-    "soloship": "./bin/soloship.js"
+    "soloship": "bin/soloship.js"
   },
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
-    "prepare": "tsc"
+    "prepare": "tsc",
+    "prepublishOnly": "node scripts/check-version.js"
   },
   "keywords": [
     "claude-code",
