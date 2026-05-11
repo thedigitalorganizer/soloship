@@ -16,7 +16,7 @@ understand WHY the bug exists. "It works if I change this" is not a root cause.
 
 ## Route
 
-Invoke `superpowers:systematic-debugging`. It enforces a 4-phase process:
+Invoke `sp-systematic-debugging`. It enforces a 4-phase process:
 
 1. **Investigate** — reproduce the bug, gather evidence
 2. **Analyze** — form hypotheses about root cause

@@ -1,9 +1,12 @@
 ---
 name: review
 description: |
-  Multi-perspective review for plans or code. For plans: routes to eng, CEO,
-  or design review. For code: combines CE conditional agents with adversarial
-  review and strategic analysis.
+  Multi-perspective review for plans or code. For plans: routes to gstack's eng,
+  CEO, or design plan review skills individually, or gs-autoplan to run all four
+  (CEO + design + eng + DX) in one auto-decided pass. For code: routes to ce-review
+  for PR-scale work (CE multi-agent parallel analysis with worktrees), or runs
+  three inline passes (structural, adversarial, design slop lens) for quick local
+  checks.
 ---
 
 # Soloship Review
@@ -33,26 +36,41 @@ since it was written." Do not block — warn and proceed.
 Ask the user which reviews they want (or suggest based on plan scope):
 
 ### Engineering Review (recommended for all plans)
-Invoke `plan-eng-review`. It locks in the execution plan — architecture, data flow,
+Invoke `gs-plan-eng-review`. It locks in the execution plan — architecture, data flow,
 edge cases, test coverage, performance. Interactive, with opinionated recommendations.
 
 ### CEO/Strategy Review (for big decisions)
-Invoke `plan-ceo-review`. It rethinks the problem, challenges premises, asks
+Invoke `gs-plan-ceo-review`. It rethinks the problem, challenges premises, asks
 whether the scope is right. Use when the plan involves significant product decisions.
 
 ### Design Review (for UI-heavy plans)
-Invoke `plan-design-review`. It rates design dimensions 0-10, explains what would
+Invoke `gs-plan-design-review`. It rates design dimensions 0-10, explains what would
 make each a 10, and fixes the plan. Use when the plan has frontend/UX components.
 
 ### All Three (for major features)
 Run them sequentially: eng review → design review → CEO review.
 Present a summary after each, fix issues, then proceed to the next.
 
+### All Four, auto-decided (the "just review it thoroughly" option)
+Invoke `gs-autoplan`. It reads the CEO, design, eng, and DX review skills from disk and runs them sequentially, making routine decisions automatically using 6 decision principles. Only close calls, borderline scope, and disagreements surface for your input at the end. One command instead of four. Use this when you want the full review pipeline and don't want to babysit each step.
+
 ---
 
 ## Code Review
 
-Run three passes in parallel using Agent tool:
+Two paths depending on scope.
+
+### Pre-merge PR review (the primary path)
+
+Use this when reviewing a PR, a feature branch, or anything where you have commits on a branch that's about to land. Invoke `ce-review` with the PR number, GitHub URL, or branch name as argument. CE's review runs a multi-agent parallel analysis with worktrees and language-specific review agents — it's the comprehensive "am I really ready to merge this?" check.
+
+After `ce-review` completes, also run the **Design Slop pass below** if the diff touched frontend files (`.tsx`, `.jsx`, `.css`, `.html`, `.scss`). This is the Soloship-specific lens CE doesn't have.
+
+### Quick local check (the lightweight path)
+
+Use this when there's no PR yet — you just want a sanity check on uncommitted work or recent local commits before pushing. Run the three inline passes below in parallel. Faster than `ce-review` and doesn't need a branch that's been pushed.
+
+---
 
 ### Pass 1: Structural Review
 Launch an agent with this prompt:
@@ -88,8 +106,8 @@ Think about:
 Be specific. Name the file, the line, and the exact scenario that breaks it.
 ```
 
-### Pass 3: Design Review Lite (if frontend files changed)
-Only run if the diff includes `.tsx`, `.jsx`, `.css`, or `.html` files.
+### Pass 3: Design Slop Lens (if frontend files changed)
+Only run if the diff includes `.tsx`, `.jsx`, `.css`, `.html`, or `.scss` files. This is the same pass you run after `ce-review` for PR-scale work.
 Launch an agent with this prompt:
 
 ```

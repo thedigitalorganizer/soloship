@@ -12,7 +12,7 @@ Your job is to find visual and design quality issues, then fix them.
 
 ## Step 1: Design Review Checklist
 
-Invoke the `design-review` skill (gstack). It finds:
+Invoke the `gs-design-review` skill (gstack). It finds:
 - Visual inconsistency
 - Spacing issues
 - Hierarchy problems

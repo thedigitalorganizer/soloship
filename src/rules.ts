@@ -1,7 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-export async function installRules(root: string): Promise<string[]> {
+export async function installRules(
+  root: string,
+  options: { force?: boolean } = {}
+): Promise<string[]> {
   const results: string[] = [];
   const rulesDir = join(root, ".claude", "rules");
 
@@ -21,6 +24,9 @@ export async function installRules(root: string): Promise<string[]> {
     if (!existsSync(path)) {
       writeFileSync(path, content);
       results.push(filename);
+    } else if (options.force) {
+      writeFileSync(path, content);
+      results.push(`${filename} (refreshed)`);
     } else {
       results.push(`${filename} (exists, skipped)`);
     }

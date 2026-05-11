@@ -2,29 +2,44 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **19 workflow skills** that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
+Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **14 Soloship-native workflow skills + 32 vendored skills from five best-in-class plugins** that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
 
 **Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet)
 
 ## Install
 
-Soloship is a [Claude Code](https://claude.com/claude-code) plugin. If you don't have Claude Code installed yet, install it first — then come back here.
+Soloship has two parts that work together:
+
+| Part | What it gives you | How it's installed |
+|------|-------------------|--------------------|
+| **Plugin** | The `/soloship:*` slash commands (audit, bootstrap, brainstorm, plan, etc.) | Claude Code plugin marketplace — once per machine |
+| **Project scaffolding** | Hooks, rules, CI, `CLAUDE.md`, version stamp for update notifications | `npx soloship init` (or `/soloship:bootstrap`, which calls it for you) — once per project |
+
+You need both for the full experience. The plugin alone gets you slash commands but no project guardrails. The npm CLI alone gets you guardrails but no slash commands.
+
+If you don't have [Claude Code](https://claude.com/claude-code) installed yet, install it first.
+
+### Step 1 — Install the plugin (once per machine)
 
 Inside any Claude Code session, run these two commands **one at a time** — run the first, wait for it to finish, then run the second:
 
-**1. Add the marketplace:**
+**Add the marketplace:**
 
 ```
 /plugin marketplace add thedigitalorganizer/soloship
 ```
 
-**2. Install the plugin:**
+**Install the plugin:**
 
 ```
 /plugin install soloship@soloship
 ```
 
-That's it. The plugin installs globally, so you only do this once on your machine. All 19 Soloship commands are now available as `/soloship:*` slash commands in every project you open.
+The plugin installs globally. All Soloship commands are now available as `/soloship:*` slash commands in every project you open.
+
+### Step 2 — Set up a project (once per project)
+
+See "Using Soloship in a project" below. The bootstrap skill calls `npx soloship init` under the hood, so you don't need to run anything from a terminal — `/soloship:bootstrap` is enough.
 
 ### Using Soloship in a project
 
@@ -122,38 +137,35 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 ### The skills
 
-19 Claude Code skills invoked as `/soloship:*` slash commands:
+**14 Soloship-native workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts; the heavy lifting is often delegated to a vendored skill (see the next section).
 
 **Setup & orientation**
 
 - `/soloship:audit` — Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 6 more to assess quality, entanglement, security, dependencies, gaps, and leverage points. Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
 - `/soloship:bootstrap` — Configures governance from audit findings or interactive questions. Creates CLAUDE.md, AGENTS.md files (3+ source file threshold), installs 4 core rules, and wires up hooks. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard` — Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. No external routing — fully self-contained.
-- `/soloship:checkpoint` — Saves working state (git status, decisions, remaining work) so any future session can resume cleanly. Routes to gstack `checkpoint`. Pairs with `/soloship:onboard` for `/clear` recovery.
 
 **Daily work**
 
-- `/soloship:brainstorm` — Detects whether the question is product (demand, audience, wedge) or technical (approaches, trade-offs) and routes accordingly: `office-hours` for product questions, `superpowers:brainstorming` for technical ones. Ends with a mandatory design-first nudge — sketch before you plan.
+- `/soloship:brainstorm` — Detects whether the question is demand-validation (should this exist?) or feature-shaping (what should this do?) and routes accordingly: `gs-office-hours` for demand, `ce-brainstorm` for feature. Ends with a mandatory design-first nudge — sketch before you plan.
 - `/soloship:spec` — Writes formal specifications with numbered acceptance criteria, data models, API contracts, user flows (including error states), and explicit out-of-scope boundaries. 8-point verification checklist. Fully self-contained.
-- `/soloship:plan` — Searches `docs/solutions/` for prior art, reads architecture context, then routes to `superpowers:writing-plans` for standard features or `plan-eng-review` for architectural work. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls.
-- `/soloship:implement` — Finds the most recent plan in `docs/plans/`, assesses the execution strategy, and routes to `superpowers:subagent-driven-development` (sequential tasks) or `superpowers:dispatching-parallel-agents` (independent modules). Freshness check warns on stale plans.
-- `/soloship:debug` — Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then routes to `superpowers:systematic-debugging` for 4-phase discipline (Investigate → Analyze → Hypothesize → Implement). Nudges `/learn` for non-obvious fixes.
-- `/soloship:learn` — Captures knowledge from non-obvious work. Step 1 routes to `compound-engineering:workflows:compound` for solution doc creation. Steps 2-3 are Soloship's own protocols: JSONL logging for cross-session search and architecture registry drift checking. Steps 4-5 adapt the distributed AGENTS.md concept — propagating pitfalls into existing AGENTS.md files and creating new ones for directories above the 3-file governance threshold. Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
-- `/soloship:cleanup` — Knowledge system maintenance. Launches 5 parallel audit agents (solution health, overlap detection, plan lifecycle, AGENTS.md staleness, index sync), presents findings interactively, then executes approved changes in a single atomic commit. Merge candidates require 2-of-3 signal threshold. Each merge dispatched as an independent subagent to prevent context bloat.
+- `/soloship:plan` — Searches `docs/solutions/` for prior art, reads architecture context, then invokes `ce-plan` to produce the plan. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls. Review is separate — handled by `/soloship:review`.
+- `/soloship:implement` — Finds the most recent plan in `docs/plans/`, invokes `ce-work` for execution with branching and QC. Freshness check warns on stale plans.
+- `/soloship:debug` — Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then invokes `sp-systematic-debugging` for 4-phase discipline (Investigate → Analyze → Hypothesize → Implement). Nudges `/learn` for non-obvious fixes.
+- `/soloship:learn` — Captures knowledge from non-obvious work. Invokes `ce-compound` for solution doc creation. Adds Soloship protocols: JSONL logging for cross-session search, architecture registry drift checking, and distributed AGENTS.md propagation (pitfalls into existing AGENTS.md files, new ones for directories above the 3-file governance threshold). Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
+- `/soloship:cleanup` — Knowledge system maintenance. Launches 5 parallel audit agents (solution health, overlap detection, plan lifecycle, AGENTS.md staleness, index sync), presents findings interactively, then executes approved changes in a single atomic commit. Merge candidates require 2-of-3 signal threshold.
 
 **Shipping**
 
 - `/soloship:shipfast` — Emergency deploy pipeline. Lint (with auto-fix tolerance), test (pre-existing failures allowed), build (must pass), commit, push, deploy. Auto-detects platform. Minimum viable safety, maximum speed.
-- `/soloship:shipthorough` — Full due diligence: preflight checks, base branch merge, lint, test, coverage audit, 3-pass code review (via `/review`), registry update, CHANGELOG enforcement, plan lifecycle cleanup, bisectable commits, PR with structured body, verification gate, deploy. 12-point checklist.
+- `/soloship:shipthorough` — Full due diligence: preflight checks, base branch merge, lint, test, inline quality gate (TypeScript + linter + dead code + shellcheck), coverage audit, 3-pass code review (via `/review`), registry update, CHANGELOG enforcement, plan lifecycle cleanup, bisectable commits, PR with structured body, verification gate, deploy.
 
 **Quality**
 
-- `/soloship:review` — Detects whether the target is a plan or code. Plans route to `plan-eng-review`, `plan-ceo-review`, or `plan-design-review`. Code gets a 3-pass parallel review: structural (SQL safety, auth, types, tests), adversarial (load, bad input, state transitions), and design-lite (a11y, responsive, AI slop — only if frontend changed). Severity classification with file:line references.
-- `/soloship:qa` — Routes to gstack `qa` (test and fix) or `qa-only` (report only). Uses accessibility checklist as baseline.
-- `/soloship:security` — Routes to gstack `cso` for infrastructure-first security scanning: OWASP Top 10, STRIDE threat modeling, secrets archaeology, dependency supply chain, npm audit.
-- `/soloship:design-review` — Two-pass visual audit. Pass 1 routes to gstack `design-review` for spacing, hierarchy, and consistency. Pass 2 is Soloship's own AI slop detection — flags generic gradients, default shadows, "Welcome to" copy, 3-column feature grids, and other patterns that mark AI-generated design. Each fix committed atomically with before/after screenshots.
-- `/soloship:health` — Routes to gstack `health` for a composite 0-10 codebase quality score (type check, lint, tests, dead code) with trend tracking across runs. Intended as a pre-ship gate inside `/soloship:shipthorough`.
-- `/soloship:autoplan` — Routes to gstack `autoplan` to run the full plan-review gauntlet (CEO, design, engineering, DX) in a single pass with auto-decisions. Use when you want every review lens applied without stepping through them individually.
+- `/soloship:review` — Detects whether the target is a plan or code. **Plans** route to `gs-plan-eng-review`, `gs-plan-ceo-review`, `gs-plan-design-review` individually, or `gs-autoplan` for all four (adds DX review) in one auto-decided pass. **Code** routes to `ce-review` for PR-scale multi-agent analysis, or runs three inline passes (structural, adversarial, design slop lens) for quick local checks.
+- `/soloship:design-review` — Two-pass visual audit. Pass 1 invokes `gs-design-review` for spacing, hierarchy, and consistency. Pass 2 is Soloship's own AI slop detection (inspired by Impeccable) — flags generic gradients, default shadows, "Welcome to" copy, 3-column feature grids, and other patterns that mark AI-generated design. Each fix committed atomically with before/after screenshots.
+
+**Note:** Skills that were previously thin wrappers over vendored gstack skills (`/soloship:qa`, `/soloship:security`, `/soloship:checkpoint`, `/soloship:autoplan`, `/soloship:health`) have been removed. Use the vendored originals directly: `/gs-qa`, `/gs-cso`, `/gs-context-save` / `/gs-context-restore`, `/gs-autoplan`. Health has no replacement — its core checks were inlined into `/soloship:shipthorough`'s quality gate.
 
 ## Quick start
 
@@ -174,15 +186,24 @@ See the [Install](#install) section above for the two commands to install the pl
 /soloship:plan → /soloship:implement → /soloship:shipthorough
 ```
 
-### Prefer an npm installer?
+### Running the npm CLI directly
 
-If you'd rather set up the project scaffolding outside Claude Code (for example, in a scripted environment or CI), the npm CLI does the same thing bootstrap does:
+`/soloship:bootstrap` calls `npx soloship init` under the hood, so you don't usually need to think about the npm CLI. But it's there if you want to script setup, run it in CI, or skip the slash command entirely:
 
 ```bash
-npx soloship init
+npx soloship init        # initial setup
+npx soloship upgrade     # refresh hooks, rules, CI, and version stamp to the latest
+npx soloship doctor      # check Claude Code environment for missing companions
+npx soloship rollback    # restore the last safety snapshot
 ```
 
-Most people should use `/soloship:bootstrap` — it's the supported path and it can tailor setup to audit findings.
+After install, every Claude Code session checks once a day whether a new Soloship version has been published. When one is, you'll see a single line at the top of the session:
+
+```
+Soloship update available: 0.1.0 → 0.2.0. Run: npx soloship upgrade
+```
+
+Run `npx soloship upgrade` whenever you see that. It refreshes hooks, rules, and CI, then re-stamps the version. Your project docs (`CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`) are preserved.
 
 ## Design decisions
 
@@ -202,23 +223,29 @@ Most people should use `/soloship:bootstrap` — it's the supported path and it 
 | 7 | Not started | Safety floor hardening, surface simplification, CLAUDE.md governance |
 | 8 | Not started | Graduation system, methodology documentation |
 
-Phases 1-6 are shipped and usable today. Phases 7-8 were restructured after a 3-round adversarial review that identified rationalization traps in the original design. Phase 7 adds mechanical safety enforcement (Semgrep scanning, automated rollback, phone-a-friend triggers) and consolidates the 19 skills into 3-4 meta-workflows. Phase 8 adds a graduation system with calibrated thresholds that tell you when your project has outgrown solo mode.
+Phases 1-6 are shipped and usable today. Phases 7-8 were restructured after a 3-round adversarial review that identified rationalization traps in the original design. Phase 7 adds mechanical safety enforcement (Semgrep scanning, automated rollback, phone-a-friend triggers) and consolidates the native skills into 3-4 meta-workflows. Phase 8 adds a graduation system with calibrated thresholds that tell you when your project has outgrown solo mode.
 
-## Prior art & influences
+## Built on the shoulders of
 
-Soloship builds on top of four Claude Code skill ecosystems rather than replacing them:
+Soloship curates and vendors skills from five outstanding Claude Code plugins. One plugin install for the user; full credit and install links for the authors. Full attribution and version pins live in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
-[Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin) — `/learn` uses CE's `workflows:compound` to create solution documents with structured frontmatter. The multi-agent pattern in CE informs how `/audit` and `/review` dispatch parallel investigation agents.
+[**Compound Engineering**](https://github.com/EveryInc/compound-engineering-plugin) — Kieran Klaassen (Every). The brainstorm → plan → work → compound loop is the spine of how Soloship thinks about engineering. Also: `/review` inherits CE's multi-agent review pattern.
 
-[Superpowers](https://github.com/anthropics/superpowers) — `/brainstorm` routes to `superpowers:brainstorming` for technical exploration. `/plan` routes to `superpowers:writing-plans`. `/implement` routes to `superpowers:subagent-driven-development` or `superpowers:dispatching-parallel-agents`. `/debug` routes to `superpowers:systematic-debugging`.
+[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `brainstorming`.
 
-[gstack](https://github.com/garrytan/gstack) — `/qa` routes to gstack's QA skill. `/security` routes to `cso`. `/design-review` routes to gstack's design-review checklist. `/brainstorm` routes to `office-hours` for product questions. `/plan` routes to `plan-eng-review` for architectural work. `/review` routes to `plan-eng-review`, `plan-ceo-review`, and `plan-design-review` for plan reviews.
+[**Impeccable**](https://impeccable.style) — Paul Bakaus (extending Anthropic's original `frontend-design`). Design vocabulary and steering commands that let non-coders ship work that doesn't look AI-generated. Soloship vendors `frontend-design` and five `/i-*` commands; 12 more are in the full plugin.
 
-[intent-layer](https://github.com/crafter-station/skills/tree/main/context-engineering/intent-layer) (crafter-station/skills, built on [The Intent Layer](https://www.intent-systems.com/learn/intent-layer) by Tyler Brandt) — `/learn` Steps 4-5 adapt the concept of distributed per-directory `AGENTS.md` files for codebase navigation. Soloship's version is continuous (updates on every `/learn` pass, not one-shot), threshold-gated (3+ source files before creating), append-only with dated attribution, and scoped to solution-doc evidence rather than speculative. `/bootstrap` and `/cleanup` also maintain the AGENTS.md network.
+[**ui-ux-pro-max**](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) — nextlevelbuilder. The design reference library: styles, palettes, font pairings, UX guidelines, chart patterns, across every stack the agent might target.
 
-[Impeccable](https://github.com/pbakaus/impeccable) — `/design-review` adds an AI slop detection pass inspired by Impeccable's design quality philosophy, checking for generic AI-generated visual, content, and layout patterns.
+[**gstack**](https://github.com/garrytan/gstack) — Garry Tan (YC). The solo builder toolkit. Soloship vendors 11 of the most non-coder-friendly skills — `autoplan` (chains CEO + design + eng + DX reviews), `checkpoint`, `browse`, `qa`, `design-review`, the plan-review trio, `office-hours`, `cso`. Full gstack has ~25 more.
 
-[Serena](https://github.com/oraios/serena) — symbol-level LSP code navigation. Optional. Worth adding once a codebase outgrows file-level tools; see Serena's README for install instructions.
+If any of these are useful to you, please install the full upstream plugin — each `THIRD_PARTY_NOTICES.md` section has the one-line install command, and you'll get everything the author built, not just Soloship's selection.
+
+Also influential but not vendored:
+
+[**intent-layer**](https://github.com/crafter-station/skills/tree/main/context-engineering/intent-layer) (crafter-station/skills, built on [The Intent Layer](https://www.intent-systems.com/learn/intent-layer) by Tyler Brandt) — `/learn` Steps 4-5 adapt the concept of distributed per-directory `AGENTS.md` files for codebase navigation. Soloship's version is continuous (updates on every `/learn` pass, not one-shot), threshold-gated (3+ source files before creating), append-only with dated attribution, and scoped to solution-doc evidence rather than speculative. `/bootstrap` and `/cleanup` also maintain the AGENTS.md network.
+
+[**Serena**](https://github.com/oraios/serena) — symbol-level LSP code navigation. Optional. Worth adding once a codebase outgrows file-level tools; see Serena's README for install instructions.
 
 The broader design traces back to a research pass across: Ousterhout on strategic vs tactical programming (you are the architect, the agent implements), Hickey on simple vs easy, Metz on dependency awareness and sizing rules, Meadows on leverage points in systems, the BCG "AI Brain Fry" finding that productivity drops past three tools, Kathy Sierra on the collapse zone (only automated process survives when things break), and the Codified Context paper that validated the CLAUDE.md + AGENTS.md + docs/ three-tier pattern.
 
@@ -237,10 +264,19 @@ src/                   # TypeScript source for the installer
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
 skills/                # Claude Code skills shipped by the plugin
-  audit/ autoplan/ bootstrap/ brainstorm/ checkpoint/ cleanup/
-  debug/ design-review/ health/ implement/ learn/ onboard/
-  plan/ qa/ review/ security/ shipfast/ shipthorough/ spec/
+  # 14 Soloship-native workflows:
+  audit/ bootstrap/ brainstorm/ cleanup/ debug/ design-review/
+  implement/ learn/ onboard/ plan/ review/ shipfast/ shipthorough/ spec/
+
+  # 32 vendored skills (full attribution in THIRD_PARTY_NOTICES.md):
+  ce-*        # 8 from Compound Engineering (Kieran Klaassen, MIT)
+  sp-*        # 5 from Superpowers (Jesse Vincent, MIT)
+  im-*        # 6 from Impeccable (Paul Bakaus, Apache 2.0)
+  uiux-*      # 1 from ui-ux-pro-max (nextlevelbuilder, MIT)
+  gs-*        # 12 from gstack (Garry Tan, MIT)
+
   references/          # Shared checklists (a11y, code review, perf, security, testing)
+  vendored/            # Per-source LICENSE / NOTICE / VERSION / README (attribution archive)
 ```
 
 ## License

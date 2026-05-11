@@ -35,25 +35,28 @@ Both must pass. If tests fail, triage:
 - Your changes broke it → fix before proceeding
 - Pre-existing failure → note it, but don't block ship for unrelated failures
 
-### Step 3.5: Health Gate
-Run `/health` to get the composite quality score. Present the result:
+### Step 3.5: Inline quality gate
+Run each available quality tool sequentially and show a compact status block. This replaces the old `/health` gate (the separate health skill was cut during the 2026-04-24 vendoring pass; its core checks live inline here).
 
+Detect and run:
+- **TypeScript** (if `tsconfig.json` present): `npx tsc --noEmit`
+- **Linter** (if `biome.json`, `.eslintrc*`, or lint script in `package.json`): the configured lint command
+- **Dead code** (if `knip.json` or knip in devDependencies): `npx knip`
+- **ShellCheck** (if shell scripts in `bin/` or `scripts/`): `shellcheck` over them
+
+Present:
 ```
-Health: [N]/10 (was [M]/10 last check)
-  TypeScript:  pass/fail
-  Linter:      pass/fail
-  Tests:       pass/fail
-  Dead code:   pass/fail
+Quality gate:
+  TypeScript:  pass / fail (N errors)
+  Linter:      pass / fail (N issues)
+  Dead code:   pass / fail (N unused exports)
+  ShellCheck:  pass / fail (N issues)   [only if shell scripts exist]
 ```
 
-- **Score 5+:** Proceed to Step 4.
-- **Below 5:** Block. Show what's dragging the score down and ask:
-  "Health score is [N]/10. Fix issues before shipping, or override?"
-  If the user overrides, note it in the PR body under a "Health Override" section.
+- **All pass, or all fails are in files untouched by this PR:** proceed to Step 4.
+- **Any fail in files this PR touched:** block. Ask: "Quality gate failed on changes introduced by this work. Fix before shipping, or override?" If the user overrides, note it in the PR body under a "Quality Gate Override" section.
 
-**Why:** Tests passing doesn't mean the codebase is healthy. A passing test suite
-with 200 linter errors and dead code everywhere is not shippable. The health
-score catches the category of rot that individual checks miss.
+**Why:** Tests passing doesn't mean the codebase is healthy. A passing test suite with 200 linter errors and dead code everywhere is not shippable. This step catches the category of rot that individual checks miss — without requiring a separate health skill.
 
 ### Step 4: Coverage Audit
 Assess test coverage for the changed code:

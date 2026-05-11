@@ -2,7 +2,7 @@
 name: brainstorm
 description: |
   Explore what you're building and why before planning. Routes to office-hours
-  for pure product/demand questions or compound-engineering:workflows:brainstorm
+  for pure product/demand questions or ce-brainstorm
   for feature and approach exploration. Ends with a nudge to design visually
   before running /plan.
 ---
@@ -27,17 +27,17 @@ requirements exploration for something you've already decided to build.
 ## Step 2: Route
 
 **For demand questions:**
-Invoke the `office-hours` skill. It uses 6 forcing questions that expose demand
+Invoke the `gs-office-hours` skill. It uses 6 forcing questions that expose demand
 reality, status quo, and the narrowest wedge. Use this only when the *existence*
 of the feature is in question.
 
 **For feature questions:**
-Invoke the `compound-engineering:workflows:brainstorm` skill. It runs a full
+Invoke the `ce-brainstorm` skill. It runs a full
 collaborative dialogue that covers requirements clarity, repository research,
 approach exploration, and YAGNI trade-offs, and writes the output to
 `docs/brainstorms/`.
 
-**If unclear:** Default to feature brainstorming. `office-hours` is reserved for
+**If unclear:** Default to feature brainstorming. `gs-office-hours` is reserved for
 genuine "should this exist" moments; most sessions are about shaping a feature
 the user has already committed to.
 
@@ -54,8 +54,31 @@ This is not optional. Real product teams (Apple, Google, Stripe) start with
 design, not architecture. You can't plan how to build something until you can
 see what you're building.
 
+## Step 3.5: Grill-Me Nudge (for medium-or-larger work)
+
+After design exists but BEFORE `/plan`, suggest `/grill-me` when the work is
+non-trivial:
+
+> Before planning, run `/grill-me`. It walks every branch of the design tree
+> — premise, scope, data, edge cases, UX, final scope — and saves the rationale
+> as a sibling doc the plan will reference. Plans grilled first need fewer
+> review revisions later.
+
+**When to suggest:**
+- 5+ files OR new infrastructure OR data-model changes
+- Auth, payments, migrations, or external integrations
+- Anything where a wrong scope decision is expensive to undo
+
+**When to skip the suggestion:**
+- Single-file mechanical change
+- Bug fix with a clear root cause already identified
+- A spike or throwaway prototype
+
+The user can always run `/grill-me` themselves; the nudge just makes it
+discoverable at the right moment.
+
 The CE brainstorm workflow writes its own artifact to `docs/brainstorms/`. If
-you ran `office-hours` instead and no file was produced, write the brainstorm
+you ran `gs-office-hours` instead and no file was produced, write the brainstorm
 output to `docs/plans/YYYY-MM-DD-<topic>-design.md` with this frontmatter:
 ```
 ---

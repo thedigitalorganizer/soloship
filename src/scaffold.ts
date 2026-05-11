@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ProjectInfo } from "./detect.js";
+import { getVersion } from "./pkg.js";
 import {
   generateClaudeMd,
   generateAgentsMd,
@@ -82,6 +83,36 @@ export async function scaffoldDocs(
     results.push({ path: ".semgrep.yml", action: "created" });
   } else {
     results.push({ path: ".semgrep.yml", action: "exists" });
+  }
+
+  // Soloship version stamp + per-clone cache directory
+  const stampResults = writeVersionStamp(root);
+  results.push(...stampResults);
+
+  return results;
+}
+
+export function writeVersionStamp(root: string): ScaffoldResult[] {
+  const results: ScaffoldResult[] = [];
+  const soloshipDir = join(root, ".soloship");
+  if (!existsSync(soloshipDir)) {
+    mkdirSync(soloshipDir, { recursive: true });
+  }
+
+  const versionPath = join(soloshipDir, "version");
+  const exists = existsSync(versionPath);
+  writeFileSync(versionPath, getVersion() + "\n");
+  results.push({
+    path: ".soloship/version",
+    action: exists ? "updated" : "created",
+  });
+
+  // Local-only cache file is gitignored; the version stamp itself is committed
+  // so collaborators see the same pinned version.
+  const gitignorePath = join(soloshipDir, ".gitignore");
+  if (!existsSync(gitignorePath)) {
+    writeFileSync(gitignorePath, ".last-update-check\n");
+    results.push({ path: ".soloship/.gitignore", action: "created" });
   }
 
   return results;

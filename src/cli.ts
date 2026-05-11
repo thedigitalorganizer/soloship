@@ -3,6 +3,8 @@ import chalk from "chalk";
 import { runInit } from "./init.js";
 import { runRollback } from "./rollback.js";
 import { runDoctor } from "./doctor.js";
+import { runUpgrade } from "./upgrade.js";
+import { getVersion } from "./pkg.js";
 
 
 const program = new Command();
@@ -10,7 +12,7 @@ const program = new Command();
 program
   .name("soloship")
   .description("Ship solo, safely — guardrails for AI-assisted development")
-  .version("0.1.0");
+  .version(getVersion());
 
 program
   .command("init")
@@ -43,6 +45,29 @@ program
       console.log("");
     } catch (err) {
       console.error(chalk.red("Setup failed:"), err);
+      process.exit(1);
+    }
+  });
+
+program
+  .command("upgrade")
+  .description(
+    "Refresh hooks, rules, and CI to the version of Soloship being run via npx"
+  )
+  .action(async () => {
+    console.log("");
+    console.log(chalk.bold("Soloship Upgrade"));
+    console.log(
+      chalk.dim(
+        "Refreshing project hooks, rules, and CI. Project docs are preserved."
+      )
+    );
+    console.log("");
+
+    try {
+      await runUpgrade();
+    } catch (err) {
+      console.error(chalk.red("Upgrade failed:"), err);
       process.exit(1);
     }
   });

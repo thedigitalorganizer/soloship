@@ -1,16 +1,39 @@
 ---
 name: plan
 description: |
-  Create an implementation plan with enforcement gates. Routes to
-  compound-engineering:workflows:plan for standard features or plan-eng-review
-  for architectural work. Searches solutions for prior art and validates plan
-  compliance before completion.
+  Create an implementation plan with enforcement gates. Routes to ce-plan
+  for the planning work itself. For review of the plan, /review handles
+  engineering/CEO/design review separately. Searches solutions for prior
+  art and validates plan compliance before completion.
 ---
 
 # Soloship Plan
 
 Your job is to create a thorough implementation plan that a fresh agent with
 zero context can execute correctly.
+
+## Step 0: Check for Grill-Me Rationale (and offer if missing)
+
+Look for a sibling rationale doc at `docs/plans/YYYY-MM-DD-<slug>-grill.md` or
+any recent `*-grill.md` file matching the topic.
+
+**If a grill-me rationale exists:** Read it. It contains the premise, scope,
+data model, edge cases, UX, and final scope decisions the user already made.
+Pass this context to `ce-plan` so the plan inherits the rationale and doesn't
+re-litigate settled questions.
+
+**If no grill-me rationale exists AND the work is non-trivial:** Suggest
+running it first.
+
+> No grill-me rationale found for this work. For anything touching 5+ files,
+> new infrastructure, data-model changes, or external integrations, run
+> `/grill-me` first. The interview takes ~15-30 minutes and prevents the
+> 3-revision review loop where scope cuts surface too late.
+>
+> Continue without grilling? (recommended only for small/mechanical work)
+
+If the user says continue, proceed to Step 1. If the user opts to grill first,
+exit and let `/grill-me` run.
 
 ## Step 1: Solution Search
 
@@ -19,7 +42,7 @@ Before planning anything, search `docs/solutions/` for prior art:
 2. Search the entire directory — never limit to one category
 3. If matches are found, read them and note any prevention strategies or pitfalls
 
-Note: `compound-engineering:workflows:plan` also runs a `learnings-researcher`
+Note: `ce-plan` also runs a `learnings-researcher`
 agent that searches `docs/solutions/`. Doing it up front here makes the findings
 explicit in the conversation before the CE workflow starts.
 
@@ -37,17 +60,9 @@ If `docs/audit/audit-findings.json` exists:
 
 ## Step 3: Route to Planning Skill
 
-Assess the scope:
+Invoke `ce-plan`. It handles repo research, learnings research, optional external research, and produces a plan file that follows project conventions. Works for all plan sizes from small features through architectural changes.
 
-**Standard feature** (< 5 files, clear scope, no architectural decisions):
-→ Invoke `compound-engineering:workflows:plan`. It handles repo research,
-learnings research, optional external research, and produces a plan file that
-follows project conventions.
-
-**Architectural work** (data flow changes, new services, schema changes, 5+ files):
-→ Invoke `plan-eng-review` — it walks through architecture, data flow, edge cases,
-test coverage, and performance interactively. For the largest changes, run CE's
-plan first and then hand it to `plan-eng-review` for the architecture deep-dive.
+**Review is a separate step.** Do not invoke `gs-plan-eng-review`, `gs-plan-ceo-review`, or `gs-plan-design-review` from here — those are review lenses, not planning. After the plan is written and passes the enforcement gate below, `/review` handles reviewing it (or `/autoplan` for all three reviews at once).
 
 ## Artifact Contract (Plan Files)
 

@@ -134,7 +134,7 @@ export async function installHooks(
   ];
   results.push("Stop: plan validation + workflow navigator + handoff reminder");
 
-  // SessionStart: Checkpoint commit + context injection
+  // SessionStart: Checkpoint commit + Soloship update check
   hooks.SessionStart = [
     {
       matcher: "",
@@ -151,14 +151,14 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildSessionStartScript(),
-          timeout: 10000,
+          command: buildUpgradeCheckScript(),
+          timeout: 5000,
         },
       ],
     },
   ];
   results.push("SessionStart: checkpoint commit before agent session");
-  results.push("SessionStart: context injection");
+  results.push("SessionStart: daily check for Soloship updates on npm");
 
   // Merge hooks into settings (don't overwrite other settings)
   settings.hooks = hooks;
@@ -341,9 +341,44 @@ fi
 '`;
 }
 
-function buildSessionStartScript(): string {
+function buildUpgradeCheckScript(): string {
+  // Once-per-day check for newer Soloship npm releases. Silent if up-to-date,
+  // network unavailable, or no version stamp exists. Cached to avoid hammering
+  // the npm registry on every session start.
   return `bash -c '
-# Dependency graph injection removed.
+SOLOSHIP_DIR=".soloship"
+VERSION_FILE="$SOLOSHIP_DIR/version"
+CACHE_FILE="$SOLOSHIP_DIR/.last-update-check"
+
+[ -f "$VERSION_FILE" ] || exit 0
+INSTALLED=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d "[:space:]")
+[ -z "$INSTALLED" ] && exit 0
+
+NOW=$(date +%s)
+LATEST=""
+if [ -f "$CACHE_FILE" ]; then
+  CACHED_TS=$(sed -n 1p "$CACHE_FILE" 2>/dev/null)
+  CACHED_VER=$(sed -n 2p "$CACHE_FILE" 2>/dev/null)
+  if [ -n "$CACHED_TS" ] && [ $((NOW - CACHED_TS)) -lt 86400 ]; then
+    LATEST="$CACHED_VER"
+  fi
+fi
+
+if [ -z "$LATEST" ]; then
+  LATEST=$(timeout 3 npm view soloship version 2>/dev/null | tr -d "[:space:]")
+  [ -z "$LATEST" ] && exit 0
+  mkdir -p "$SOLOSHIP_DIR"
+  printf "%s\\n%s\\n" "$NOW" "$LATEST" > "$CACHE_FILE" 2>/dev/null
+fi
+
+if [ "$INSTALLED" != "$LATEST" ]; then
+  NEWEST=$(printf "%s\\n%s\\n" "$INSTALLED" "$LATEST" | sort -V | tail -n1)
+  if [ "$NEWEST" = "$LATEST" ]; then
+    echo "{\\"systemMessage\\": \\"Soloship update available: $INSTALLED → $LATEST. Run: npx soloship upgrade\\"}"
+  fi
+fi
+
+exit 0
 '`;
 }
 

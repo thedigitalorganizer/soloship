@@ -1,7 +1,7 @@
 ---
 name: implement
 description: |
-  Execute an implementation plan. Routes to compound-engineering:workflows:work
+  Execute an implementation plan. Routes to ce-work
   which reads the plan, sets up a working branch, and executes systematically
   while maintaining quality.
 ---
@@ -22,9 +22,49 @@ check whether today exceeds date + ttl_days. If stale, warn:
 "This plan is N days old (expires after M days). Verify it still reflects current
 intent before executing." Do not block — warn and proceed.
 
+## Step 1.5: Pre-Execution State Verification
+
+**Required for every multi-phase plan, every phase, every time.** Plans embed
+concrete factual claims about the codebase — version numbers, file paths,
+identifier names, "is X done" assumptions — that are correct at write time and
+can be wrong at execute time. Intervening commits land. The author guesses a
+location without grepping. A prior phase changed something this phase depends on.
+
+Before invoking `ce-work` or editing any file, spend ≤2 minutes grepping every
+concrete assertion the phase you're about to execute makes:
+
+- **Version constants:** plan says "bump CONST N → N+1"? Grep the constant.
+  If it's already N+1 or N+2, the literal numbers are stale — bump from current.
+- **File locations:** plan names a file path for a CSS variable, identifier,
+  palette override, or alias? `grep -rn "<construct>" src/ functions/src/` and
+  confirm it actually lives where the plan says.
+- **Identifier renames:** plan assumes a prior phase renamed `OldName` to `NewName`?
+  `git log --oneline -p -S "OldName"` across the touched files. Use the new name
+  if the rename happened, the old name if it didn't.
+- **"Is X done" assumptions:** plan assumes a prior phase did or did not do
+  something? Grep for the artifact (renamed tab, deleted file) before re-doing it
+  or before assuming it still needs to be done.
+
+Cap at 2 minutes per phase. The point is to surface mismatches, not to re-derive
+the plan.
+
+**Document every delta in the phase handoff under "Plan-vs-reality adjustments
+documented:".** Empty if none — empty *signals* that verification ran. Populated
+with each delta if found. The next phase's executor reads the handoff and inherits
+the corrected mental model.
+
+If a project follows the auto-loaded `plan-materialization.md` rule, this step is
+already mandated there; this skill restates it because it's the highest-leverage
+discipline `/implement` can enforce. See
+`docs/solutions/workflow-issues/plan-state-decay-during-multi-phase-execution-20260503.md`
+(in any project that has compounded this learning) for surfaced incidents.
+
+**Skip this step ONLY if** the plan is single-phase or the work is the trivial
+1-2 step direct change documented in the Step 2 exception.
+
 ## Step 2: Route to Execution
 
-Invoke `compound-engineering:workflows:work` with the plan file path as input.
+Invoke `ce-work` with the plan file path as input.
 It will:
 - Read the plan completely and clarify ambiguities before starting
 - Set up the correct branch
@@ -47,7 +87,7 @@ for five-minute changes.
 |--------|---------|
 | "I don't need a plan for this, it's straightforward" | If it were straightforward, you wouldn't be using `/implement`. No plan = no shared understanding of what "done" means. Run `/plan` first. |
 | "I'll adjust the plan as I go" | Adjustments are fine — but update the plan file. An executed plan that doesn't match the written plan is worse than no plan at all. |
-| "I'll skip CE's workflow and just code it" | CE:workflows:work handles branch setup, clarification gates, and quality checks that are easy to forget when coding solo. Use it unless the change is genuinely trivial. |
+| "I'll skip CE's workflow and just code it" | ce-work handles branch setup, clarification gates, and quality checks that are easy to forget when coding solo. Use it unless the change is genuinely trivial. |
 | "I'll skip `/learn` — this was routine" | "Routine" work that needed a plan and an implementation skill is, by definition, not trivial. Capture what you learned. |
 
 ---
@@ -64,6 +104,7 @@ When implementation is complete:
 Implementation is not complete until ALL of these are true:
 
 - [ ] Plan file was read and understood before any code was written
+- [ ] **Pre-execution state verification ran** (Step 1.5) and any deltas are documented in the phase handoff under "Plan-vs-reality adjustments documented:" (empty if none — empty signals verification ran)
 - [ ] All tasks in the plan are addressed (completed or explicitly deferred with reason)
 - [ ] Tests pass (`npm test` or equivalent — show the output)
 - [ ] Build succeeds (`npm run build` or equivalent — show the output)

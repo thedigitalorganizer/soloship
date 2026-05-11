@@ -122,14 +122,15 @@ Check what rules already exist in `.claude/rules/`. Don't duplicate.
 
 Check `.claude/settings.local.json` for existing hooks.
 
-**If Soloship hooks are already installed** (from `npx soloship init`):
+**If Soloship hooks are already installed** (`.soloship/version` exists):
 - Verify they're still correct for the project
-- Update the madge/dependency graph hook if the source directory isn't `src/`
 - Add project-specific hooks if the audit recommends them
+- If the stamped version is older than the latest on npm, suggest the user run `npx soloship upgrade` to refresh
 
 **If no hooks exist:**
-- Install the Soloship hook set (same as what `npx soloship init` creates)
-- Adapt to the detected stack
+- Run `npx soloship init --skip-prompts` in the project root via the Bash tool. This is the canonical installer — it writes hooks, the `.soloship/version` stamp (used by the daily update-check hook), the `.gitignore` for cache files, and the four core rules.
+- Do not hand-write hooks into `.claude/settings.local.json` directly. The npm CLI is the source of truth; replicating it by hand causes drift.
+- After init runs, layer any project-specific tailoring on top (e.g., audit-driven rules from Step 4 that aren't part of the default set).
 
 ---
 
