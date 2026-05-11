@@ -2,48 +2,55 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **14 Soloship-native workflow skills + 32 vendored skills from five best-in-class plugins** that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
+Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **15 Soloship-native workflow skills + 36 vendored skills from five best-in-class plugins** that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
 
 **Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet)
 
 ## Install
 
+### Prerequisites
+
+You need two things before you start:
+
+1. **[Claude Code](https://claude.com/claude-code)** — install it if you haven't yet. Soloship runs inside it.
+2. **Node.js 18 or newer** — `npx` ships with Node and is how Soloship's CLI runs. Check by running `node -v` in a terminal. If you don't have it, install from [nodejs.org](https://nodejs.org).
+
+You don't need to install anything from npm by hand. `npx` downloads `soloship` on demand and caches it. Soloship is [live on npm](https://www.npmjs.com/package/soloship) — you can verify with `npm view soloship`.
+
+### How Soloship is structured
+
 Soloship has two parts that work together:
 
-| Part | What it gives you | How it's installed |
-|------|-------------------|--------------------|
-| **Plugin** | The `/soloship:*` slash commands (audit, bootstrap, brainstorm, plan, etc.) | Claude Code plugin marketplace — once per machine |
-| **Project scaffolding** | Hooks, rules, CI, `CLAUDE.md`, version stamp for update notifications | `npx soloship init` (or `/soloship:bootstrap`, which calls it for you) — once per project |
+| Part | What it gives you | How it's installed | When it runs |
+|------|-------------------|--------------------|--------------|
+| **Plugin** (`thedigitalorganizer/soloship`) | The `/soloship:*` slash commands (audit, bootstrap, brainstorm, plan, etc.) | Claude Code plugin marketplace | Once per machine |
+| **npm CLI** (`soloship` on npm) | The `init` / `upgrade` / `doctor` / `rollback` commands that install hooks, rules, CI, and `CLAUDE.md` into a project | Auto-downloaded by `npx` (no manual install) | Once per project, then `upgrade` whenever a new version ships |
 
-You need both for the full experience. The plugin alone gets you slash commands but no project guardrails. The npm CLI alone gets you guardrails but no slash commands.
-
-If you don't have [Claude Code](https://claude.com/claude-code) installed yet, install it first.
+You need both for the full experience. The plugin gives you the slash commands. The npm CLI installs the project-level guardrails. The plugin's `/soloship:bootstrap` calls `npx soloship init` for you, so in practice you only ever type slash commands.
 
 ### Step 1 — Install the plugin (once per machine)
 
-Inside any Claude Code session, run these two commands **one at a time** — run the first, wait for it to finish, then run the second:
+Inside any Claude Code session, run these two slash commands **one at a time** — run the first, wait for it to finish, then run the second.
 
-**Add the marketplace:**
+**1a. Add the marketplace:**
 
 ```
 /plugin marketplace add thedigitalorganizer/soloship
 ```
 
-**Install the plugin:**
+This points Claude Code at the Soloship marketplace on GitHub. Nothing is installed yet — this just registers where to find the plugin.
+
+**1b. Install the plugin:**
 
 ```
 /plugin install soloship@soloship
 ```
 
-The plugin installs globally. All Soloship commands are now available as `/soloship:*` slash commands in every project you open.
+The syntax is `<plugin-name>@<marketplace-name>` — both happen to be `soloship`, which is why it reads twice. Once this finishes, every `/soloship:*` slash command is available in every project you open in Claude Code.
 
 ### Step 2 — Set up a project (once per project)
 
-See "Using Soloship in a project" below. The bootstrap skill calls `npx soloship init` under the hood, so you don't need to run anything from a terminal — `/soloship:bootstrap` is enough.
-
-### Using Soloship in a project
-
-Open the project you want to use Soloship in — a brand-new empty folder or an existing codebase, either works — then run one of these in Claude Code:
+Open the project you want to use Soloship in — a brand-new empty folder or an existing codebase, either works — then run one of these in Claude Code. **You don't need to open a terminal.** The bootstrap skill calls `npx soloship init` for you.
 
 **Brand-new project (no code yet):**
 
@@ -63,6 +70,18 @@ Bootstrap asks four questions about your project, then sets up the guardrails (h
 `/soloship:audit` investigates the codebase first (it dispatches 10 parallel agents to map architecture, conventions, quality, and risk). `/soloship:bootstrap` then reads what audit found and tailors the setup to your actual code instead of guessing. Takes a few minutes, but it's what keeps the guardrails from fighting your existing conventions.
 
 After bootstrap, the daily loop is `/soloship:brainstorm` → `/soloship:plan` → `/soloship:implement` → `/soloship:shipthorough`.
+
+### Keeping Soloship up to date
+
+After install, every Claude Code session checks once a day whether a new Soloship version has been published. When one is, you'll see a single line at the top of the session:
+
+```
+Soloship update available: 0.1.0 → 0.1.2. Run: npx soloship upgrade
+```
+
+Run that command from your project root whenever you see it. It refreshes hooks, rules, and CI, then re-stamps the version. Your project docs (`CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`) are preserved.
+
+To update the plugin itself (the slash commands), Claude Code handles it via `/plugin update soloship@soloship`.
 
 ## How we got here
 
@@ -108,7 +127,8 @@ Others are routers — Soloship adds enforcement and routing logic, then dispatc
 | Skill | Routes to | What Soloship adds |
 |-------|-----------|-------------------|
 | `/brainstorm` | `office-hours` (product) / `superpowers:brainstorming` (technical) | Product-vs-technical routing, mandatory design-first nudge |
-| `/plan` | `superpowers:writing-plans` / `plan-eng-review` | Solution search before planning, 7-point enforcement gate, artifact contracts |
+| `/grill-me` | (self-contained, adapted from Matt Pocock's `grill-me`) | Pre-plan interview that refuses to write a plan until user + agent share a complete mental model. Walks the design tree exhaustively. |
+| `/plan` | `superpowers:writing-plans` / `plan-eng-review` | Solution search before planning, 7-point enforcement gate, artifact contracts, checks for `/grill-me` rationale on non-trivial work |
 | `/implement` | `superpowers:subagent-driven-development` / `superpowers:dispatching-parallel-agents` | Plan-first enforcement, execution strategy routing |
 | `/debug` | `superpowers:systematic-debugging` | Solution search for prior art, root-cause iron law |
 | `/learn` | `compound-engineering:workflows:compound` (Step 1) | Solution doc via CE, then own protocols: JSONL logging, registry audit, AGENTS.md propagation + creation |
@@ -137,7 +157,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 ### The skills
 
-**14 Soloship-native workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts; the heavy lifting is often delegated to a vendored skill (see the next section).
+**15 Soloship-native workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts; the heavy lifting is often delegated to a vendored skill (see the next section).
 
 **Setup & orientation**
 
@@ -148,8 +168,9 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 **Daily work**
 
 - `/soloship:brainstorm` — Detects whether the question is demand-validation (should this exist?) or feature-shaping (what should this do?) and routes accordingly: `gs-office-hours` for demand, `ce-brainstorm` for feature. Ends with a mandatory design-first nudge — sketch before you plan.
+- `/soloship:grill-me` — Relentless pre-plan interview that walks every branch of the design tree until user and agent share a complete mental model. Refuses to produce a plan or any code until alignment is explicit. Triggered explicitly ("grill me", "interview me") or by `/soloship:plan` on medium-to-large work. Adapted from Matt Pocock's `grill-me` (MIT).
 - `/soloship:spec` — Writes formal specifications with numbered acceptance criteria, data models, API contracts, user flows (including error states), and explicit out-of-scope boundaries. 8-point verification checklist. Fully self-contained.
-- `/soloship:plan` — Searches `docs/solutions/` for prior art, reads architecture context, then invokes `ce-plan` to produce the plan. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls. Review is separate — handled by `/soloship:review`.
+- `/soloship:plan` — Searches `docs/solutions/` for prior art, reads architecture context, then invokes `ce-plan` to produce the plan. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls, and that non-trivial work was preceded by `/soloship:grill-me`. Review is separate — handled by `/soloship:review`.
 - `/soloship:implement` — Finds the most recent plan in `docs/plans/`, invokes `ce-work` for execution with branching and QC. Freshness check warns on stale plans.
 - `/soloship:debug` — Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then invokes `sp-systematic-debugging` for 4-phase discipline (Investigate → Analyze → Hypothesize → Implement). Nudges `/learn` for non-obvious fixes.
 - `/soloship:learn` — Captures knowledge from non-obvious work. Invokes `ce-compound` for solution doc creation. Adds Soloship protocols: JSONL logging for cross-session search, architecture registry drift checking, and distributed AGENTS.md propagation (pitfalls into existing AGENTS.md files, new ones for directories above the 3-file governance threshold). Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
@@ -188,22 +209,16 @@ See the [Install](#install) section above for the two commands to install the pl
 
 ### Running the npm CLI directly
 
-`/soloship:bootstrap` calls `npx soloship init` under the hood, so you don't usually need to think about the npm CLI. But it's there if you want to script setup, run it in CI, or skip the slash command entirely:
+`/soloship:bootstrap` calls `npx soloship init` under the hood, so you don't usually need to think about the npm CLI. But it's there if you want to script setup, run it in CI, or skip the slash command entirely. Run any of these from your project root:
 
 ```bash
-npx soloship init        # initial setup
-npx soloship upgrade     # refresh hooks, rules, CI, and version stamp to the latest
+npx soloship init        # initial setup — creates docs, hooks, rules, CI, CLAUDE.md
+npx soloship upgrade     # refresh hooks, rules, CI, and the .soloship/version stamp
 npx soloship doctor      # check Claude Code environment for missing companions
 npx soloship rollback    # restore the last safety snapshot
 ```
 
-After install, every Claude Code session checks once a day whether a new Soloship version has been published. When one is, you'll see a single line at the top of the session:
-
-```
-Soloship update available: 0.1.0 → 0.2.0. Run: npx soloship upgrade
-```
-
-Run `npx soloship upgrade` whenever you see that. It refreshes hooks, rules, and CI, then re-stamps the version. Your project docs (`CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`) are preserved.
+`npx` auto-downloads the latest Soloship from npm the first time you run it, and caches it after that. There's no separate `npm install -g` step.
 
 ## Design decisions
 
@@ -231,13 +246,13 @@ Soloship curates and vendors skills from five outstanding Claude Code plugins. O
 
 [**Compound Engineering**](https://github.com/EveryInc/compound-engineering-plugin) — Kieran Klaassen (Every). The brainstorm → plan → work → compound loop is the spine of how Soloship thinks about engineering. Also: `/review` inherits CE's multi-agent review pattern.
 
-[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `brainstorming`.
+[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents` (via `using-git-worktrees`), `finishing-a-development-branch`, `brainstorming`. Nine skills total.
 
 [**Impeccable**](https://impeccable.style) — Paul Bakaus (extending Anthropic's original `frontend-design`). Design vocabulary and steering commands that let non-coders ship work that doesn't look AI-generated. Soloship vendors `frontend-design` and five `/i-*` commands; 12 more are in the full plugin.
 
 [**ui-ux-pro-max**](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) — nextlevelbuilder. The design reference library: styles, palettes, font pairings, UX guidelines, chart patterns, across every stack the agent might target.
 
-[**gstack**](https://github.com/garrytan/gstack) — Garry Tan (YC). The solo builder toolkit. Soloship vendors 11 of the most non-coder-friendly skills — `autoplan` (chains CEO + design + eng + DX reviews), `checkpoint`, `browse`, `qa`, `design-review`, the plan-review trio, `office-hours`, `cso`. Full gstack has ~25 more.
+[**gstack**](https://github.com/garrytan/gstack) — Garry Tan (YC). The solo builder toolkit. Soloship vendors 12 of the most non-coder-friendly skills — `autoplan` (chains CEO + design + eng + DX reviews), `context-save` / `context-restore` (the checkpoint pair), `browse` (headless browser daemon, re-vendored from gstack v1.31.1.0 with Soloship-native paths so it works standalone), `qa`, `design-review`, the four plan-review skills (eng, ceo, design, devex), `office-hours`, `cso`. Full gstack has ~25 more.
 
 If any of these are useful to you, please install the full upstream plugin — each `THIRD_PARTY_NOTICES.md` section has the one-line install command, and you'll get everything the author built, not just Soloship's selection.
 
@@ -264,16 +279,19 @@ src/                   # TypeScript source for the installer
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
 skills/                # Claude Code skills shipped by the plugin
-  # 14 Soloship-native workflows:
+  # 15 Soloship-native workflows:
   audit/ bootstrap/ brainstorm/ cleanup/ debug/ design-review/
-  implement/ learn/ onboard/ plan/ review/ shipfast/ shipthorough/ spec/
+  grill-me/ implement/ learn/ onboard/ plan/ review/
+  shipfast/ shipthorough/ spec/
 
-  # 32 vendored skills (full attribution in THIRD_PARTY_NOTICES.md):
+  # 36 vendored skills (full attribution in THIRD_PARTY_NOTICES.md):
   ce-*        # 8 from Compound Engineering (Kieran Klaassen, MIT)
-  sp-*        # 5 from Superpowers (Jesse Vincent, MIT)
+  sp-*        # 9 from Superpowers (Jesse Vincent, MIT)
   im-*        # 6 from Impeccable (Paul Bakaus, Apache 2.0)
   uiux-*      # 1 from ui-ux-pro-max (nextlevelbuilder, MIT)
-  gs-*        # 12 from gstack (Garry Tan, MIT)
+  gs-*        # 12 from gstack (Garry Tan, MIT) — includes the gs-browse
+              # headless browser daemon, re-vendored at v1.31.1.0 with
+              # Soloship-native paths so it works without gstack installed
 
   references/          # Shared checklists (a11y, code review, perf, security, testing)
   vendored/            # Per-source LICENSE / NOTICE / VERSION / README (attribution archive)

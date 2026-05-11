@@ -19,9 +19,8 @@ skills/gs-browse/dist/.version
 
 # Internal working files — excluded from public repo
 CLAUDE.md
-docs/
+docs/*
 !docs/known-issues/
-!docs/known-issues/**
 site/
 .claude/settings.local.json
 .gstack/
