@@ -1,7 +1,7 @@
 ---
 name: debug
 description: |
-  Systematic debugging with root cause discipline. Routes to systematic-debugging.
+  Soloship — Systematic debugging with root cause discipline. Routes to systematic-debugging.
   Iron law: no fixes without root cause investigation.
 ---
 

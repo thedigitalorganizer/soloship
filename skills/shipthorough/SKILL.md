@@ -1,7 +1,7 @@
 ---
 name: shipthorough
 description: |
-  Full due diligence deploy pipeline. Review, coverage audit, registry update,
+  Soloship — Full due diligence deploy pipeline. Review, coverage audit, registry update,
   CHANGELOG, plan cleanup, bisectable commits, PR, verification, deploy.
   Use after significant work when everything needs to be solid.
 ---

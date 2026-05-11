@@ -1,7 +1,7 @@
 ---
 name: cleanup
 description: |
-  Knowledge system maintenance: deduplicate solutions, prune stale references,
+  Soloship — Knowledge system maintenance: deduplicate solutions, prune stale references,
   enforce plan lifecycle, fix AGENTS.md drift, rebuild learnings index.
   The garbage collector, linker, and index rebuilder for a project's knowledge base.
   Use periodically or when docs/solutions/ has grown since the last cleanup.

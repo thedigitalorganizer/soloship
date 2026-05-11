@@ -1,7 +1,7 @@
 ---
 name: implement
 description: |
-  Execute an implementation plan. Routes to ce-work
+  Soloship — Execute an implementation plan. Routes to ce-work
   which reads the plan, sets up a working branch, and executes systematically
   while maintaining quality.
 ---

@@ -1,7 +1,7 @@
 ---
 name: bootstrap
 description: |
-  Configure project governance from audit findings or interactive questions.
+  Soloship — Configure project governance from audit findings or interactive questions.
   Creates/updates CLAUDE.md, AGENTS.md files, rules, and hooks tailored to the
   actual project. Use after /audit on existing projects, or standalone on new projects.
 ---

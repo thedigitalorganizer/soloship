@@ -3,7 +3,7 @@ name: gs-office-hours
 preamble-tier: 3
 version: 2.0.0
 description: |
-  YC Office Hours — two modes. Startup mode: six forcing questions that expose
+  Soloship — YC Office Hours — two modes. Startup mode: six forcing questions that expose
   demand reality, status quo, desperate specificity, narrowest wedge, observation,
   and future-fit. Builder mode: design thinking brainstorming for side projects,
   hackathons, learning, and open source. Saves a design doc.
@@ -13,7 +13,7 @@ description: |
   a new product idea, asks whether something is worth building, wants to think
   through design decisions for something that doesn't exist yet, or is exploring
   a concept before any code is written.
-  Use before /gs-plan-ceo-review or /gs-plan-eng-review. (gstack)
+  Use before /gs-plan-ceo-review or /gs-plan-eng-review.
 allowed-tools:
   - Bash
   - Read

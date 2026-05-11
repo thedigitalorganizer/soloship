@@ -1,6 +1,6 @@
 ---
 name: sp-test-driven-development
-description: Use when implementing any feature or bugfix, before writing implementation code
+description: Soloship — Use when implementing any feature or bugfix, before writing implementation code
 ---
 
 <!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->
