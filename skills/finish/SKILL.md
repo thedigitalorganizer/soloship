@@ -1,7 +1,9 @@
 ---
-name: finishing-a-development-branch
+name: finish
 description: Soloship — Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
 ---
+
+<!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Renamed `finishing-a-development-branch` → `finish` for Soloship's user-facing `/soloship-finish` command. -->
 
 # Finishing a Development Branch
 

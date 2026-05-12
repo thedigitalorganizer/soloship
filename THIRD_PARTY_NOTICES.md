@@ -41,7 +41,7 @@ Thank you, Kieran. The brainstorm → plan → work → compound loop is the bac
 **Version pinned:** 4.1.1
 **Source:** https://github.com/obra/superpowers
 
-**Vendored into Soloship:** `systematic-debugging`, `test-driven-development`, `brainstorming`, `verification-before-completion`, `writing-plans` (5 skills).
+**Vendored into Soloship:** `systematic-debugging`, `test-driven-development`, `brainstorming`, `verification-before-completion`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `using-git-worktrees`, and `finishing-a-development-branch` (renamed to `finish` in Soloship — invoke via `/soloship-finish`). 9 skills total.
 
 **Install the full plugin for everything else:**
 ```
