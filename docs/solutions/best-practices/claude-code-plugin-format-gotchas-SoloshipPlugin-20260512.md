@@ -216,9 +216,11 @@ If install itself fails: schema validation error (Gotcha 3 or related).
 
 ## Cross-references
 
+- [`docs/solutions/patterns/critical-patterns.md`](../patterns/critical-patterns.md) — **Pattern #1** promotes Gotcha 7 to Required Reading. Read before any plugin.json edits.
 - `.claude/rules/release-version-sync.md` — the rule that enforces Gotcha 1 prevention
 - `docs/solutions/best-practices/vendor-skills-without-external-deps-SoloshipPlugin-20260511.md` — yesterday's sibling lesson about vendoring; this doc covers the plugin-format layer above that
 - `docs/plans/archive/2026-05-12-both-install-paths-complete.md` — the plan that surfaced these gotchas
+- [Claude Code plugin manifest schema (official)](https://code.claude.com/docs/en/plugins-reference#plugin-manifest-schema) — the "Replaces the default" sentence is the load-bearing detail behind Gotcha 7
 
 ## Why The Earlier Versions Shipped Broken
 
