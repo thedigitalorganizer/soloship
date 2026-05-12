@@ -1,7 +1,7 @@
 ---
 name: learn
 description: |
-  Soloship — Capture knowledge from non-obvious work. Creates a solution doc via
+  Capture knowledge from non-obvious work. Creates a solution doc via
   ce-compound, then audits the architecture registry for drift,
   propagates new pitfalls into AGENTS.md files, and creates missing AGENTS.md
   for directories that have grown past the governance threshold.

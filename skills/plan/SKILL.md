@@ -1,7 +1,7 @@
 ---
 name: plan
 description: |
-  Soloship — Create an implementation plan with enforcement gates. Routes to ce-plan
+  Create an implementation plan with enforcement gates. Routes to ce-plan
   for the planning work itself. For review of the plan, /review handles
   engineering/CEO/design review separately. Searches solutions for prior
   art and validates plan compliance before completion.

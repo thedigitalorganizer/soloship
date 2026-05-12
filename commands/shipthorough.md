@@ -1,6 +1,6 @@
 ---
-name: soloship-shipthorough
-description: Soloship — Full due diligence deploy pipeline. Review, coverage audit, registry update, CHANGELOG, plan cleanup, bisectable commits, PR, verification, deploy. Use after significant work when everything needs to be solid.
+name: shipthorough
+description: Full due diligence deploy pipeline. Review, coverage audit, registry update, CHANGELOG, plan cleanup, bisectable commits, PR, verification, deploy. Use after significant work when everything needs to be solid.
 ---
 
 Invoke the `shipthorough` skill from the Soloship plugin. Use the Skill tool with skill name `shipthorough` and let it drive the workflow.

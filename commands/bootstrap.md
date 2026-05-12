@@ -1,6 +1,6 @@
 ---
-name: soloship-bootstrap
-description: Soloship — Configure project governance from audit findings or interactive questions. Creates/updates CLAUDE.md, AGENTS.md files, rules, and hooks tailored to the actual project. Use after /audit on existing projects, or standalone on new projects.
+name: bootstrap
+description: Configure project governance from audit findings or interactive questions. Creates/updates CLAUDE.md, AGENTS.md files, rules, and hooks tailored to the actual project. Use after /audit on existing projects, or standalone on new projects.
 ---
 
 Invoke the `bootstrap` skill from the Soloship plugin. Use the Skill tool with skill name `bootstrap` and let it drive the workflow.

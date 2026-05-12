@@ -3,7 +3,7 @@ name: gs-context-save
 preamble-tier: 2
 version: 1.0.0
 description: |
-  Soloship — Save working context. Captures git state, decisions made, and remaining work
+  Save working context. Captures git state, decisions made, and remaining work
   so any future session can pick up without losing a beat.
   Use when asked to "save progress", "save state", "context save", or
   "save my work". Pair with /gs-context-restore to resume later.

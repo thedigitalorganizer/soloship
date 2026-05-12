@@ -1,6 +1,6 @@
 ---
 name: ce-brainstorm
-description: Soloship — Explore requirements and approaches through collaborative dialogue before planning implementation
+description: Explore requirements and approaches through collaborative dialogue before planning implementation
 ---
 
 Invoke the `ce-brainstorm` skill from the Soloship plugin. Use the Skill tool with skill name `ce-brainstorm` and let it drive the workflow.

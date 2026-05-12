@@ -1,6 +1,6 @@
 ---
 name: subagent-driven-development
-description: Soloship — Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with code review between tasks, enabling fast iteration with quality gates
+description: Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with code review between tasks, enabling fast iteration with quality gates
 ---
 
 <!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->
@@ -104,8 +104,8 @@ After all tasks complete, dispatch final code-reviewer:
 ### 7. Complete Development
 
 After final review passes:
-- Announce: "I'm using the /soloship-finish skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use /soloship-finish (Soloship's rename of Superpowers' `finishing-a-development-branch`)
+- Announce: "I'm using the /soloship:finish skill to complete this work."
+- **REQUIRED SUB-SKILL:** Use /soloship:finish (Soloship's rename of Superpowers' `finishing-a-development-branch`)
 - Follow that skill to verify tests, present options, execute choice
 
 ## Example Workflow
@@ -180,7 +180,7 @@ Done!
 **Required workflow skills:**
 - **writing-plans** - REQUIRED: Creates the plan that this skill executes
 - **requesting-code-review** - REQUIRED: Review after each task (see Step 3)
-- **`/soloship-finish`** - REQUIRED: Complete development after all tasks (see Step 7)
+- **`/soloship:finish`** - REQUIRED: Complete development after all tasks (see Step 7)
 
 **Subagents must use:**
 - **test-driven-development** - Subagents follow TDD for each task

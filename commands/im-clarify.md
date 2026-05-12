@@ -1,6 +1,6 @@
 ---
 name: im-clarify
-description: Soloship — Improve unclear UX copy, error messages, microcopy, labels, and instructions. Makes interfaces easier to understand and use.
+description: Improve unclear UX copy, error messages, microcopy, labels, and instructions. Makes interfaces easier to understand and use.
 ---
 
 Invoke the `im-clarify` skill from the Soloship plugin. Use the Skill tool with skill name `im-clarify` and let it drive the workflow.

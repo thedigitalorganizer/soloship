@@ -1,6 +1,6 @@
 ---
 name: im-audit
-description: Soloship — Perform comprehensive audit of interface quality across accessibility, performance, theming, and responsive design. Generates detailed report of issues with severity ratings and recommendations.
+description: Perform comprehensive audit of interface quality across accessibility, performance, theming, and responsive design. Generates detailed report of issues with severity ratings and recommendations.
 ---
 
 Invoke the `im-audit` skill from the Soloship plugin. Use the Skill tool with skill name `im-audit` and let it drive the workflow.

@@ -1,6 +1,6 @@
 ---
 name: ce-review
-description: Soloship — Perform exhaustive code reviews using multi-agent analysis, ultra-thinking, and worktrees
+description: Perform exhaustive code reviews using multi-agent analysis, ultra-thinking, and worktrees
 ---
 
 Invoke the `ce-review` skill from the Soloship plugin. Use the Skill tool with skill name `ce-review` and let it drive the workflow.

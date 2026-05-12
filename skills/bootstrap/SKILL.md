@@ -1,7 +1,7 @@
 ---
 name: bootstrap
 description: |
-  Soloship — Configure project governance from audit findings or interactive questions.
+  Configure project governance from audit findings or interactive questions.
   Creates/updates CLAUDE.md, AGENTS.md files, rules, and hooks tailored to the
   actual project. Use after /audit on existing projects, or standalone on new projects.
 ---
@@ -141,7 +141,7 @@ command -v node >/dev/null 2>&1 && command -v npx >/dev/null 2>&1 && echo "NODE_
 > 1. Open Terminal
 > 2. Paste: `brew install node` (and press Enter)
 > 3. Wait for it to finish
-> 4. Come back here and run `/soloship-bootstrap` again
+> 4. Come back here and run `/soloship:bootstrap` again
 >
 > If you don't have Homebrew, install it first from https://brew.sh — one line, follow the prompts.
 >

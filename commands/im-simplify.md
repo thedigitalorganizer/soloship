@@ -1,6 +1,6 @@
 ---
 name: im-simplify
-description: Soloship — Strip designs to their essence by removing unnecessary complexity. Great design is simple, powerful, and clean.
+description: Strip designs to their essence by removing unnecessary complexity. Great design is simple, powerful, and clean.
 ---
 
 Invoke the `im-simplify` skill from the Soloship plugin. Use the Skill tool with skill name `im-simplify` and let it drive the workflow.

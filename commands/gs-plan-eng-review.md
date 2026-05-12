@@ -1,6 +1,6 @@
 ---
 name: gs-plan-eng-review
-description: Soloship — Eng manager-mode plan review. Lock in the execution plan — architecture, data flow, diagrams, edge cases, test coverage, performance. Walks through issues interactively with opinionated recommendations. Use when asked to "review the architecture", "engineering review", or "lock in the plan". Proactively suggest when the user has a plan or design doc and is about to start coding — to catch architecture issues before implementation. Voice triggers (speech-to-text aliases): "tech r
+description: Eng manager-mode plan review. Lock in the execution plan — architecture, data flow, diagrams, edge cases, test coverage, performance. Walks through issues interactively with opinionated recommendations. Use when asked to "review the architecture", "engineering review", or "lock in the plan". Proactively suggest when the user has a plan or design doc and is about to start coding — to catch architecture issues before implementation. Voice triggers (speech-to-text aliases): "tech r
 ---
 
 Invoke the `gs-plan-eng-review` skill from the Soloship plugin. Use the Skill tool with skill name `gs-plan-eng-review` and let it drive the workflow.

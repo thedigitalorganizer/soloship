@@ -1,6 +1,6 @@
 ---
 name: ce-plan
-description: Soloship — Transform feature descriptions into well-structured project plans following conventions
+description: Transform feature descriptions into well-structured project plans following conventions
 argument-hint: "[feature description, bug report, or improvement idea]"
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: im-polish
-description: Soloship — Final quality pass before shipping. Fixes alignment, spacing, consistency, and detail issues that separate good from great.
+description: Final quality pass before shipping. Fixes alignment, spacing, consistency, and detail issues that separate good from great.
 ---
 
 Invoke the `im-polish` skill from the Soloship plugin. Use the Skill tool with skill name `im-polish` and let it drive the workflow.

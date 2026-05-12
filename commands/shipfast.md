@@ -1,6 +1,6 @@
 ---
-name: soloship-shipfast
-description: Soloship — Emergency deploy pipeline. Something's broken in prod, you fixed it, get it live NOW. Lint, test, build, commit, push, deploy. Minimum viable safety checks, maximum speed.
+name: shipfast
+description: Emergency deploy pipeline. Something's broken in prod, you fixed it, get it live NOW. Lint, test, build, commit, push, deploy. Minimum viable safety checks, maximum speed.
 ---
 
 Invoke the `shipfast` skill from the Soloship plugin. Use the Skill tool with skill name `shipfast` and let it drive the workflow.

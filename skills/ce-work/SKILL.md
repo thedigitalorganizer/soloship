@@ -1,6 +1,6 @@
 ---
 name: ce-work
-description: Soloship — Execute work plans efficiently while maintaining quality and finishing features
+description: Execute work plans efficiently while maintaining quality and finishing features
 argument-hint: "[plan file, specification, or todo file path]"
 ---
 

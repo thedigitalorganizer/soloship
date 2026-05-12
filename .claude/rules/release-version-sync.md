@@ -72,7 +72,7 @@ Putting this rule in a checked-in auto-loaded file means it cascades to every de
 ## When This Rule Triggers
 
 - Any `npm version` invocation in Soloship's repo.
-- Any `/soloship-shipthorough` or `/soloship-shipfast` run that publishes to npm.
+- Any `/soloship:shipthorough` or `/soloship:shipfast` run that publishes to npm.
 - Any conversation where the user asks to "ship a new version", "release", "publish", or "push v0.X".
 - The pre-publish self-check above runs as part of the release sequence.
 

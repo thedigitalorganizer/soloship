@@ -1,6 +1,6 @@
 ---
 name: sp-subagent-driven-development
-description: Soloship — Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with code review between tasks, enabling fast iteration with quality gates
+description: Use when executing implementation plans with independent tasks in the current session - dispatches fresh subagent for each task with code review between tasks, enabling fast iteration with quality gates
 ---
 
 Invoke the `sp-subagent-driven-development` skill from the Soloship plugin. Use the Skill tool with skill name `sp-subagent-driven-development` and let it drive the workflow.

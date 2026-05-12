@@ -1,6 +1,6 @@
 ---
 name: sp-executing-plans
-description: Soloship — Use when partner provides a complete implementation plan to execute in controlled batches with review checkpoints - loads plan, reviews critically, executes tasks in batches, reports for review between batches
+description: Use when partner provides a complete implementation plan to execute in controlled batches with review checkpoints - loads plan, reviews critically, executes tasks in batches, reports for review between batches
 ---
 
 Invoke the `sp-executing-plans` skill from the Soloship plugin. Use the Skill tool with skill name `sp-executing-plans` and let it drive the workflow.

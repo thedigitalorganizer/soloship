@@ -1,7 +1,7 @@
 ---
 name: review
 description: |
-  Soloship — Multi-perspective review for plans or code. For plans: routes to gstack's eng,
+  Multi-perspective review for plans or code. For plans: routes to gstack's eng,
   CEO, or design plan review skills individually, or gs-autoplan to run all four
   (CEO + design + eng + DX) in one auto-decided pass. For code: routes to ce-review
   for PR-scale work (CE multi-agent parallel analysis with worktrees), or runs

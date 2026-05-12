@@ -1,6 +1,6 @@
 ---
 name: im-audit
-description: Soloship — Perform comprehensive audit of interface quality across accessibility, performance, theming, and responsive design. Generates detailed report of issues with severity ratings and recommendations.
+description: Perform comprehensive audit of interface quality across accessibility, performance, theming, and responsive design. Generates detailed report of issues with severity ratings and recommendations.
 args:
   - name: area
     description: The feature or area to audit (optional)

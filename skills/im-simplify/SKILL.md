@@ -1,6 +1,6 @@
 ---
 name: im-simplify
-description: Soloship — Strip designs to their essence by removing unnecessary complexity. Great design is simple, powerful, and clean.
+description: Strip designs to their essence by removing unnecessary complexity. Great design is simple, powerful, and clean.
 args:
   - name: target
     description: The feature or component to simplify (optional)

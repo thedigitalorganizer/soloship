@@ -1,6 +1,6 @@
 ---
 name: ce-compound
-description: Soloship — Document a recently solved problem to compound your team's knowledge
+description: Document a recently solved problem to compound your team's knowledge
 argument-hint: "[optional: brief context about the fix]"
 ---
 

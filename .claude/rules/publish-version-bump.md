@@ -40,6 +40,6 @@ Shawn shipped `soloship@0.1.0` to npm on 2026-05-11. From now on, every shipped 
 ## How To Apply
 
 - Triggers on any conversation where we're about to `npm publish` Soloship.
-- Also triggers in `/soloship-shipthorough` and `/soloship-shipfast` runs that target the npm package (vs. just committing to git).
+- Also triggers in `/soloship:shipthorough` and `/soloship:shipfast` runs that target the npm package (vs. just committing to git).
 - If the user says "ship to npm," "publish a new version," "release," or runs `npm publish` directly, this rule kicks in.
 - Doesn't trigger for plain `git push` — Soloship's plugin install pulls from GitHub, but the npm CLI is the binary surface, and that's the one that needs version discipline.

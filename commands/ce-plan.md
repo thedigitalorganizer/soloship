@@ -1,6 +1,6 @@
 ---
 name: ce-plan
-description: Soloship — Transform feature descriptions into well-structured project plans following conventions
+description: Transform feature descriptions into well-structured project plans following conventions
 ---
 
 Invoke the `ce-plan` skill from the Soloship plugin. Use the Skill tool with skill name `ce-plan` and let it drive the workflow.

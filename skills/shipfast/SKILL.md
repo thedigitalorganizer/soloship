@@ -1,7 +1,7 @@
 ---
 name: shipfast
 description: |
-  Soloship — Emergency deploy pipeline. Something's broken in prod, you fixed it, get it
+  Emergency deploy pipeline. Something's broken in prod, you fixed it, get it
   live NOW. Lint, test, build, commit, push, deploy. Minimum viable safety
   checks, maximum speed.
 ---

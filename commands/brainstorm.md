@@ -1,6 +1,6 @@
 ---
-name: soloship-brainstorm
-description: Soloship — Explore what you're building and why before planning. Routes to office-hours for pure product/demand questions or ce-brainstorm for feature and approach exploration. Ends with a nudge to design visually before running /plan.
+name: brainstorm
+description: Explore what you're building and why before planning. Routes to office-hours for pure product/demand questions or ce-brainstorm for feature and approach exploration. Ends with a nudge to design visually before running /plan.
 ---
 
 Invoke the `brainstorm` skill from the Soloship plugin. Use the Skill tool with skill name `brainstorm` and let it drive the workflow.

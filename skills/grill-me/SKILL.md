@@ -1,7 +1,7 @@
 ---
 name: grill-me
 description: |
-  Soloship — Relentless pre-plan interview that walks every branch of the design tree until
+  Relentless pre-plan interview that walks every branch of the design tree until
   user and agent share a complete mental model. Refuses to write a plan or any
   code until alignment is explicit. Use when about to plan something non-trivial,
   when user says "grill me", "interview me", "interrogate me", "stress test this",

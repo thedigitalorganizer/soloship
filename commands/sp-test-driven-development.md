@@ -1,6 +1,6 @@
 ---
 name: sp-test-driven-development
-description: Soloship — Use when implementing any feature or bugfix, before writing implementation code
+description: Use when implementing any feature or bugfix, before writing implementation code
 ---
 
 Invoke the `sp-test-driven-development` skill from the Soloship plugin. Use the Skill tool with skill name `sp-test-driven-development` and let it drive the workflow.

@@ -1,6 +1,6 @@
 ---
 name: executing-plans
-description: Soloship — Use when partner provides a complete implementation plan to execute in controlled batches with review checkpoints - loads plan, reviews critically, executes tasks in batches, reports for review between batches
+description: Use when partner provides a complete implementation plan to execute in controlled batches with review checkpoints - loads plan, reviews critically, executes tasks in batches, reports for review between batches
 ---
 
 <!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->
@@ -47,8 +47,8 @@ Based on feedback:
 ### Step 5: Complete Development
 
 After all tasks complete and verified:
-- Announce: "I'm using the /soloship-finish skill to complete this work."
-- **REQUIRED SUB-SKILL:** Use /soloship-finish (Soloship's rename of Superpowers' `finishing-a-development-branch`)
+- Announce: "I'm using the /soloship:finish skill to complete this work."
+- **REQUIRED SUB-SKILL:** Use /soloship:finish (Soloship's rename of Superpowers' `finishing-a-development-branch`)
 - Follow that skill to verify tests, present options, execute choice
 
 ## When to Stop and Ask for Help

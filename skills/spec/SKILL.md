@@ -1,7 +1,7 @@
 ---
 name: spec
 description: |
-  Soloship — Lightweight formal specification with acceptance criteria. For features that
+  Lightweight formal specification with acceptance criteria. For features that
   need explicit success conditions, data models, or API contracts before planning.
 ---
 

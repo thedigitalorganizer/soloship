@@ -1,7 +1,7 @@
 ---
 name: brainstorm
 description: |
-  Soloship — Explore what you're building and why before planning. Routes to office-hours
+  Explore what you're building and why before planning. Routes to office-hours
   for pure product/demand questions or ce-brainstorm
   for feature and approach exploration. Ends with a nudge to design visually
   before running /plan.

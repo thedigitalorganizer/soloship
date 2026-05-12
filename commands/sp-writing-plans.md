@@ -1,6 +1,6 @@
 ---
 name: sp-writing-plans
-description: Soloship — Use when you have a spec or requirements for a multi-step task, before touching code
+description: Use when you have a spec or requirements for a multi-step task, before touching code
 ---
 
 Invoke the `sp-writing-plans` skill from the Soloship plugin. Use the Skill tool with skill name `sp-writing-plans` and let it drive the workflow.

@@ -1,6 +1,6 @@
 ---
-name: soloship-implement
-description: Soloship — Execute an implementation plan. Routes to ce-work which reads the plan, sets up a working branch, and executes systematically while maintaining quality.
+name: implement
+description: Execute an implementation plan. Routes to ce-work which reads the plan, sets up a working branch, and executes systematically while maintaining quality.
 ---
 
 Invoke the `implement` skill from the Soloship plugin. Use the Skill tool with skill name `implement` and let it drive the workflow.

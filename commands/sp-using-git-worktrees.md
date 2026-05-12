@@ -1,6 +1,6 @@
 ---
 name: sp-using-git-worktrees
-description: Soloship — Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
+description: Use when starting feature work that needs isolation from current workspace or before executing implementation plans - creates isolated git worktrees with smart directory selection and safety verification
 ---
 
 Invoke the `sp-using-git-worktrees` skill from the Soloship plugin. Use the Skill tool with skill name `sp-using-git-worktrees` and let it drive the workflow.

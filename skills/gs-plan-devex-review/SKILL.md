@@ -4,7 +4,7 @@ preamble-tier: 3
 interactive: true
 version: 2.0.0
 description: |
-  Soloship — Interactive developer experience plan review. Explores developer personas,
+  Interactive developer experience plan review. Explores developer personas,
   benchmarks against competitors, designs magical moments, and traces friction
   points before scoring. Three modes: DX EXPANSION (competitive advantage),
   DX POLISH (bulletproof every touchpoint), DX TRIAGE (critical gaps only).

@@ -1,6 +1,6 @@
 ---
 name: sp-writing-plans
-description: Soloship — Use when you have a spec or requirements for a multi-step task, before touching code
+description: Use when you have a spec or requirements for a multi-step task, before touching code
 ---
 
 <!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->

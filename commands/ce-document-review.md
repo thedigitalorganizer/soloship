@@ -1,6 +1,6 @@
 ---
 name: ce-document-review
-description: Soloship — This skill should be used to refine brainstorm or plan documents before proceeding to the next workflow step. It applies when a brainstorm or plan document exists and the user wants to improve it.
+description: This skill should be used to refine brainstorm or plan documents before proceeding to the next workflow step. It applies when a brainstorm or plan document exists and the user wants to improve it.
 ---
 
 Invoke the `ce-document-review` skill from the Soloship plugin. Use the Skill tool with skill name `ce-document-review` and let it drive the workflow.

@@ -1,6 +1,6 @@
 ---
-name: soloship-design-review
-description: Soloship — Visual design audit combining gstack design-review checklist with Impeccable AI Slop Detection. Finds spacing issues, hierarchy problems, and generic AI-generated design fingerprints, then fixes them.
+name: design-review
+description: Visual design audit combining gstack design-review checklist with Impeccable AI Slop Detection. Finds spacing issues, hierarchy problems, and generic AI-generated design fingerprints, then fixes them.
 ---
 
 Invoke the `design-review` skill from the Soloship plugin. Use the Skill tool with skill name `design-review` and let it drive the workflow.

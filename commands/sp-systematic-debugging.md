@@ -1,6 +1,6 @@
 ---
 name: sp-systematic-debugging
-description: Soloship — Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
+description: Use when encountering any bug, test failure, or unexpected behavior, before proposing fixes
 ---
 
 Invoke the `sp-systematic-debugging` skill from the Soloship plugin. Use the Skill tool with skill name `sp-systematic-debugging` and let it drive the workflow.

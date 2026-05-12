@@ -1,6 +1,6 @@
 ---
 name: ce-brainstorming
-description: Soloship — This skill should be used before implementing features, building components, or making changes. It guides exploring user intent, approaches, and design decisions before planning. Triggers on "let's brainstorm", "help me think through", "what should we build", "explore approaches", ambiguous feature requests, or when the user's request has multiple valid interpretations that need clarification.
+description: This skill should be used before implementing features, building components, or making changes. It guides exploring user intent, approaches, and design decisions before planning. Triggers on "let's brainstorm", "help me think through", "what should we build", "explore approaches", ambiguous feature requests, or when the user's request has multiple valid interpretations that need clarification.
 ---
 
 Invoke the `ce-brainstorming` skill from the Soloship plugin. Use the Skill tool with skill name `ce-brainstorming` and let it drive the workflow.

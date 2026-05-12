@@ -1,6 +1,6 @@
 ---
 name: im-critique
-description: Soloship — Evaluate design effectiveness from a UX perspective. Assesses visual hierarchy, information architecture, emotional resonance, and overall design quality with actionable feedback.
+description: Evaluate design effectiveness from a UX perspective. Assesses visual hierarchy, information architecture, emotional resonance, and overall design quality with actionable feedback.
 ---
 
 Invoke the `im-critique` skill from the Soloship plugin. Use the Skill tool with skill name `im-critique` and let it drive the workflow.

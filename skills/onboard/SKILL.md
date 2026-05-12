@@ -1,7 +1,7 @@
 ---
 name: onboard
 description: |
-  Soloship — Codebase orientation for new contributors or fresh AI sessions. Reads CLAUDE.md,
+  Codebase orientation for new contributors or fresh AI sessions. Reads CLAUDE.md,
   AGENTS.md files, recent git history, and audit reports to produce a quick briefing.
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: gs-context-save
-description: Soloship — Save working context. Captures git state, decisions made, and remaining work so any future session can pick up without losing a beat. Use when asked to "save progress", "save state", "context save", or "save my work". Pair with /gs-context-restore to resume later. Formerly /checkpoint — renamed because Claude Code treats /checkpoint as a native rewind alias in current environments, which was shadowing this skill.
+description: Save working context. Captures git state, decisions made, and remaining work so any future session can pick up without losing a beat. Use when asked to "save progress", "save state", "context save", or "save my work". Pair with /gs-context-restore to resume later. Formerly /checkpoint — renamed because Claude Code treats /checkpoint as a native rewind alias in current environments, which was shadowing this skill.
 ---
 
 Invoke the `gs-context-save` skill from the Soloship plugin. Use the Skill tool with skill name `gs-context-save` and let it drive the workflow.

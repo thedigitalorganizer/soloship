@@ -1,6 +1,6 @@
 ---
 name: im-frontend-design
-description: Soloship — Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications. Generates creative, polished code that avoids generic AI aesthetics.
+description: Create distinctive, production-grade frontend interfaces with high design quality. Use this skill when the user asks to build web components, pages, artifacts, posters, or applications. Generates creative, polished code that avoids generic AI aesthetics.
 ---
 
 Invoke the `im-frontend-design` skill from the Soloship plugin. Use the Skill tool with skill name `im-frontend-design` and let it drive the workflow.

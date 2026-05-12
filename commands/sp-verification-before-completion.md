@@ -1,6 +1,6 @@
 ---
 name: sp-verification-before-completion
-description: Soloship — Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
+description: Use when about to claim work is complete, fixed, or passing, before committing or creating PRs - requires running verification commands and confirming output before making any success claims; evidence before assertions always
 ---
 
 Invoke the `sp-verification-before-completion` skill from the Soloship plugin. Use the Skill tool with skill name `sp-verification-before-completion` and let it drive the workflow.

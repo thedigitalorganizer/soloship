@@ -1,6 +1,6 @@
 ---
-name: soloship-spec
-description: Soloship — Lightweight formal specification with acceptance criteria. For features that need explicit success conditions, data models, or API contracts before planning.
+name: spec
+description: Lightweight formal specification with acceptance criteria. For features that need explicit success conditions, data models, or API contracts before planning.
 ---
 
 Invoke the `spec` skill from the Soloship plugin. Use the Skill tool with skill name `spec` and let it drive the workflow.

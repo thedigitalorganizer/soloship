@@ -1,6 +1,6 @@
 ---
-name: soloship-audit
-description: Soloship — Deep codebase investigation that produces an architecture map, quality assessment, and actionable recommendations. Two-phase: understand the system, then assess it. Use when onboarding to a codebase, before /bootstrap, or periodically to check for drift. Produces docs/audit/AUDIT-YYYY-MM-DD.md + audit-findings.json.
+name: audit
+description: Deep codebase investigation that produces an architecture map, quality assessment, and actionable recommendations. Two-phase: understand the system, then assess it. Use when onboarding to a codebase, before /bootstrap, or periodically to check for drift. Produces docs/audit/AUDIT-YYYY-MM-DD.md + audit-findings.json.
 ---
 
 Invoke the `audit` skill from the Soloship plugin. Use the Skill tool with skill name `audit` and let it drive the workflow.

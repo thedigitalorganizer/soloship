@@ -243,7 +243,7 @@ Soloship curates and vendors skills from five outstanding Claude Code plugins. O
 
 [**Compound Engineering**](https://github.com/EveryInc/compound-engineering-plugin) — Kieran Klaassen (Every). The brainstorm → plan → work → compound loop is the spine of how Soloship thinks about engineering. Also: `/review` inherits CE's multi-agent review pattern.
 
-[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `using-git-worktrees`, `finishing-a-development-branch` (renamed to `finish` in Soloship — invoke via `/soloship-finish`), and `brainstorming`. Nine skills total.
+[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `using-git-worktrees`, `finishing-a-development-branch` (renamed to `finish` in Soloship — invoke via `/soloship:finish`), and `brainstorming`. Nine skills total.
 
 [**Impeccable**](https://impeccable.style) — Paul Bakaus (extending Anthropic's original `frontend-design`). Design vocabulary and steering commands that let non-coders ship work that doesn't look AI-generated. Soloship vendors `frontend-design` and five `/i-*` commands; 12 more are in the full plugin.
 
@@ -276,7 +276,7 @@ src/                   # TypeScript source for the installer
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
 skills/                # Claude Code skills shipped by the plugin (51 total)
-  # 16 skills invoked as /soloship-* (15 Soloship-native + 1 renamed vendor):
+  # 16 skills invoked as /soloship:* (15 Soloship-native + 1 renamed vendor):
   audit/ bootstrap/ brainstorm/ cleanup/ debug/ design-review/
   grill-me/ implement/ learn/ onboard/ plan/ review/
   shipfast/ shipthorough/ spec/

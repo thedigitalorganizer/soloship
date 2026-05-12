@@ -1,6 +1,6 @@
 ---
 name: ce-deepen-plan
-description: Soloship — Enhance a plan with parallel research agents for each section to add depth, best practices, and implementation details
+description: Enhance a plan with parallel research agents for each section to add depth, best practices, and implementation details
 ---
 
 Invoke the `ce-deepen-plan` skill from the Soloship plugin. Use the Skill tool with skill name `ce-deepen-plan` and let it drive the workflow.

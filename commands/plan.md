@@ -1,6 +1,6 @@
 ---
-name: soloship-plan
-description: Soloship — Create an implementation plan with enforcement gates. Routes to ce-plan for the planning work itself. For review of the plan, /review handles engineering/CEO/design review separately. Searches solutions for prior art and validates plan compliance before completion.
+name: plan
+description: Create an implementation plan with enforcement gates. Routes to ce-plan for the planning work itself. For review of the plan, /review handles engineering/CEO/design review separately. Searches solutions for prior art and validates plan compliance before completion.
 ---
 
 Invoke the `plan` skill from the Soloship plugin. Use the Skill tool with skill name `plan` and let it drive the workflow.

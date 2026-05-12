@@ -3,7 +3,7 @@ name: gs-autoplan
 preamble-tier: 3
 version: 1.0.0
 description: |
-  Soloship — Auto-review pipeline — reads the full CEO, design, eng, and DX review skills from disk
+  Auto-review pipeline — reads the full CEO, design, eng, and DX review skills from disk
   and runs them sequentially with auto-decisions using 6 decision principles. Surfaces
   taste decisions (close approaches, borderline scope, codex disagreements) at a final
   approval gate. One command, fully reviewed plan out.

@@ -1,6 +1,6 @@
 ---
 name: ce-compound
-description: Soloship — Document a recently solved problem to compound your team's knowledge
+description: Document a recently solved problem to compound your team's knowledge
 ---
 
 Invoke the `ce-compound` skill from the Soloship plugin. Use the Skill tool with skill name `ce-compound` and let it drive the workflow.

@@ -1,7 +1,7 @@
 ---
 name: design-review
 description: |
-  Soloship — Visual design audit combining gstack design-review checklist with Impeccable
+  Visual design audit combining gstack design-review checklist with Impeccable
   AI Slop Detection. Finds spacing issues, hierarchy problems, and generic
   AI-generated design fingerprints, then fixes them.
 ---

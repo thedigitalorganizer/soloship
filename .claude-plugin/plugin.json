@@ -1,6 +1,6 @@
 {
   "name": "soloship",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Ship solo, safely. Guardrails for non-coders building software through AI agents.",
   "author": {
     "name": "thedigitalorganizer",

@@ -1,6 +1,6 @@
 ---
 name: ce-work
-description: Soloship — Execute work plans efficiently while maintaining quality and finishing features
+description: Execute work plans efficiently while maintaining quality and finishing features
 ---
 
 Invoke the `ce-work` skill from the Soloship plugin. Use the Skill tool with skill name `ce-work` and let it drive the workflow.

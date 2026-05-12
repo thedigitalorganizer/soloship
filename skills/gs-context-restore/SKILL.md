@@ -3,7 +3,7 @@ name: gs-context-restore
 preamble-tier: 2
 version: 1.0.0
 description: |
-  Soloship — Restore working context saved earlier by /gs-context-save. Loads the most recent
+  Restore working context saved earlier by /gs-context-save. Loads the most recent
   saved state (across all branches by default) so you can pick up where you
   left off — even across Conductor workspace handoffs.
   Use when asked to "resume", "restore context", "where was I", or

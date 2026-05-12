@@ -3,7 +3,7 @@ name: gs-office-hours
 preamble-tier: 3
 version: 2.0.0
 description: |
-  Soloship — YC Office Hours — two modes. Startup mode: six forcing questions that expose
+  YC Office Hours — two modes. Startup mode: six forcing questions that expose
   demand reality, status quo, desperate specificity, narrowest wedge, observation,
   and future-fit. Builder mode: design thinking brainstorming for side projects,
   hackathons, learning, and open source. Saves a design doc.

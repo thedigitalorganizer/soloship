@@ -1,6 +1,6 @@
 ---
-name: soloship-finish
-description: Soloship — Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
+name: finish
+description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
 ---
 
 Invoke the `finish` skill from the Soloship plugin. Use the Skill tool with skill name `finish` and let it drive the workflow.

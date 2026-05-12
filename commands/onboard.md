@@ -1,6 +1,6 @@
 ---
-name: soloship-onboard
-description: Soloship — Codebase orientation for new contributors or fresh AI sessions. Reads CLAUDE.md, AGENTS.md files, recent git history, and audit reports to produce a quick briefing.
+name: onboard
+description: Codebase orientation for new contributors or fresh AI sessions. Reads CLAUDE.md, AGENTS.md files, recent git history, and audit reports to produce a quick briefing.
 ---
 
 Invoke the `onboard` skill from the Soloship plugin. Use the Skill tool with skill name `onboard` and let it drive the workflow.
