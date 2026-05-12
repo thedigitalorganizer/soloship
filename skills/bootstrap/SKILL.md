@@ -118,7 +118,7 @@ Check what rules already exist in `.claude/rules/`. Don't duplicate.
 
 ---
 
-## Step 5: Hooks
+## Step 5: Hooks + CI (via `npx soloship init`)
 
 Check `.claude/settings.local.json` for existing hooks.
 
@@ -127,10 +127,51 @@ Check `.claude/settings.local.json` for existing hooks.
 - Add project-specific hooks if the audit recommends them
 - If the stamped version is older than the latest on npm, suggest the user run `npx soloship upgrade` to refresh
 
-**If no hooks exist:**
-- Run `npx soloship init --skip-prompts` in the project root via the Bash tool. This is the canonical installer — it writes hooks, the `.soloship/version` stamp (used by the daily update-check hook), the `.gitignore` for cache files, and the four core rules.
-- Do not hand-write hooks into `.claude/settings.local.json` directly. The npm CLI is the source of truth; replicating it by hand causes drift.
-- After init runs, layer any project-specific tailoring on top (e.g., audit-driven rules from Step 4 that aren't part of the default set).
+**If no hooks exist — run the canonical installer:**
+
+First, check Node is available:
+
+```bash
+command -v node >/dev/null 2>&1 && command -v npx >/dev/null 2>&1 && echo "NODE_OK" || echo "NODE_MISSING"
+```
+
+**If `NODE_MISSING`:** Stop and message the user in plain English:
+
+> "Soloship's full install needs Node.js. On Mac, the simplest way is:
+> 1. Open Terminal
+> 2. Paste: `brew install node` (and press Enter)
+> 3. Wait for it to finish
+> 4. Come back here and run `/soloship-bootstrap` again
+>
+> If you don't have Homebrew, install it first from https://brew.sh — one line, follow the prompts.
+>
+> Bootstrap is paused until Node is available. The slash commands you already have will keep working, you just won't have the file-level safety hooks or CI checks until Node + init runs."
+
+**If `NODE_OK`:** Run `npx soloship init --skip-prompts` in the project root via the Bash tool. This is the canonical installer — it writes:
+- Claude Code hooks (`.claude/settings.local.json`)
+- The `.soloship/version` stamp (used by the daily update-check hook)
+- The `.gitignore` for cache files
+- The four core workflow rules
+- GitHub Actions CI workflow + architecture fitness tests (TypeScript/JavaScript projects only, only if git is initialized)
+
+Do not hand-write hooks into `.claude/settings.local.json` directly. The npm CLI is the source of truth; replicating it by hand causes drift.
+
+After init runs, layer any project-specific tailoring on top (e.g., audit-driven rules from Step 4 that aren't part of the default set).
+
+### Verify CI was installed (TS/JS projects only)
+
+After init runs, if the project is TypeScript/JavaScript and has a git repo, verify CI files exist:
+
+```bash
+[ -f .github/workflows/ci.yml ] && echo "CI_OK" || echo "CI_MISSING"
+[ -f __arch__/fitness.test.ts ] && echo "FITNESS_OK" || echo "FITNESS_MISSING"
+```
+
+If either is `MISSING` (and the project IS TS/JS + git), check whether the user actually wants CI. CI only adds value if the project pushes to GitHub. Ask:
+
+> "Want GitHub Actions CI? It runs lint, tests, build, security scan, and architecture fitness checks on every push. Skip if you're not pushing to GitHub."
+
+If yes, manually re-run `npx soloship init --skip-prompts` (it should pick up missing CI files) or report that init didn't generate them as expected.
 
 ---
 

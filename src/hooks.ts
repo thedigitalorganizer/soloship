@@ -342,17 +342,34 @@ fi
 }
 
 function buildUpgradeCheckScript(): string {
-  // Once-per-day check for newer Soloship npm releases. Silent if up-to-date,
-  // network unavailable, or no version stamp exists. Cached to avoid hammering
-  // the npm registry on every session start.
+  // Once-per-day check for newer Soloship releases. Detects whether the user
+  // installed via npm (.soloship/version present) or via Claude Code plugin
+  // marketplace only (plugin.json present, no .soloship/version) and shows
+  // the appropriate upgrade command for each. Silent if up-to-date, network
+  // unavailable, or installed version cannot be determined.
   return `bash -c '
 SOLOSHIP_DIR=".soloship"
 VERSION_FILE="$SOLOSHIP_DIR/version"
 CACHE_FILE="$SOLOSHIP_DIR/.last-update-check"
+PLUGIN_MANIFEST="$HOME/.claude/plugins/marketplaces/soloship/.claude-plugin/plugin.json"
 
-[ -f "$VERSION_FILE" ] || exit 0
-INSTALLED=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d "[:space:]")
+# Determine installed version + install path
+INSTALLED=""
+INSTALL_PATH=""
+if [ -f "$VERSION_FILE" ]; then
+  INSTALLED=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d "[:space:]")
+  INSTALL_PATH="npm"
+elif [ -f "$PLUGIN_MANIFEST" ]; then
+  INSTALLED=$(grep -E "\\"version\\"" "$PLUGIN_MANIFEST" 2>/dev/null | head -n1 | sed -E "s/.*\\"version\\"[[:space:]]*:[[:space:]]*\\"([^\\"]+)\\".*/\\\\1/" | tr -d "[:space:]")
+  INSTALL_PATH="plugin"
+fi
+
 [ -z "$INSTALLED" ] && exit 0
+
+# Cache (npm-path projects keep cache in .soloship/; plugin-path falls back to /tmp)
+if [ "$INSTALL_PATH" = "plugin" ]; then
+  CACHE_FILE="/tmp/.soloship-update-check-$(id -u)"
+fi
 
 NOW=$(date +%s)
 LATEST=""
@@ -365,16 +382,27 @@ if [ -f "$CACHE_FILE" ]; then
 fi
 
 if [ -z "$LATEST" ]; then
-  LATEST=$(timeout 3 npm view soloship version 2>/dev/null | tr -d "[:space:]")
+  # Prefer npm for the source-of-truth version (npm + plugin ship from same repo).
+  # If npm isn't available, fall back to the GitHub raw plugin.json on main.
+  if command -v npm >/dev/null 2>&1; then
+    LATEST=$(timeout 3 npm view soloship version 2>/dev/null | tr -d "[:space:]")
+  fi
+  if [ -z "$LATEST" ] && command -v curl >/dev/null 2>&1; then
+    LATEST=$(timeout 3 curl -sf "https://raw.githubusercontent.com/thedigitalorganizer/soloship/main/.claude-plugin/plugin.json" 2>/dev/null | grep -E "\\"version\\"" | head -n1 | sed -E "s/.*\\"version\\"[[:space:]]*:[[:space:]]*\\"([^\\"]+)\\".*/\\\\1/" | tr -d "[:space:]")
+  fi
   [ -z "$LATEST" ] && exit 0
-  mkdir -p "$SOLOSHIP_DIR"
+  mkdir -p "$(dirname "$CACHE_FILE")" 2>/dev/null
   printf "%s\\n%s\\n" "$NOW" "$LATEST" > "$CACHE_FILE" 2>/dev/null
 fi
 
 if [ "$INSTALLED" != "$LATEST" ]; then
   NEWEST=$(printf "%s\\n%s\\n" "$INSTALLED" "$LATEST" | sort -V | tail -n1)
   if [ "$NEWEST" = "$LATEST" ]; then
-    echo "{\\"systemMessage\\": \\"Soloship update available: $INSTALLED → $LATEST. Run: npx soloship upgrade\\"}"
+    if [ "$INSTALL_PATH" = "plugin" ]; then
+      echo "{\\"systemMessage\\": \\"Soloship update available: $INSTALLED → $LATEST. Update via Claude Code: type /plugins, find Soloship, click Update.\\"}"
+    else
+      echo "{\\"systemMessage\\": \\"Soloship update available: $INSTALLED → $LATEST. Run: npx soloship upgrade\\"}"
+    fi
   fi
 fi
 
