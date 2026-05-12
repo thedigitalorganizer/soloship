@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.3] - 2026-05-11
+
+### Added
+- **`/soloship-finish` slash command.** Surfaces Superpowers' development-branch-completion discipline as a user-facing skill. Use after implementation work is done to walk the merge / PR / cleanup options. Internally the skill is at `skills/finish/`, vendored from Superpowers v4.1.1.
+
+### Fixed
+- **Attribution comment added to 4 sp-* skills.** `sp-executing-plans`, `sp-subagent-driven-development`, `sp-using-git-worktrees`, and the renamed `skills/finish/` were missing the standard `<!-- Vendored from superpowers v4.1.1 (Jesse Vincent) -->` header that every other vendored skill carries. These were rescue-added in v0.1.1 and the header got missed. MIT compliance was already satisfied by `skills/vendored/superpowers/LICENSE`; this is the voluntary in-file source clarity we apply elsewhere.
+- **Stale counts in vendored-source docs.** `skills/vendored/superpowers/README.md` said "5 skills"; reality is 9. `THIRD_PARTY_NOTICES.md` had the same drift. Both now list all 9 Superpowers skills with the appropriate Soloship rename note for `finishing-a-development-branch` → `finish`.
+
+### Changed
+- **`skills/sp-finishing-a-development-branch/` renamed to `skills/finish/`** with `name: finish` in frontmatter. Cross-references in the three sibling sp-* skills that invoke it (`executing-plans`, `subagent-driven-development`, `using-git-worktrees`) updated to use the new slash form `/soloship-finish`.
+
 ## [0.1.2] - 2026-05-11
 
 ### Fixed
