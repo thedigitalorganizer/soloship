@@ -276,9 +276,9 @@ product owner who knows their domain better than you do.
 
 This skill does NOT replace:
 - `/brainstorm` (still upstream — used when WHAT to build is uncertain)
-- `/gs-office-hours` (still used when DEMAND is uncertain — should we build at all)
+- `/office-hours` (still used when DEMAND is uncertain — should we build at all)
 - `/plan` or `ce-plan` (still writes the plan)
 - `/review` or `/autoplan` (still catches code-correctness issues this skill can't)
 
-The chain is: `gs-office-hours?` → `brainstorm?` → **`grill-me`** → `plan` →
+The chain is: `office-hours?` → `brainstorm?` → **`grill-me`** → `plan` →
 `autoplan` → `implement` → `review` → `ship`.

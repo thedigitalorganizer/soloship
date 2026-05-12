@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **16 Soloship workflow skills + 35 vendored skills from five best-in-class plugins** (51 skills total) that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
+Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **43 workflow skills** drawn from Soloship's own work plus four best-in-class upstream plugins (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max — full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires everything into the project.
 
 **Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet)
 
@@ -163,7 +163,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 **Daily work**
 
-- `/soloship:brainstorm` — Detects whether the question is demand-validation (should this exist?) or feature-shaping (what should this do?) and routes accordingly: `gs-office-hours` for demand, `ce-brainstorm` for feature. Ends with a mandatory design-first nudge — sketch before you plan.
+- `/soloship:brainstorm` — Detects whether the question is demand-validation (should this exist?) or feature-shaping (what should this do?) and routes accordingly: `office-hours` for demand, `ce-brainstorm` for feature. Ends with a mandatory design-first nudge — sketch before you plan.
 - `/soloship:grill-me` — Relentless pre-plan interview that walks every branch of the design tree until user and agent share a complete mental model. Refuses to produce a plan or any code until alignment is explicit. Triggered explicitly ("grill me", "interview me") or by `/soloship:plan` on medium-to-large work. Adapted from Matt Pocock's `grill-me` (MIT).
 - `/soloship:spec` — Writes formal specifications with numbered acceptance criteria, data models, API contracts, user flows (including error states), and explicit out-of-scope boundaries. 8-point verification checklist. Fully self-contained.
 - `/soloship:plan` — Searches `docs/solutions/` for prior art, reads architecture context, then invokes `ce-plan` to produce the plan. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls, and that non-trivial work was preceded by `/soloship:grill-me`. Review is separate — handled by `/soloship:review`.
@@ -180,10 +180,10 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 **Quality**
 
-- `/soloship:review` — Detects whether the target is a plan or code. **Plans** route to `gs-plan-eng-review`, `gs-plan-ceo-review`, `gs-plan-design-review` individually, or `gs-autoplan` for all four (adds DX review) in one auto-decided pass. **Code** routes to `ce-review` for PR-scale multi-agent analysis, or runs three inline passes (structural, adversarial, design slop lens) for quick local checks.
+- `/soloship:review` — Detects whether the target is a plan or code. **Plans** route to `eng-review`, `ceo-review`, `plan-design-review` individually, or `autoplan` for all four (adds DX review) in one auto-decided pass. **Code** routes to `code-review` for PR-scale multi-agent analysis, or runs three inline passes (structural, adversarial, design slop lens) for quick local checks.
 - `/soloship:design-review` — Two-pass visual audit. Pass 1 invokes `gs-design-review` for spacing, hierarchy, and consistency. Pass 2 is Soloship's own AI slop detection (inspired by Impeccable) — flags generic gradients, default shadows, "Welcome to" copy, 3-column feature grids, and other patterns that mark AI-generated design. Each fix committed atomically with before/after screenshots.
 
-**Note:** Skills that were previously thin wrappers over vendored gstack skills (`/soloship:qa`, `/soloship:security`, `/soloship:checkpoint`, `/soloship:autoplan`, `/soloship:health`) have been removed. Use the vendored originals directly: `/gs-qa`, `/gs-cso`, `/gs-context-save` / `/gs-context-restore`, `/gs-autoplan`. Health has no replacement — its core checks were inlined into `/soloship:shipthorough`'s quality gate.
+**Note:** Skills that were previously thin wrappers over vendored gstack skills (`/soloship:qa`, `/soloship:security`, `/soloship:checkpoint`, `/soloship:autoplan`, `/soloship:health`) have been removed. Use the vendored originals directly: `/qa`, `/cso`, `/context-save` / `/context-restore`, `/autoplan`. Health has no replacement — its core checks were inlined into `/soloship:shipthorough`'s quality gate.
 
 ## Quick start
 
@@ -275,26 +275,34 @@ src/                   # TypeScript source for the installer
   rules.ts             # Workflow rule installation
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
-skills/                # Claude Code skills shipped by the plugin (51 total)
-  # 16 skills invoked as /soloship:* (15 Soloship-native + 1 renamed vendor):
-  audit/ bootstrap/ brainstorm/ cleanup/ debug/ design-review/
-  grill-me/ implement/ learn/ onboard/ plan/ review/
-  shipfast/ shipthorough/ spec/
-  finish/     # vendored from Superpowers' finishing-a-development-branch
-              # — renamed for the Soloship slash-command surface
+skills/                # Claude Code skills shipped by the plugin (43 total)
+  # All skills are invoked as /soloship:<name>. Source attribution lives
+  # in THIRD_PARTY_NOTICES.md; no source prefixes leak into command names.
 
-  # 35 vendored skills with source prefix (full attribution in THIRD_PARTY_NOTICES.md):
-  ce-*        # 8 from Compound Engineering (Kieran Klaassen, MIT)
-  sp-*        # 8 from Superpowers (Jesse Vincent, MIT)
-              # (a 9th Superpowers skill, finishing-a-development-branch,
-              # lives at skills/finish/ above)
-  im-*        # 6 from Impeccable (Paul Bakaus, Apache 2.0)
-  uiux-*      # 1 from ui-ux-pro-max (nextlevelbuilder, MIT)
-  gs-*        # 12 from gstack (Garry Tan, MIT) — includes the gs-browse
-              # headless browser daemon, re-vendored at v1.31.1.0 with
-              # Soloship-native paths so it works without gstack installed.
-              # gs-browse compiles its launcher on first use (build-on-host
-              # for architecture portability across arm64 / x86_64 Macs).
+  # Soloship-native workflow skills (16):
+  audit/ bootstrap/ brainstorm/ cleanup/ debug/ design-review/
+  finish/ grill-me/ implement/ learn/ onboard/ plan/ review/
+  shipfast/ shipthorough/ spec/
+
+  # Plan-review skills, derived from gstack (5):
+  ceo-review/ eng-review/ devex-review/ plan-design-review/ autoplan/
+
+  # Code-review, design, and frontend skills, derived from CE and Impeccable (8):
+  code-review/ deepen-plan/ document-review/ clarify/ critique/
+  polish/ simplify/ frontend-design/
+
+  # Discipline skills, derived from Superpowers (6):
+  executing-plans/ subagent-driven-development/ test-driven-development/
+  using-git-worktrees/ verification-before-completion/ writing-plans/
+
+  # Standalone vendored utilities (8):
+  browse/             # gstack's headless browser daemon — re-vendored at
+                      # v1.31.1.0 with Soloship-native paths so it works
+                      # without gstack installed. Compiles its launcher on
+                      # first use (build-on-host for arm64/x86_64 portability).
+  cso/ qa/ context-save/ context-restore/ office-hours/   # from gstack
+  ui-audit/                                               # from Impeccable
+  ui-ux-pro-max/                                          # from nextlevelbuilder
 
   references/          # Shared checklists (a11y, code review, perf, security, testing)
   vendored/            # Per-source LICENSE / NOTICE / VERSION / README (attribution archive)

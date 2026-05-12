@@ -1,5 +1,26 @@
 # Changelog
 
+## [0.5.0] - 2026-05-12
+
+### Changed (breaking)
+- **All vendored skill names dropped their source prefix.** `ce-*`, `sp-*`, `gs-*`, `im-*`, and `uiux-*` prefixes are gone. Slash commands are now plain English names: `/soloship:browse` (was `gs-browse`), `/soloship:cso` (was `gs-cso`), `/soloship:code-review` (was `ce-review`), `/soloship:ui-audit` (was `im-audit`), `/soloship:test-driven-development` (was `sp-test-driven-development`), and so on. Source attribution lives in `THIRD_PARTY_NOTICES.md` and the README; users no longer need to know what `ce`/`sp`/`gs`/`im`/`uiux` mean to invoke a skill.
+- **Five 1:1 routers merged into the target skill.** `/soloship:debug` now contains the full systematic-debugging methodology inline (was a router to `sp-systematic-debugging`); same pattern for `/soloship:plan`, `/soloship:implement`, `/soloship:learn`, and `/soloship:design-review`. Each merged skill keeps Soloship's preamble (iron-law reminders, solution-search step, common rationalizations) and appends the upstream methodology.
+- **Three brainstorming variants folded into `/soloship:brainstorm`.** Compound Engineering's `brainstorm` and `brainstorming` plus Superpowers' `brainstorming` are now sections of one skill; the demand-discovery path (`/soloship:office-hours`) stays separate.
+- **Plan-review slash commands renamed for clarity.** `/soloship:gs-plan-ceo-review` → `/soloship:ceo-review`; same pattern for `eng-review`, `devex-review`, and `plan-design-review`. `gs-plan-design-review` kept the `plan-` prefix because `/soloship:design-review` is taken by the visual UI review skill.
+- **Net surface:** 51 commands → 43 commands. No source prefixes; no `(Soloship) Soloship —` doubling.
+
+### Why
+On a fresh-install Mac mini, slash commands like `/soloship:ce-plan` and `/soloship:gs-browse` leaked implementation detail that no end user has any way to interpret. The source prefix existed for attribution; that need is fully served by the GitHub README and `THIRD_PARTY_NOTICES.md`. For 1:1 routers, the indirection produced ugly double-prefixed names (`/soloship:debug` calling `sp-systematic-debugging`) without adding value over a single merged skill.
+
+### Migration
+After updating the plugin (`/plugin update soloship@soloship`), any `/soloship:<old-prefixed-name>` you had muscle-memorized will report "unknown command". Strip the prefix:
+- `/soloship:ce-review` → `/soloship:code-review`
+- `/soloship:gs-browse` → `/soloship:browse`
+- `/soloship:gs-plan-eng-review` → `/soloship:eng-review`
+- `/soloship:im-audit` → `/soloship:ui-audit`
+- `/soloship:sp-test-driven-development` → `/soloship:test-driven-development`
+- Everything else: drop the 2-3 letter prefix and you've got it.
+
 ## [0.1.3] - 2026-05-11
 
 ### Added

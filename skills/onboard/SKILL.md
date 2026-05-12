@@ -14,7 +14,7 @@ where do I start?"
 ## Step 0: Check for Checkpoint
 
 Before reading anything else, check if a Soloship checkpoint exists for the
-current branch (written by `/gs-context-save`):
+current branch (written by `/context-save`):
 
 ```bash
 SLUG=$(basename "$(git rev-parse --show-toplevel 2>/dev/null || pwd)")

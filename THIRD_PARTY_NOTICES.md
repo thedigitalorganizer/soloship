@@ -22,7 +22,7 @@ If any of these plugins look valuable to you, install the full upstream version 
 **Version pinned:** 2.34.0
 **Source:** https://github.com/EveryInc/compound-engineering-plugin
 
-**Vendored into Soloship:** `workflows:brainstorm`, `workflows:plan`, `workflows:work`, `workflows:compound`, `workflows:review`, `document-review`, `deepen-plan`, `brainstorming` (8 skills).
+**Vendored into Soloship as:** `/soloship:brainstorm` (merged from `workflows:brainstorm` + `brainstorming`), `/soloship:plan` (from `workflows:plan`), `/soloship:implement` (from `workflows:work`), `/soloship:learn` (from `workflows:compound`), `/soloship:code-review` (from `workflows:review`), `/soloship:document-review`, `/soloship:deepen-plan`. 8 upstream skills consolidated into 7 Soloship commands.
 
 **Install the full plugin for everything else:**
 ```
@@ -41,7 +41,7 @@ Thank you, Kieran. The brainstorm → plan → work → compound loop is the bac
 **Version pinned:** 4.1.1
 **Source:** https://github.com/obra/superpowers
 
-**Vendored into Soloship:** `systematic-debugging`, `test-driven-development`, `brainstorming`, `verification-before-completion`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `using-git-worktrees`, and `finishing-a-development-branch` (renamed to `finish` in Soloship — invoke via `/soloship:finish`). 9 skills total.
+**Vendored into Soloship as:** `/soloship:debug` (from `systematic-debugging`), `/soloship:test-driven-development`, `/soloship:brainstorm` (merged with CE's brainstorming variants), `/soloship:verification-before-completion`, `/soloship:writing-plans`, `/soloship:executing-plans`, `/soloship:subagent-driven-development`, `/soloship:using-git-worktrees`, `/soloship:finish` (from `finishing-a-development-branch`). 9 upstream skills.
 
 **Install the full plugin for everything else:**
 ```
@@ -60,7 +60,7 @@ Thank you, Jesse. "No fixes without root cause" and "evidence before claims" are
 **Version pinned:** 1.0.0
 **Source:** https://impeccable.style
 
-**Vendored into Soloship:** `frontend-design`, `i-simplify`, `i-polish`, `i-clarify`, `i-critique`, `i-audit` (6 skills).
+**Vendored into Soloship as:** `/soloship:frontend-design`, `/soloship:simplify`, `/soloship:polish`, `/soloship:clarify`, `/soloship:critique`, `/soloship:ui-audit` (from `i-audit`). 6 upstream skills.
 
 **Attribution chain:** Impeccable's `frontend-design` extends Anthropic's original `frontend-design` skill (Apache 2.0). Attribution flows Anthropic → Paul Bakaus → Soloship; the full chain is preserved in `NOTICE.md`.
 
@@ -81,7 +81,7 @@ Thank you, Paul. Giving design vocabulary to AI coding tools is exactly what non
 **Version pinned:** 2.5.0
 **Source:** https://github.com/nextlevelbuilder/ui-ux-pro-max-skill
 
-**Vendored into Soloship:** `ui-ux-pro-max` (1 skill — the top-level reference with style / color / typography / chart / UX guideline lookups).
+**Vendored into Soloship as:** `/soloship:ui-ux-pro-max` (1 skill — the top-level reference with style / color / typography / chart / UX guideline lookups).
 
 **Install the full plugin for the full database set:**
 ```
@@ -100,7 +100,7 @@ Thank you, nextlevelbuilder. When the agent needs a font pairing or a palette, t
 **Version pinned:** 1.31.1.0
 **Source:** https://github.com/garrytan/gstack
 
-**Vendored into Soloship:** `autoplan`, `checkpoint`, `browse`, `qa`, `design-review`, `plan-ceo-review`, `plan-eng-review`, `plan-design-review`, `plan-devex-review`, `office-hours`, `cso` (11 skills).
+**Vendored into Soloship as:** `/soloship:autoplan`, `/soloship:browse`, `/soloship:context-save`, `/soloship:context-restore` (the `checkpoint` skill), `/soloship:qa`, `/soloship:design-review` (merged with Soloship's own design-review wrapper), `/soloship:ceo-review` (from `plan-ceo-review`), `/soloship:eng-review` (from `plan-eng-review`), `/soloship:plan-design-review`, `/soloship:devex-review` (from `plan-devex-review`), `/soloship:office-hours`, `/soloship:cso`. 12 upstream skills.
 
 **Install the full plugin for the ~25 other skills we didn't vendor:**
 ```bash
