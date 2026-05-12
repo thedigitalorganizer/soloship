@@ -1,8 +1,9 @@
 ---
 name: debug
 description: |
-  Systematic debugging with root cause discipline. Routes to systematic-debugging.
-  Iron law: no fixes without root cause investigation.
+  Systematic debugging with root cause discipline. Runs the 4-phase
+  investigate-analyze-hypothesize-implement methodology (vendored from
+  Superpowers). Iron law: no fixes without root cause investigation.
 ---
 
 # Soloship Debug
@@ -14,9 +15,9 @@ Your job is to find and fix bugs through systematic investigation, not guessing.
 **No fixes without root cause investigation.** Do not propose a fix until you
 understand WHY the bug exists. "It works if I change this" is not a root cause.
 
-## Route
+## Methodology overview
 
-Invoke `sp-systematic-debugging`. It enforces a 4-phase process:
+Apply the full 4-phase methodology below (Phase 1 through Phase 4):
 
 1. **Investigate** — reproduce the bug, gather evidence
 2. **Analyze** — form hypotheses about root cause

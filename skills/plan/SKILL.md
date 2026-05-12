@@ -1,10 +1,11 @@
 ---
 name: plan
 description: |
-  Create an implementation plan with enforcement gates. Routes to ce-plan
-  for the planning work itself. For review of the plan, /review handles
-  engineering/CEO/design review separately. Searches solutions for prior
-  art and validates plan compliance before completion.
+  Create an implementation plan with enforcement gates. Searches
+  docs/solutions/ for prior art, reads architecture context, then runs
+  the Compound-Engineering-derived plan-writing methodology. Review is
+  separate — handled by /soloship:review (which dispatches CEO/eng/design/
+  devex plan-review skills, or autoplan for all-in-one).
 ---
 
 # Soloship Plan
@@ -19,8 +20,8 @@ any recent `*-grill.md` file matching the topic.
 
 **If a grill-me rationale exists:** Read it. It contains the premise, scope,
 data model, edge cases, UX, and final scope decisions the user already made.
-Pass this context to `ce-plan` so the plan inherits the rationale and doesn't
-re-litigate settled questions.
+Carry this context into the planning methodology below so the plan inherits
+the rationale and doesn't re-litigate settled questions.
 
 **If no grill-me rationale exists AND the work is non-trivial:** Suggest
 running it first.
@@ -42,9 +43,9 @@ Before planning anything, search `docs/solutions/` for prior art:
 2. Search the entire directory — never limit to one category
 3. If matches are found, read them and note any prevention strategies or pitfalls
 
-Note: `ce-plan` also runs a `learnings-researcher`
+Note: the planning methodology below also runs a `learnings-researcher`
 agent that searches `docs/solutions/`. Doing it up front here makes the findings
-explicit in the conversation before the CE workflow starts.
+explicit in the conversation before the methodology starts.
 
 ## Step 2: Read Architecture Context (with Freshness Check)
 
@@ -58,11 +59,11 @@ If `docs/audit/audit-findings.json` exists:
    "Audit findings are N days old (expires after M days). Consider re-running /audit for current data."
 2. Check if any findings relate to the components being modified.
 
-## Step 3: Route to Planning Skill
+## Step 3: Apply the planning methodology
 
-Invoke `ce-plan`. It handles repo research, learnings research, optional external research, and produces a plan file that follows project conventions. Works for all plan sizes from small features through architectural changes.
+Apply the Compound-Engineering-derived plan-writing methodology below. It handles repo research, learnings research, optional external research, and produces a plan file that follows project conventions. Works for all plan sizes from small features through architectural changes.
 
-**Review is a separate step.** Do not invoke `eng-review`, `ceo-review`, or `plan-design-review` from here — those are review lenses, not planning. After the plan is written and passes the enforcement gate below, `/review` handles reviewing it (or `/autoplan` for all three reviews at once).
+**Review is a separate step.** Do not invoke `/soloship:eng-review`, `/soloship:ceo-review`, or `/soloship:plan-design-review` from here — those are review lenses, not planning. After the plan is written and passes the enforcement gate below, `/soloship:review` handles reviewing it (or `/soloship:autoplan` for all four reviews at once).
 
 ## Artifact Contract (Plan Files)
 

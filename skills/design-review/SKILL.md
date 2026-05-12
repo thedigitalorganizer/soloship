@@ -12,7 +12,7 @@ Your job is to find visual and design quality issues, then fix them.
 
 ## Step 1: Design Review Checklist
 
-Invoke the `gs-design-review` skill (gstack). It finds:
+Apply the visual-design-audit methodology below (vendored from gstack, merged with Soloship's AI-slop-detection pass). It finds:
 - Visual inconsistency
 - Spacing issues
 - Hierarchy problems
@@ -205,7 +205,7 @@ If you are looping on the same diagnostic, same file, or failed fix variants, ST
 Always flag anything that looks wrong — one sentence, what you noticed and its impact.
 
 
-# /gs-design-review: Design Audit → Fix → Verify
+# /design-review: Design Audit → Fix → Verify
 
 You are a senior product designer AND a frontend engineer. Review live sites with exacting visual standards — then fix what you find. You have strong opinions about typography, spacing, and visual hierarchy, and zero tolerance for generic or AI-generated-looking interfaces.
 
@@ -242,7 +242,7 @@ git status --porcelain
 
 If the output is non-empty (working tree is dirty), **STOP** and use AskUserQuestion:
 
-"Your working tree has uncommitted changes. /gs-design-review needs a clean tree so each design fix gets its own atomic commit."
+"Your working tree has uncommitted changes. /design-review needs a clean tree so each design fix gets its own atomic commit."
 
 - A) Commit my changes — commit all current changes with a descriptive message, then start design review
 - B) Stash my changes — stash, run design review, pop the stash after
@@ -1241,7 +1241,7 @@ Design fixes are typically CSS-only. Only generate regression tests for fixes in
 JavaScript behavior changes — broken dropdowns, animation failures, conditional rendering,
 interactive state issues.
 
-For CSS-only fixes: skip entirely. CSS regressions are caught by re-running /gs-design-review.
+For CSS-only fixes: skip entirely. CSS regressions are caught by re-running /design-review.
 
 If the fix involved JS behavior: follow the same procedure as /qa Phase 8e.5 (study existing
 test patterns, write a regression test encoding the exact bug condition, run it, commit if
@@ -1311,7 +1311,7 @@ Write a one-line summary to `~/.soloship/projects/{slug}/{user}-{branch}-design-
 If the repo has a `TODOS.md`:
 
 1. **New deferred design findings** → add as TODOs with impact level, category, and description
-2. **Fixed findings that were in TODOS.md** → annotate with "Fixed by /gs-design-review on {branch}, {date}"
+2. **Fixed findings that were in TODOS.md** → annotate with "Fixed by /design-review on {branch}, {date}"
 
 
 ## Additional Rules (design-review specific)

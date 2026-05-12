@@ -1,6 +1,6 @@
 ---
 name: debug
-description: Systematic debugging with root cause discipline. Routes to systematic-debugging. Iron law: no fixes without root cause investigation.
+description: Systematic debugging with root cause discipline. Runs the Superpowers-derived 4-phase methodology (Investigate → Analyze → Hypothesize → Implement). Iron law: no fixes without root cause investigation.
 ---
 
 Invoke the `debug` skill from the Soloship plugin. Use the Skill tool with skill name `debug` and let it drive the workflow.

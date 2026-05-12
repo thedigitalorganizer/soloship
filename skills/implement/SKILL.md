@@ -1,9 +1,10 @@
 ---
 name: implement
 description: |
-  Execute an implementation plan. Routes to ce-work
-  which reads the plan, sets up a working branch, and executes systematically
-  while maintaining quality.
+  Execute an implementation plan. Finds the most recent plan in
+  docs/plans/, sets up a working branch, then runs the Compound-Engineering-
+  derived execution methodology with branching, clarification gates,
+  and quality checks. Freshness check warns on stale plans.
 ---
 
 # Soloship Implement
@@ -30,7 +31,7 @@ identifier names, "is X done" assumptions — that are correct at write time and
 can be wrong at execute time. Intervening commits land. The author guesses a
 location without grepping. A prior phase changed something this phase depends on.
 
-Before invoking `ce-work` or editing any file, spend ≤2 minutes grepping every
+Before running the execution methodology or editing any file, spend ≤2 minutes grepping every
 concrete assertion the phase you're about to execute makes:
 
 - **Version constants:** plan says "bump CONST N → N+1"? Grep the constant.
@@ -64,7 +65,7 @@ discipline `/implement` can enforce. See
 
 ## Step 2: Route to Execution
 
-Invoke `ce-work` with the plan file path as input.
+Apply the execution methodology below with the plan file path as input.
 It will:
 - Read the plan completely and clarify ambiguities before starting
 - Set up the correct branch
@@ -87,7 +88,7 @@ for five-minute changes.
 |--------|---------|
 | "I don't need a plan for this, it's straightforward" | If it were straightforward, you wouldn't be using `/implement`. No plan = no shared understanding of what "done" means. Run `/plan` first. |
 | "I'll adjust the plan as I go" | Adjustments are fine — but update the plan file. An executed plan that doesn't match the written plan is worse than no plan at all. |
-| "I'll skip CE's workflow and just code it" | ce-work handles branch setup, clarification gates, and quality checks that are easy to forget when coding solo. Use it unless the change is genuinely trivial. |
+| "I'll skip the methodology and just code it" | The execution methodology handles branch setup, clarification gates, and quality checks that are easy to forget when coding solo. Apply it unless the change is genuinely trivial. |
 | "I'll skip `/learn` — this was routine" | "Routine" work that needed a plan and an implementation skill is, by definition, not trivial. Capture what you learned. |
 
 ---

@@ -912,7 +912,7 @@ Evaluate:
 **Reminder: Do NOT make any code changes. Review only.**
 
 ### Section 11: Design & UX Review (skip if no UI scope detected)
-The CEO calling in the designer. Not a pixel-level audit — that's /plan-design-review and /gs-design-review. This is ensuring the plan has design intentionality.
+The CEO calling in the designer. Not a pixel-level audit — that's /plan-design-review and /design-review. This is ensuring the plan has design intentionality.
 
 Evaluate:
 * Information architecture — what does the user see first, second, third?
@@ -1075,7 +1075,7 @@ agree with the outside voice. Cross-model consensus is a strong signal — prese
 such — but the user makes the decision.
 
 ## Post-Implementation Design Audit (if UI scope detected)
-After implementation, run `/gs-design-review` on the live site to catch visual issues that can only be evaluated with rendered output.
+After implementation, run `/design-review` on the live site to catch visual issues that can only be evaluated with rendered output.
 
 ## CRITICAL RULE — How to ask questions
 Follow the AskUserQuestion format from the Preamble above. Additional rules for plan reviews:

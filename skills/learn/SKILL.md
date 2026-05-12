@@ -2,7 +2,7 @@
 name: learn
 description: |
   Capture knowledge from non-obvious work. Creates a solution doc via
-  ce-compound, then audits the architecture registry for drift,
+  learn, then audits the architecture registry for drift,
   propagates new pitfalls into AGENTS.md files, and creates missing AGENTS.md
   for directories that have grown past the governance threshold.
   Cherry-picks the learnings.jsonl persistence pattern for quick cross-session search.
@@ -15,7 +15,7 @@ don't have to re-investigate.
 
 ## Step 1: Capture Solution Doc
 
-Invoke `ce-compound`. It guides you through documenting:
+Apply the compound-knowledge methodology below (vendored from Compound Engineering). It guides you through documenting:
 - What problem was solved
 - What was the root cause
 - What prevention strategies apply

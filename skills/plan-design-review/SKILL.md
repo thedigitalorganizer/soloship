@@ -7,7 +7,7 @@ description: |
   Designer's eye plan review — interactive, like CEO and Eng review.
   Rates each design dimension 0-10, explains what would make it a 10,
   then fixes the plan to get there. Works in plan mode. For live site
-  visual audits, use /gs-design-review. Use when asked to "review the design plan"
+  visual audits, use /design-review. Use when asked to "review the design plan"
   or "design critique".
   Proactively suggest when the user has a plan with UI/UX components that
   should be reviewed before implementation.
@@ -977,7 +977,7 @@ Then present options: **A)** Add to TODOS.md **B)** Skip — not valuable enough
   +====================================================================+
 ```
 
-If all passes 8+: "Plan is design-complete. Run /gs-design-review after implementation for visual QA."
+If all passes 8+: "Plan is design-complete. Run /design-review after implementation for visual QA."
 If any below 8: note what's unresolved and why (user chose to defer).
 
 ### Unresolved Decisions

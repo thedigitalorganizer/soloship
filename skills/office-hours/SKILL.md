@@ -782,7 +782,7 @@ If they approve or say "good enough," proceed.
 
 Reference the wireframe screenshot in the design doc's "Recommended Approach" section.
 The screenshot file at `/tmp/soloship-sketch.png` can be referenced by downstream skills
-(`/plan-design-review`, `/gs-design-review`) to see what was originally envisioned.
+(`/plan-design-review`, `/design-review`) to see what was originally envisioned.
 
 **Step 6: Outside design voices** (optional)
 

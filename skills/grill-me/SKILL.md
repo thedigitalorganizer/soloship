@@ -160,7 +160,7 @@ explicitly. The user finds bloat the agent can't see.
 ## Step 4: Refuse to Plan Until Aligned
 
 Do not write a plan. Do not write code. Do not invoke `/plan`. Do not invoke
-`ce-plan`. Until the user explicitly confirms final alignment via the Phase 6
+`plan`. Until the user explicitly confirms final alignment via the Phase 6
 gate, your only job is to keep grilling.
 
 If the user says "just write the plan" before alignment, push back once:
@@ -277,7 +277,7 @@ product owner who knows their domain better than you do.
 This skill does NOT replace:
 - `/brainstorm` (still upstream — used when WHAT to build is uncertain)
 - `/office-hours` (still used when DEMAND is uncertain — should we build at all)
-- `/plan` or `ce-plan` (still writes the plan)
+- `/plan` or `plan` (still writes the plan)
 - `/review` or `/autoplan` (still catches code-correctness issues this skill can't)
 
 The chain is: `office-hours?` → `brainstorm?` → **`grill-me`** → `plan` →

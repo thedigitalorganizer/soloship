@@ -1,6 +1,6 @@
 ---
 name: implement
-description: Execute an implementation plan. Routes to ce-work which reads the plan, sets up a working branch, and executes systematically while maintaining quality.
+description: Execute an implementation plan. Finds the most recent plan in docs/plans/, sets up a working branch, then runs the Compound-Engineering-derived execution methodology with branching, clarification gates, and quality checks. Freshness check warns on stale plans.
 ---
 
 Invoke the `implement` skill from the Soloship plugin. Use the Skill tool with skill name `implement` and let it drive the workflow.

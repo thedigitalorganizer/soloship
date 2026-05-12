@@ -1,10 +1,10 @@
 ---
 name: brainstorm
 description: |
-  Explore what you're building and why before planning. Routes to office-hours
-  for pure product/demand questions or ce-brainstorm
-  for feature and approach exploration. Ends with a nudge to design visually
-  before running /plan.
+  Explore what you're building before planning. Merges Compound Engineering's
+  feature-exploration methodology with Superpowers' brainstorming discipline
+  into one flow. For pure demand-validation questions, use /soloship:office-hours
+  instead. Ends with a nudge to design visually before running /soloship:plan.
 ---
 
 # Soloship Brainstorm
@@ -27,12 +27,12 @@ requirements exploration for something you've already decided to build.
 ## Step 2: Route
 
 **For demand questions:**
-Invoke the `office-hours` skill. It uses 6 forcing questions that expose demand
+For pure demand-validation questions, invoke `/soloship:office-hours` instead — it uses 6 forcing questions that expose demand
 reality, status quo, and the narrowest wedge. Use this only when the *existence*
 of the feature is in question.
 
 **For feature questions:**
-Invoke the `ce-brainstorm` skill. It runs a full
+Apply the feature-exploration methodology below. It runs a full
 collaborative dialogue that covers requirements clarity, repository research,
 approach exploration, and YAGNI trade-offs, and writes the output to
 `docs/brainstorms/`.

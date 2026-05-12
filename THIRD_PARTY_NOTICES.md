@@ -134,7 +134,7 @@ handoff to `/plan` → `/autoplan`.
 ```
 
 Thank you, Matt. The "interview before plan" insight — and Brooks' design-concept
-framing you cited — is exactly the upstream gap autoplan and ce-plan can't close
+framing you cited — is exactly the upstream gap autoplan and plan can't close
 on their own.
 
 ---

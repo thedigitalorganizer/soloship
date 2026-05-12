@@ -92,7 +92,7 @@ bash "$SKILL_DIR/scripts/build-node-server.sh"
 # ─── Install Playwright Chromium ──────────────────────────────────
 
 # Playwright auto-downloads Chromium on first use, but we trigger it here so
-# the first /gs-qa or /gs-design-review call doesn't take an extra minute.
+# the first /gs-qa or /design-review call doesn't take an extra minute.
 # `bun x playwright install chromium` is idempotent — skips if cache hit.
 echo "[gs-browse-build] ensuring Playwright Chromium is installed…"
 bun x playwright install chromium 2>&1 | tail -3
@@ -110,4 +110,4 @@ echo "$GIT_REV" > "$DIST_DIR/.version"
 
 echo "[gs-browse-build] DONE. Built artifacts (arch: $ARCH):"
 ls -lh "$DIST_DIR/browse" "$DIST_DIR/find-browse" "$DIST_DIR/server-node.mjs" "$DIST_DIR/.version"
-echo "[gs-browse-build] Subsequent /gs-qa, /gs-design-review, etc. will reuse these artifacts."
+echo "[gs-browse-build] Subsequent /gs-qa, /design-review, etc. will reuse these artifacts."

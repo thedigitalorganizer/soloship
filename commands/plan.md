@@ -1,6 +1,6 @@
 ---
 name: plan
-description: Create an implementation plan with enforcement gates. Routes to ce-plan for the planning work itself. For review of the plan, /review handles engineering/CEO/design review separately. Searches solutions for prior art and validates plan compliance before completion.
+description: Create an implementation plan with enforcement gates. Searches docs/solutions/ for prior art, reads architecture context, then runs the Compound-Engineering-derived plan-writing methodology. Review is separate — handled by /soloship:review (which dispatches CEO/eng/design/devex plan-review skills or autoplan for all-in-one).
 ---
 
 Invoke the `plan` skill from the Soloship plugin. Use the Skill tool with skill name `plan` and let it drive the workflow.
