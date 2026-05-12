@@ -1,6 +1,7 @@
 ---
 module: Soloship Plugin
 date: 2026-05-12
+updated: 2026-05-12
 problem_type: best_practice
 component: tooling
 symptoms:
@@ -9,13 +10,15 @@ symptoms:
   - "claude plugin details reports old version even after marketplace shows new version"
   - "Marketplace UI never offers updates despite multiple npm releases"
   - "Skills load (visible in inventory) but slash commands don't"
-tags: [claude-code, plugin, marketplace, plugin-json, slash-commands, commands-directory, namespacing, version-sync]
+  - "Plugin installs/updates clean but commands silently fail to register"
+  - "Declaring commands as string path to directory suppresses default auto-discovery"
+tags: [claude-code, plugin, marketplace, plugin-json, slash-commands, commands-directory, namespacing, version-sync, manifest-schema, auto-discovery]
 root_cause: incomplete_setup
 resolution_type: workflow_improvement
 severity: high
 ---
 
-# Claude Code Plugin Format — The Six Gotchas
+# Claude Code Plugin Format — The Seven Gotchas
 
 ## Context
 
@@ -23,7 +26,7 @@ On 2026-05-12, Shawn tried to install Soloship via Claude Code's plugin marketpl
 
 This doc consolidates the gotchas as prevention for any future Claude Code plugin Soloship builds or vendors.
 
-## The Six Gotchas
+## The Seven Gotchas
 
 ### Gotcha 1 — Three version files exist, not one
 
@@ -57,7 +60,9 @@ This was the deepest confusion. In Claude Code's model:
 
 Soloship had 51 skills declared via `"skills": "./skills"` and a `claude plugin details soloship` inventory that showed "Skills (51), Hooks (0), MCP servers (0)" — no `Commands` line at all. Users typing `/soloship-bootstrap` got "unknown command" because no command existed; only a skill of the same name existed and that's not user-typable.
 
-**Fix:** Add a `commands/` directory with one `.md` per slash command. Each file is a thin wrapper that invokes the corresponding skill. Declare `"commands": "./commands"` in plugin.json alongside `"skills"`.
+**Fix:** Add a `commands/` directory with one `.md` per slash command. Each file is a thin wrapper that invokes the corresponding skill.
+
+**⚠️ Original v0.4.0 guidance overturned by Gotcha 7 (below):** This doc's earlier version said to declare `"commands": "./commands"` in plugin.json. That recommendation was wrong — declaring `commands` as a string path to a directory *suppresses* the default auto-discovery and registers zero commands. The correct fix is to **just create the `commands/` directory at plugin root and not declare anything in the manifest**. Auto-discovery handles it. See Gotcha 7.
 
 ### Gotcha 3 — The `agents` field doesn't exist in the manifest schema
 
@@ -118,25 +123,59 @@ Each of the previous five gotchas FAILS SILENTLY for the end user. The marketpla
 - Add a diagnostic command file to the plugin itself (e.g., `commands/soloship-doctor.md`) that runs filesystem and manifest checks and reports findings in plain English.
 - The first command users are told to try should be unique-named (`/soloship:gs-office-hours`, not `/soloship:bootstrap`) so naming collisions with other plugins don't mask plugin-loading issues.
 
-## The Final Working Configuration (Soloship 0.4.1)
+### Gotcha 7 — Declaring `commands` or `skills` in plugin.json *replaces* the default auto-discovery
 
-`.claude-plugin/plugin.json`:
+**Discovered later the same day, 2026-05-12.** v0.4.0 added `commands/` directory AND `"commands": "./commands"` to plugin.json (per Gotcha 2's original advice). Plugin installs were succeeding cleanly with no validation errors. The commands directory existed in the clone. **Every slash command still returned "unknown command" on a fresh-install Mac mini.**
+
+The official [plugin manifest schema reference](https://code.claude.com/docs/en/plugins-reference#plugin-manifest-schema) reveals the actual rules:
+
+> **Replaces the default**: `commands`, `agents`, `outputStyles`, `experimental.themes`, `experimental.monitors`. For example, when the manifest specifies `commands`, the default `commands/` directory is not scanned.
+
+And the canonical example shows `commands` as an **array of specific .md file paths**:
+
+```json
+"commands": ["./specialized/deploy.md", "./utilities/batch-process.md"]
+```
+
+So `"commands": "./commands"` (a single string pointing at a directory) was failing two ways at once:
+
+1. **It suppressed the default auto-scan** of `commands/` at plugin root.
+2. **The string value `"./commands"` is not a valid command file path** — the schema wants an array of specific files. The parser registered zero commands.
+
+The plugin installed without complaint, the manifest was structurally valid, the files were on disk — but the loader registered no commands. Pure silent failure.
+
+**Correct configuration:**
+
+- Place `commands/<name>.md` files at plugin root.
+- Place `skills/<name>/SKILL.md` directories at plugin root.
+- **Do not declare `commands` or `skills` in plugin.json.** Auto-discovery handles them.
+- If you need custom paths, declare them as **arrays of specific file paths** (for `commands`) or directory paths (for `skills`, which is additive not replacing).
+
+**This overturns the v0.4.0 guidance in Gotcha 2.** Fixed in Soloship v0.4.2 by removing both fields from plugin.json. Verified on the Mac mini that `/soloship:ce-plan` (and after the v0.5.0 rename, `/soloship:plan`) loaded correctly.
+
+**Prevention for future plugins:**
+
+- Read the [plugin-manifest-schema](https://code.claude.com/docs/en/plugins-reference#plugin-manifest-schema) section completely. The "Replaces the default" sentence is the load-bearing detail.
+- Default to omitting component fields from plugin.json. Only declare them if you actively need a non-default path AND know to use the schema-correct value format.
+- Symmetric-looking field reasoning ("if `commands` is declared, `skills` should be too") is wrong — `skills` adds to defaults, `commands` replaces them. Same field-name style, different semantics. The two-letter difference between "adds to" and "replaces" controls whether your plugin works.
+
+## The Final Working Configuration (Soloship 0.5.1)
+
+`.claude-plugin/plugin.json` (Soloship 0.5.1):
 ```json
 {
   "name": "soloship",
-  "version": "0.4.1",
+  "version": "0.5.1",
   "description": "...",
   "author": {...},
   "homepage": "...",
   "repository": "...",
   "license": "MIT",
-  "keywords": [...],
-  "commands": "./commands",
-  "skills": "./skills"
+  "keywords": [...]
 }
 ```
 
-Note: no `agents` field. agents/ directory exists at plugin root and is auto-discovered.
+**Note: no `commands`, `skills`, or `agents` fields.** All three component directories (`commands/`, `skills/`, `agents/`) exist at plugin root and are auto-discovered by their default locations. Declaring any of those fields as a path string (the obvious-but-wrong reading) suppresses or breaks the default discovery — see Gotcha 7.
 
 `.claude-plugin/marketplace.json` — keep `plugins[0].version` in lockstep with `plugin.json`'s `version` and `package.json`'s `version`.
 
@@ -187,5 +226,11 @@ If install itself fails: schema validation error (Gotcha 3 or related).
 - The npm path (`npx soloship init`) was tested. The plugin path was not.
 - The marketplace.json version drift hid the bug from anyone who DID try plugin install — the marketplace told them they were up to date on 0.1.0, which never had commands, so failure looked like "old broken version."
 - Schema validation errors weren't surfaced until v0.4.0's commands push (Gotcha 3, the agents field).
+- v0.4.0 → v0.4.1 added `"commands": "./commands"` to plugin.json believing it enabled discovery. Tested again on the Mac mini — still "unknown command." That third failure on the same install path forced the deeper read of the schema reference, which surfaced Gotcha 7 (the "Replaces the default" semantics).
 
 **The single most valuable prevention:** A clean-machine install + slash-command-fires test as a release gate. Not yet automated; should be.
+
+## Update Log
+
+- **2026-05-12 (initial publication):** Documented Gotchas 1-6. Recommended declaring `"commands": "./commands"` in plugin.json (Gotcha 2).
+- **2026-05-12 (later same day, after Mac mini v0.4.0/0.4.1 still failed):** Added Gotcha 7. The earlier recommendation about declaring `commands` was overturned. Plugin authors should NOT declare `commands` or `skills` in plugin.json when using the default `commands/` and `skills/` directories at plugin root — declaration is for non-default paths only, and `commands` declaration *replaces* the default scan. Corrected Final Working Configuration to show v0.5.1's minimal plugin.json with no component-path fields.
