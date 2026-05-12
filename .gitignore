@@ -21,6 +21,7 @@ skills/gs-browse/dist/.version
 CLAUDE.md
 docs/*
 !docs/known-issues/
+!docs/solutions/
 site/
 .claude/settings.local.json
 .gstack/
