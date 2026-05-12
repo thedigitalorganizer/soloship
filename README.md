@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **15 Soloship-native workflow skills + 36 vendored skills from five best-in-class plugins** that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
+Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 4 rules, CI checks — no judgment calls required), **16 Soloship workflow skills + 35 vendored skills from five best-in-class plugins** (51 skills total) that guide you through the steps a professional would take (each with enforcement gates and anti-rationalization tables so the agent can't cut corners), and **a one-command setup** that detects your stack and wires everything into the project.
 
 **Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet)
 
@@ -76,7 +76,7 @@ After bootstrap, the daily loop is `/soloship:brainstorm` → `/soloship:plan` �
 After install, every Claude Code session checks once a day whether a new Soloship version has been published. When one is, you'll see a single line at the top of the session:
 
 ```
-Soloship update available: 0.1.0 → 0.1.2. Run: npx soloship upgrade
+Soloship update available: 0.1.2 → 0.1.3. Run: npx soloship upgrade
 ```
 
 Run that command from your project root whenever you see it. It refreshes hooks, rules, and CI, then re-stamps the version. Your project docs (`CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`) are preserved.
@@ -121,6 +121,7 @@ Some skills are fully self-contained — the logic lives entirely in the SKILL.m
 | `/onboard` | Reads all project docs, produces orientation briefing |
 | `/shipfast` | Lint → test → build → commit → push → deploy |
 | `/cleanup` | 5 audit agents → interactive proposals → atomic execution |
+| `/finish` | Merge / PR / cleanup decision tree when implementation is complete (renamed from Superpowers' `finishing-a-development-branch`, vendored under MIT) |
 
 Others are routers — Soloship adds enforcement and routing logic, then dispatches to an external skill:
 
@@ -134,12 +135,7 @@ Others are routers — Soloship adds enforcement and routing logic, then dispatc
 | `/learn` | `compound-engineering:workflows:compound` (Step 1) | Solution doc via CE, then own protocols: JSONL logging, registry audit, AGENTS.md propagation + creation |
 | `/review` | `plan-eng/ceo/design-review` (plans) / 3-pass agents (code) | Target detection (plan vs code), severity classification, synthesis |
 | `/shipthorough` | Invokes `/review` internally | 12-step pipeline: preflight, merge, lint, test, coverage audit, review, registry, CHANGELOG, plan lifecycle, commits, PR, deploy |
-| `/qa` | gstack `qa` / `qa-only` | Mode selection (fix vs report-only) |
-| `/security` | gstack `cso` | Post-audit triage routing |
 | `/design-review` | gstack `design-review` | Adds AI slop detection pass (visual/content/layout patterns) |
-| `/autoplan` | gstack `autoplan` | Chains CEO + design + eng + DX reviews with auto-decisions |
-| `/checkpoint` | gstack `checkpoint` | Session state snapshots for `/clear` recovery; pairs with `/onboard` |
-| `/health` | gstack `health` | Composite 0-10 quality score with trend tracking; pre-ship gate |
 
 ## What you get
 
@@ -157,7 +153,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 ### The skills
 
-**15 Soloship-native workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts; the heavy lifting is often delegated to a vendored skill (see the next section).
+**16 Soloship workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts; the heavy lifting is often delegated to a vendored skill (see the next section). One of the 16 (`/finish`) is a faithful vendor of a Superpowers skill, renamed to fit the Soloship slash-command surface.
 
 **Setup & orientation**
 
@@ -178,6 +174,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 **Shipping**
 
+- `/soloship:finish` — When implementation is done, all tests pass, and you need to decide how to integrate the work. Walks the merge / PR / cleanup options with a structured decision tree. Faithful vendor of Superpowers' `finishing-a-development-branch` skill, renamed for the Soloship slash surface.
 - `/soloship:shipfast` — Emergency deploy pipeline. Lint (with auto-fix tolerance), test (pre-existing failures allowed), build (must pass), commit, push, deploy. Auto-detects platform. Minimum viable safety, maximum speed.
 - `/soloship:shipthorough` — Full due diligence: preflight checks, base branch merge, lint, test, inline quality gate (TypeScript + linter + dead code + shellcheck), coverage audit, 3-pass code review (via `/review`), registry update, CHANGELOG enforcement, plan lifecycle cleanup, bisectable commits, PR with structured body, verification gate, deploy.
 
@@ -246,7 +243,7 @@ Soloship curates and vendors skills from five outstanding Claude Code plugins. O
 
 [**Compound Engineering**](https://github.com/EveryInc/compound-engineering-plugin) — Kieran Klaassen (Every). The brainstorm → plan → work → compound loop is the spine of how Soloship thinks about engineering. Also: `/review` inherits CE's multi-agent review pattern.
 
-[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `dispatching-parallel-agents` (via `using-git-worktrees`), `finishing-a-development-branch`, `brainstorming`. Nine skills total.
+[**Superpowers**](https://github.com/obra/superpowers) — Jesse Vincent. The discipline skills: `systematic-debugging`'s "no fixes without root cause," `verification-before-completion`'s "evidence before claims," `test-driven-development`, `writing-plans`, `executing-plans`, `subagent-driven-development`, `using-git-worktrees`, `finishing-a-development-branch` (renamed to `finish` in Soloship — invoke via `/soloship-finish`), and `brainstorming`. Nine skills total.
 
 [**Impeccable**](https://impeccable.style) — Paul Bakaus (extending Anthropic's original `frontend-design`). Design vocabulary and steering commands that let non-coders ship work that doesn't look AI-generated. Soloship vendors `frontend-design` and five `/i-*` commands; 12 more are in the full plugin.
 
@@ -278,20 +275,26 @@ src/                   # TypeScript source for the installer
   rules.ts             # Workflow rule installation
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
-skills/                # Claude Code skills shipped by the plugin
-  # 15 Soloship-native workflows:
+skills/                # Claude Code skills shipped by the plugin (51 total)
+  # 16 skills invoked as /soloship-* (15 Soloship-native + 1 renamed vendor):
   audit/ bootstrap/ brainstorm/ cleanup/ debug/ design-review/
   grill-me/ implement/ learn/ onboard/ plan/ review/
   shipfast/ shipthorough/ spec/
+  finish/     # vendored from Superpowers' finishing-a-development-branch
+              # — renamed for the Soloship slash-command surface
 
-  # 36 vendored skills (full attribution in THIRD_PARTY_NOTICES.md):
+  # 35 vendored skills with source prefix (full attribution in THIRD_PARTY_NOTICES.md):
   ce-*        # 8 from Compound Engineering (Kieran Klaassen, MIT)
-  sp-*        # 9 from Superpowers (Jesse Vincent, MIT)
+  sp-*        # 8 from Superpowers (Jesse Vincent, MIT)
+              # (a 9th Superpowers skill, finishing-a-development-branch,
+              # lives at skills/finish/ above)
   im-*        # 6 from Impeccable (Paul Bakaus, Apache 2.0)
   uiux-*      # 1 from ui-ux-pro-max (nextlevelbuilder, MIT)
   gs-*        # 12 from gstack (Garry Tan, MIT) — includes the gs-browse
               # headless browser daemon, re-vendored at v1.31.1.0 with
-              # Soloship-native paths so it works without gstack installed
+              # Soloship-native paths so it works without gstack installed.
+              # gs-browse compiles its launcher on first use (build-on-host
+              # for architecture portability across arm64 / x86_64 Macs).
 
   references/          # Shared checklists (a11y, code review, perf, security, testing)
   vendored/            # Per-source LICENSE / NOTICE / VERSION / README (attribution archive)
