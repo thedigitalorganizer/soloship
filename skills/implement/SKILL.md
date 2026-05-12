@@ -63,12 +63,37 @@ discipline `/implement` can enforce. See
 **Skip this step ONLY if** the plan is single-phase or the work is the trivial
 1-2 step direct change documented in the Step 2 exception.
 
+## Step 1.7: Branch/Worktree Discipline (Soloship Override)
+
+The CE methodology below offers three branch-setup options at the start of Phase 1 (new branch / worktree / stay on default). **Soloship's default differs from CE's: default to a worktree (CE's Option B), not a bare new branch (CE's Option A).**
+
+**Why:** Soloship users frequently run 2-5 parallel agent processes against the same repo at the same time. New feature work on a fresh branch in the *same* working directory will trip over the other processes — dirty state from one agent's WIP shows up in another's diffs, builds run against the wrong files, and `git status` becomes unreadable. A worktree gives each new branch its own physical directory, so parallel processes can't collide.
+
+**How to apply when reaching CE's Setup Environment step:**
+
+1. **If on the default branch and starting new work:** invoke the `soloship:using-git-worktrees` skill instead of running `git checkout -b` directly. The skill handles directory selection, `.gitignore` safety, and clean baseline tests.
+2. **If already on a feature branch:** check whether you are inside an existing worktree (`git rev-parse --show-toplevel` will be a path under `.worktrees/` or `~/.config/superpowers/worktrees/`). If yes, continue there. If no, ask the user before continuing — they may have been mid-task in the main checkout.
+3. **Skip the worktree only if** the user explicitly says "use a branch in this checkout" or the work is the trivial 1-2 step exception documented in Step 2 below.
+
+When CE's Phase 1 step 2 lists Options A / B / C, treat Option B as the default. Do not present the three-option menu to the user unless they push back — the menu is a CE-era artifact and the worktree default is what Soloship wants.
+
+If `soloship:using-git-worktrees` is not available (the skill isn't installed in this environment), fall back to creating a worktree manually:
+
+```bash
+mkdir -p .worktrees
+grep -q "^\.worktrees/$" .gitignore || echo ".worktrees/" >> .gitignore
+git worktree add ".worktrees/<branch-name>" -b "<branch-name>"
+cd ".worktrees/<branch-name>"
+```
+
+…and verify the new directory got added to `.gitignore` before proceeding.
+
 ## Step 2: Route to Execution
 
 Apply the execution methodology below with the plan file path as input.
 It will:
 - Read the plan completely and clarify ambiguities before starting
-- Set up the correct branch
+- Set up the correct branch (subject to the Step 1.7 worktree override above)
 - Execute the plan systematically while maintaining quality
 - Ship complete features rather than half-built ones
 
@@ -93,12 +118,55 @@ for five-minute changes.
 
 ---
 
+## Step 2.5: Finishing Behavior Override (Soloship)
+
+The CE methodology below ends Phase 4 ("Ship It") with `git push -u origin <branch>` followed by `gh pr create`. **Soloship overrides this final step: do not create a PR automatically.** Soloship is a solo-developer tool — there's no reviewer waiting on GitHub, and the PR step is pure latency between "done" and "live." The default finishing behavior is a **local merge into the base branch**, then push the base branch.
+
+**When you reach CE's Phase 4 step 3 ("Create Pull Request"), run this instead of `gh pr create`:**
+
+```bash
+# Detect base branch
+default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+[ -z "$default_branch" ] && default_branch=$(git rev-parse --verify origin/main >/dev/null 2>&1 && echo "main" || echo "master")
+
+# Capture feature branch name BEFORE switching
+feature_branch=$(git branch --show-current)
+
+# If we are inside a worktree, the merge must happen in the main checkout
+toplevel=$(git rev-parse --show-toplevel)
+case "$toplevel" in
+  *.worktrees/*|*/superpowers/worktrees/*)
+    main_checkout=$(git worktree list --porcelain | awk '/^worktree / { print $2; exit }')
+    cd "$main_checkout"
+    ;;
+esac
+
+# Merge, push, clean up
+git checkout "$default_branch"
+git pull origin "$default_branch"
+git merge --no-ff "$feature_branch" -m "Merge $feature_branch into $default_branch"
+git push origin "$default_branch"
+git branch -d "$feature_branch"
+
+# Remove worktree if one existed
+git worktree list | grep -q ".worktrees/$feature_branch" && \
+  git worktree remove ".worktrees/$feature_branch"
+```
+
+Report the merge target, the commit hash that's now on the base branch, and confirmation that the feature branch and worktree were cleaned up.
+
+**Merge conflicts:** stop immediately, report the conflicting files, ask the user how to proceed. Do not auto-resolve.
+
+**Skip the override and run the original PR flow only if** the user explicitly asked for a PR earlier in the conversation ("open a PR for this," "push it up for review," etc.). Inferring "the work is done, PR is next" does not count as explicit. When opt-in is explicit, run CE's original Phase 4 step 3 (`git push -u origin HEAD` + `gh pr create`).
+
+If the user later wants a PR for an already-merged change, they can run it manually from the base branch, or use `/soloship:finish` Option 2 on a new branch.
+
 ## Step 3: After Implementation
 
 When implementation is complete:
 
 1. If the work was non-trivial, suggest: "Run `/learn` to capture what you learned."
-2. Then suggest: "Run `/shipfast` for a quick deploy or `/shipthorough` for full due diligence."
+2. Then suggest: "Run `/shipfast` for a quick deploy or `/shipthorough` for full due diligence." (Both deploy from the merged base branch, not from a PR.)
 
 ## Verification
 

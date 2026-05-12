@@ -134,7 +134,7 @@ Others are routers — Soloship adds enforcement and routing logic, then dispatc
 | `/debug` | `superpowers:systematic-debugging` | Solution search for prior art, root-cause iron law |
 | `/learn` | `compound-engineering:workflows:compound` (Step 1) | Solution doc via CE, then own protocols: JSONL logging, registry audit, AGENTS.md propagation + creation |
 | `/review` | `plan-eng/ceo/design-review` (plans) / 3-pass agents (code) | Target detection (plan vs code), severity classification, synthesis |
-| `/shipthorough` | Invokes `/review` internally | 12-step pipeline: preflight, merge, lint, test, coverage audit, review, registry, CHANGELOG, plan lifecycle, commits, PR, deploy |
+| `/shipthorough` | Invokes `/review` internally | 12-step pipeline: preflight, merge, lint, test, coverage audit, review, registry, CHANGELOG, plan lifecycle, commits, local merge to base branch (PR only on explicit request), deploy |
 | `/design-review` | gstack `design-review` | Adds AI slop detection pass (visual/content/layout patterns) |
 
 ## What you get
@@ -167,7 +167,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 - `/soloship:grill-me` — Relentless pre-plan interview that walks every branch of the design tree until user and agent share a complete mental model. Refuses to produce a plan or any code until alignment is explicit. Triggered explicitly ("grill me", "interview me") or by `/soloship:plan` on medium-to-large work. Adapted from Matt Pocock's `grill-me` (MIT).
 - `/soloship:spec` — Writes formal specifications with numbered acceptance criteria, data models, API contracts, user flows (including error states), and explicit out-of-scope boundaries. 8-point verification checklist. Fully self-contained.
 - `/soloship:plan` — Searches `docs/solutions/` for prior art, reads architecture context, then runs the Compound-Engineering-derived plan-writing methodology. 7-point enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, no unaddressed pitfalls, and that non-trivial work was preceded by `/soloship:grill-me`. Review is separate — handled by `/soloship:review`.
-- `/soloship:implement` — Finds the most recent plan in `docs/plans/`, sets up a working branch, then runs the Compound-Engineering-derived execution methodology with branching and quality checks. Freshness check warns on stale plans.
+- `/soloship:implement` — Finds the most recent plan in `docs/plans/`, sets up an isolated worktree (so parallel agent processes don't collide on the working tree), then runs the Compound-Engineering-derived execution methodology with branching and quality checks. Freshness check warns on stale plans. **Defaults to a local merge into the base branch** when execution finishes — does not auto-create a GitHub PR. Ask explicitly ("open a PR for this") or use `/soloship:finish` Option 2 if you want one.
 - `/soloship:debug` — Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then runs the Superpowers-derived 4-phase discipline (Investigate → Analyze → Hypothesize → Implement). Nudges `/soloship:learn` for non-obvious fixes.
 - `/soloship:learn` — Captures knowledge from non-obvious work. Runs the Compound-Engineering-derived compound methodology to write a solution doc. Adds Soloship protocols: JSONL logging for cross-session search, architecture registry drift checking, and distributed AGENTS.md propagation (pitfalls into existing AGENTS.md files, new ones for directories above the 3-file governance threshold). Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
 - `/soloship:cleanup` — Knowledge system maintenance. Launches 5 parallel audit agents (solution health, overlap detection, plan lifecycle, AGENTS.md staleness, index sync), presents findings interactively, then executes approved changes in a single atomic commit. Merge candidates require 2-of-3 signal threshold.
@@ -176,7 +176,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 - `/soloship:finish` — When implementation is done, all tests pass, and you need to decide how to integrate the work. Walks the merge / PR / cleanup options with a structured decision tree. Faithful vendor of Superpowers' `finishing-a-development-branch` skill, renamed for the Soloship slash surface.
 - `/soloship:shipfast` — Emergency deploy pipeline. Lint (with auto-fix tolerance), test (pre-existing failures allowed), build (must pass), commit, push, deploy. Auto-detects platform. Minimum viable safety, maximum speed.
-- `/soloship:shipthorough` — Full due diligence: preflight checks, base branch merge, lint, test, inline quality gate (TypeScript + linter + dead code + shellcheck), coverage audit, 3-pass code review (via `/review`), registry update, CHANGELOG enforcement, plan lifecycle cleanup, bisectable commits, PR with structured body, verification gate, deploy.
+- `/soloship:shipthorough` — Full due diligence: preflight checks, base branch merge, lint, test, inline quality gate (TypeScript + linter + dead code + shellcheck), coverage audit, 3-pass code review (via `/review`), registry update, CHANGELOG enforcement, plan lifecycle cleanup, bisectable commits, **local merge into the base branch and push** (PR only on explicit opt-in), verification gate, deploy.
 
 **Quality**
 

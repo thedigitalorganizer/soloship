@@ -107,13 +107,45 @@ splitting into logical, bisectable commits:
 - Each commit should build and pass tests independently
 - Use `git rebase` to reorganize if needed (ask user first)
 
-### Step 10: Push + Create PR
+### Step 10: Merge to Base Branch Locally (default)
+
+**Soloship default — no PR.** Shawn is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.
+
 ```bash
-git push -u origin HEAD
+# Detect base branch
+default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
+[ -z "$default_branch" ] && default_branch=$(git rev-parse --verify origin/main >/dev/null 2>&1 && echo "main" || echo "master")
+
+# Capture feature branch name BEFORE switching
+feature_branch=$(git branch --show-current)
+
+# If we are inside a worktree, the merge happens in the main checkout
+toplevel=$(git rev-parse --show-toplevel)
+case "$toplevel" in
+  *.worktrees/*|*/superpowers/worktrees/*)
+    main_checkout=$(git worktree list --porcelain | awk '/^worktree / { print $2; exit }')
+    cd "$main_checkout"
+    ;;
+esac
+
+# Merge, push, clean up
+git checkout "$default_branch"
+git pull origin "$default_branch"
+git merge --no-ff "$feature_branch" -m "Merge $feature_branch into $default_branch"
+git push origin "$default_branch"
+git branch -d "$feature_branch"
+
+# Remove worktree if one existed
+git worktree list | grep -q ".worktrees/$feature_branch" && \
+  git worktree remove ".worktrees/$feature_branch"
 ```
 
-Create a PR with structured body:
-```
+**Merge conflicts:** stop immediately, report the conflicting files, ask the user how to proceed. Do not auto-resolve.
+
+**Explicit PR opt-in:** if the user said "open a PR" or "push this up for review" earlier in the conversation, use the original PR flow instead:
+
+```bash
+git push -u origin HEAD
 gh pr create --title "SHORT_TITLE" --body "$(cat <<'EOF'
 ## Summary
 - [bullet points of what changed and why]
@@ -132,8 +164,12 @@ EOF
 )"
 ```
 
+See `~/.claude/rules/no-auto-pr.md` for the global rule that drives this default.
+
 ### Step 11: Verification Gate
-After PR is created, re-run tests to verify nothing broke during review fixes:
+
+After the merge (or PR creation, if opt-in), re-run tests + build to verify nothing broke during review fixes / merge resolution:
+
 ```bash
 npm test 2>&1
 npm run build 2>&1
@@ -165,13 +201,16 @@ Same deployment detection as `/shipfast`:
 
 ```
 Shipped (thorough).
-  PR: [URL]
-  Commit(s): [count] commits
+  Merged to: [base-branch] (commit [hash])
+  Commit(s) on feature branch: [count]
   Coverage: [overall assessment]
   Review: [findings summary]
   Deployed to: [platform]
 
   Plan: [archived/deleted/none]
+
+  # Only if user explicitly opted into a PR:
+  # PR: [URL]
 ```
 
 ## Verification
@@ -185,6 +224,6 @@ Ship thorough is not complete until ALL of these are true:
 - [ ] Coverage audit presented (ASCII chart with per-file assessment)
 - [ ] Code review ran (3-pass) and no unresolved Critical/Important findings
 - [ ] CHANGELOG updated for all feat:/fix:/refactor: changes
-- [ ] PR created with Summary, Coverage, Review, and Test Plan sections
-- [ ] Verification gate passed after PR creation (tests + build re-run)
+- [ ] Feature branch merged into base branch locally; base branch pushed; feature branch deleted (default), OR PR created with Summary/Coverage/Review/Test Plan sections (only if user explicitly requested PR)
+- [ ] Verification gate passed after merge or PR creation (tests + build re-run)
 - [ ] Plan file archived or deleted per lifecycle rules

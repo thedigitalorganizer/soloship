@@ -1,5 +1,28 @@
 # Changelog
 
+## [0.6.0] - 2026-05-12
+
+### Changed (solo-developer defaults)
+
+Two skill defaults flipped to match how solo developers actually ship. Both are backwards-compatible — the previous behavior is still available on explicit request — but the defaults now match the project's name.
+
+- **`/soloship:implement` defaults to creating a worktree, not a bare branch.** A new Step 1.7 in `skills/implement/SKILL.md` overrides the Compound-Engineering "Setup Environment" menu (which presented a worktree as "Option B") and routes new feature work through `/soloship:using-git-worktrees` by default. Falls back to a manual `git worktree add` snippet if the skill isn't available. Skip and use a bare branch only if the user explicitly says so or the change is the trivial 1-2 step exception.
+- **`/soloship:implement` no longer auto-creates GitHub PRs at the end of execution.** A new Step 2.5 in `skills/implement/SKILL.md` intercepts the final step of CE's Phase 4 ("Ship It") and replaces `gh pr create` with a local merge into the base branch (checkout base → pull → merge → push base → delete feature branch → remove worktree). PRs only happen when the user explicitly asks for one ("open a PR," "push it up for review") or picks `/soloship:finish` Option 2.
+- **`/soloship:shipthorough` Step 10 rewritten.** Was hard-coded "push + `gh pr create`"; now defaults to the same local-merge-and-push flow as `/soloship:implement`. PR creation is preserved behind explicit opt-in. The "Done" report block and verification checklist were updated to match.
+
+### Why
+
+Soloship's audience is solo developers. The PR-and-review pattern is correct for teams; for a solo operator it's pure latency between "done" and "live" — and it trains agents to think the workflow ends at github.com instead of in the working repo. The bare-branch default has a separate failure mode: when Soloship users run 2-5 parallel agent processes against the same repo (which is the project's whole positioning), branches in a single checkout collide on the working tree, and `git status` becomes useless. Worktrees isolate them.
+
+### Migration
+
+Nothing to migrate. The first time you run `/soloship:implement` or `/soloship:shipthorough` after updating, you'll see new behavior at two points:
+
+- At the start of execution, the agent will create a worktree under `.worktrees/<branch-name>` instead of running `git checkout -b` in the current directory. Verify your `.gitignore` contains `.worktrees/`; the worktree skill adds it automatically if missing.
+- At the end of execution, the agent will merge the feature branch into your base branch locally and push the base branch instead of opening a PR. If you want a PR for a particular change, say so before the merge step ("open a PR for this") or run `/soloship:finish` and pick Option 2 after the work is done.
+
+If you're working in a team setting where PRs are required, set up a project-local rule that overrides the default, or invoke the explicit PR opt-in on every run.
+
 ## [0.5.0] - 2026-05-12
 
 ### Changed (breaking)
