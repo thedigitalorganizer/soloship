@@ -1,6 +1,6 @@
 {
   "name": "soloship",
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Systematic programming methodology for AI-assisted development",
   "type": "module",
   "bin": {
