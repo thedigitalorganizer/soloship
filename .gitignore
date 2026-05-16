@@ -26,3 +26,6 @@ site/
 .claude/settings.local.json
 .gstack/
 .soloship/
+
+# macOS dedup-suffix copies of skill files — never stage these
+SKILL (*).md
