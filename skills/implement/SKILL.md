@@ -295,10 +295,23 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    **Heuristic:** "Can I write a commit message that describes a complete, valuable change? If yes, commit. If the message would be 'WIP' or 'partial X', wait."
 
+   **Scope Ledger Gate (Soloship — MANDATORY before this commit):** Before the
+   commit that closes a task, invoke the `verification-before-completion` skill
+   and emit its **Scope Ledger** (shipped / remaining / out-of-scope) and
+   **Touch Map** (`git grep` the changed value/name across the whole repo; one
+   row per hit, each resolved with evidence). Do not run `git commit` until the
+   ledger is emitted and every Touch-Map row is resolved. If REMAINING is
+   non-empty, do not call the task "done" — state exactly what shipped and what
+   remains. This is the in-run catch for stale-state bugs and premature
+   phase-done claims; it has to happen before the commit because the user does
+   not interrupt mid-run.
+
    **Commit workflow:**
    ```bash
    # 1. Verify tests pass (use project's test command)
    # Examples: bin/rails test, npm test, pytest, go test, etc.
+
+   # 1b. Scope Ledger Gate emitted and all Touch-Map rows resolved (see above)
 
    # 2. Stage only files related to this logical unit (not `git add .`)
    git add <files related to this logical unit>
@@ -382,6 +395,14 @@ This command takes a work document (plan, specification, or todo file) and execu
 ### Phase 4: Ship It
 
 1. **Create Commit**
+
+   **Scope Ledger Gate (Soloship — MANDATORY before this final commit):**
+   Invoke `verification-before-completion` and emit the **Scope Ledger** +
+   **Touch Map** for the whole change set, not just the last file touched.
+   `git grep` every value/name introduced or changed across the repo; resolve
+   every hit with evidence. Do not commit until the ledger is emitted and every
+   row is resolved. If anything is REMAINING, the report must say so — never
+   claim the plan is fully shipped when it is not.
 
    ```bash
    git add .

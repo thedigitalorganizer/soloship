@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.8.0] - 2026-05-16
+
+### Added — three friction-to-automatic gates (from `/insights`)
+
+Each converts a defect class the maintainer currently catches by hand into one the plugin catches automatically.
+
+- **Scope Ledger Gate (in-run, before any terminal commit).** New Soloship-authored section in `verification-before-completion/SKILL.md`, wired as a MANDATORY pre-commit step into `implement` (incremental + final commits), `shipthorough` (new Step 9.5, before the merge), and `shipfast` (Step 4). Before the terminal commit of any task, the agent must emit a **Scope Ledger** (shipped / remaining / explicitly out-of-scope) and a **Touch Map** — `git grep` the changed value/name across the whole repo, one row per hit, each resolved with evidence. Kills both the stale-state class (16+ `wrong_approach`: fix shipped to 1 of N copies of a value) and premature "phase done" over-claims. In-run by design: the user does not interrupt, so the catch must precede the commit.
+- **Plan-claim verification (before a plan proceeds).** Every factual assertion in a plan ("X already done", file/function locations, test-coverage claims, pricing/rate/limit values, dependency claims) must be `git grep`'d against the live repo before the plan enters review or implementation. Added as a MANDATORY gate in `plan/SKILL.md` Step 4 (with a Claims Table), as `autoplan` Phase 0 Step 2.5 (gate before the review pipeline), and as a new auto-loaded rule `plan-claim-verification.md` so it cascades regardless of entry path.
+- **Billing / credit / rerun-window confirmation gate.** New auto-loaded rule `billing-confirmation-gate.md` + a new `PreToolUse` (Edit|Write|MultiEdit|NotebookEdit) hook `buildBillingGateScript` that **blocks (exit 2)** any edit to billing/credit/rerun-window code (matched by file path or billing-state identifiers) until the agent has confirmed the data-model semantics — unit & sign, idempotency, window boundary, backfill scope — with the user and recorded it in `.ai/.billing-ack`. This was the single most expensive recurring friction (two backfill rounds + reverts).
+
+### Why
+
+`/insights` (185 sessions) showed these three were the patterns that *repeated* and were caught only by manual vigilance. Plugin-level permanence removes the dependency on the maintainer noticing each time. Deploy rebuild-and-verify (MAPS `/ship`-specific), the MCP-retrieval habit (project CLAUDE.md), and the two-modes workflow insight (personal workflow) were deliberately kept out — they are not general plugin behaviors.
+
+### Migration
+
+Nothing to migrate. New `soloship init` runs include both new rules and the billing hook automatically. Plugin skills are symlinked so the Scope Ledger / plan-claim gates are live immediately. Existing projects keep their current `.claude/rules/` and hooks until re-init (`soloship init` skips existing rule files unless `--force`); the billing hook + new rules can be added to a project on their own.
+
 ## [0.7.0] - 2026-05-16
 
 ### Added — deploy-freshness gate (the recurring prod-gap fix)

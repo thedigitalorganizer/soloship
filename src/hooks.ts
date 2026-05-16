@@ -90,11 +90,22 @@ export async function installHooks(
         },
       ],
     },
+    {
+      matcher: "Edit|Write|MultiEdit|NotebookEdit",
+      hooks: [
+        {
+          type: "command",
+          command: buildBillingGateScript(),
+          timeout: 5000,
+        },
+      ],
+    },
   ];
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
+  results.push("PreToolUse: billing/credit/rerun-window confirmation gate (blocks edits until data-model semantics confirmed)");
 
   // PostToolUse: Auto-lint after file edits + CHANGELOG check after commits
   const postToolUseHooks: HookEntry[] = [];
@@ -684,5 +695,41 @@ if [ -n "$STALE" ]; then
 fi
 
 exit 0
+'`;
+}
+
+function buildBillingGateScript(): string {
+  // Billing / credit / rerun-window confirmation gate. The single most
+  // expensive recurring friction was money/credit code written on an assumed
+  // data model, shipped, then discovered wrong — two backfill rounds + reverts.
+  // This is the mechanical floor for the billing-confirmation-gate rule:
+  // BLOCK (exit 2) any Edit/Write to billing-state code until the agent has
+  // confirmed the data-model semantics with the user and recorded it in
+  // .ai/.billing-ack. The ack file is the escape hatch — the rule forbids
+  // creating it without an actual confirmation.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+
+# Already confirmed for this working area => stand down.
+if [ -f .ai/.billing-ack ]; then
+  exit 0
+fi
+
+# Strong trigger: the target file path itself is billing/credit/window code.
+PATH_HIT=$(echo "$TI" | grep -oiE "\\"(file_)?path\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*(billing|credit|invoice|subscription|proration|payout|ledger|stripe|rerun[-_]?window|grace[-_]?period|trial[-_]?(length|end|days))[^\\"]*\\"" | head -1)
+
+# Content trigger: the change introduces/edits billing-state identifiers.
+CONTENT_HIT=$(echo "$TI" | grep -oiE "(credit[_-]?balance|creditBalance|credits?[[:space:]]*[-+]?=|rerun[_-]?window|rerunWindow|grace[_-]?period|trial[_-]?(ends?|end_at|length|days)|amount[_-]?due|amountDue|invoice|subscription|proration|refund|stripe\\.[a-z]|charge[A-Z_])" | head -1)
+
+if [ -z "$PATH_HIT" ] && [ -z "$CONTENT_HIT" ]; then
+  exit 0
+fi
+
+WHY="$PATH_HIT"
+[ -z "$WHY" ] && WHY="$CONTENT_HIT"
+
+echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation violates the rule." >&2
+exit 2
 '`;
 }

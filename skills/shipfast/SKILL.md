@@ -37,6 +37,15 @@ npm run build 2>&1
 Must pass. If build fails, fix before proceeding.
 
 ### 4. Commit
+
+**Scope Ledger Gate (Soloship — MANDATORY, even in emergency):** Before this
+commit, invoke `verification-before-completion` and emit its **Scope Ledger**
+(shipped / remaining / out-of-scope) and **Touch Map**. Emergency fixes are the
+*highest*-risk place for stale-state bugs — a hotfix that patches 1 of 4 copies
+of the broken value ships the bug right back. `git grep` the changed value/name
+across the whole repo; resolve every hit with evidence before committing. If
+anything is REMAINING, the "Shipped." report must say so.
+
 Stage the changed files (be specific — don't `git add -A`).
 Write a concise commit message with the appropriate prefix:
 - `fix:` for bug fixes

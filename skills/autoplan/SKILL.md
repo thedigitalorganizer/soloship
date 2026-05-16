@@ -428,6 +428,35 @@ Then prepend a one-line HTML comment to the plan file:
   on top of) or if an AI agent is the primary user (OpenClaw actions, Claude Code skills,
   MCP servers).
 
+### Step 2.5: Claim Verification (MANDATORY — gate before reviews run)
+
+A plan is a set of assertions about a codebase. Reviewing or auto-deciding on a
+plan whose factual claims are wrong wastes the entire pipeline — every
+downstream review reasons from a false premise. Before loading the review
+skills, verify the plan's factual claims against the live repo.
+
+Extract every factual assertion from the plan — "X is already implemented",
+file/function locations, "there are tests for Y", config/pricing/rate/limit
+values, dependency claims ("Z calls W", "nothing else uses this") — and verify
+each with `git grep` / file reads against the actual repo (not from memory, not
+from the plan's own words). Emit a Claims Table:
+
+```
+CLAIM VERIFICATION (autoplan Phase 0)
+  | claim                                | verified? | evidence                    |
+  |--------------------------------------|-----------|-----------------------------|
+  | "rate limiting already exists"       | FALSE     | git grep rateLimit → 0 hits |
+  | "pricing is $29/mo"                  | TRUE      | config/pricing.ts:12 = 2900 |
+```
+
+**If any load-bearing claim is FALSE or unverifiable:** do not proceed to the
+reviews. Surface the false claims to the user at the final approval gate as a
+**User Challenge** (per Decision Classification) with the evidence, and either
+correct the plan to match reality or mark the claim as an explicit
+assumption-to-validate. A plan with an unverified load-bearing claim does not
+enter the review pipeline. This is the load-bearing audit step — it runs every
+time, not only when someone remembers to ask for it.
+
 ### Step 3: Load skill files from disk
 
 Use the Glob tool to find each review skill, in this order of preference:

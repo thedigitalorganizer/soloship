@@ -98,9 +98,46 @@ After the plan is written to `docs/plans/YYYY-MM-DD-<slug>.md`, validate:
 - [ ] Handoff section exists with next step and context for next agent
 - [ ] No prior pitfalls from solution search left unaddressed
 - [ ] All dependencies/contracts for touched files are accounted for
+- [ ] **Claim Verification passed (see below) — every factual assertion grepped against the live repo**
 
 **If any check fails:** Fix it before declaring the plan complete. Do not
 proceed to implementation with an incomplete plan.
+
+### Claim Verification (MANDATORY — do not skip)
+
+A plan is a set of assertions about a codebase that does not exist in your
+context — it exists on disk. Every **factual claim** in the plan must be
+verified against the actual repo *before the plan is allowed to proceed* to
+review or implementation. Plans drift from reality silently; an unverified
+"X is already done" sends the next agent to build on a foundation that isn't
+there.
+
+Extract every factual assertion and verify each against the live codebase:
+
+| Claim type | How to verify |
+|------------|---------------|
+| "X is already implemented / already done" | `git grep` for the symbol/behavior; open the file and confirm it actually does X |
+| File / function / module locations | `ls`/`git grep` the exact path or symbol — confirm it exists where the plan says |
+| "There are tests for Y" / coverage claims | `git grep` the test file; confirm the assertion tests Y, not just that a file exists |
+| Config / pricing / rate / limit values | `git grep` the constant; read the actual current value — never restate from memory |
+| "Z depends on / calls W" | `git grep` the call site; confirm the dependency direction |
+| "Nothing else uses this" | `git grep` the symbol repo-wide; one hit disproves it |
+
+Emit a **Claims Table** in the plan (or inline before proceeding):
+
+```
+CLAIM VERIFICATION
+  | claim                                  | verified? | evidence                     |
+  |----------------------------------------|-----------|------------------------------|
+  | "auth middleware already rate-limits"  | FALSE     | git grep rateLimit → 0 hits  |
+  | "pricing is $29/mo"                     | TRUE      | config/pricing.ts:12 = 2900  |
+  | "no tests for the export path"          | TRUE      | git grep export.*spec → none |
+```
+
+**If any claim is FALSE or unverifiable:** the plan is wrong, not the repo.
+Correct the plan to match reality (or mark the claim as an explicit assumption
+to validate first) before it proceeds. A plan with an unverified load-bearing
+claim does not pass the gate.
 
 ## Common Rationalizations
 
@@ -112,6 +149,8 @@ proceed to implementation with an incomplete plan.
 | "I'll skip the enforcement gate — the plan looks good" | The gate exists because plans always look good to their author. Check the boxes. Every unchecked box is a failure mode in execution. |
 | "I don't need to read the architecture registry" | The registry tells you what depends on what you're changing. Skipping it means surprise breakage in components you didn't know existed. |
 | "CE's workflow already produced a plan, so I'm done" | CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done. |
+| "The plan says X is already done, so I'll trust it" | The plan is an assertion, not evidence. `git grep` it. "Already done" claims that were false are the most expensive plan defect — they send the next agent to build on nothing. |
+| "Grepping every claim is tedious" | One false load-bearing claim = a full implementation built on a wrong premise, then reverted. The grep is seconds; the rework is hours. |
 
 ---
 

@@ -107,6 +107,19 @@ splitting into logical, bisectable commits:
 - Each commit should build and pass tests independently
 - Use `git rebase` to reorganize if needed (ask user first)
 
+### Step 9.5: Scope Ledger Gate (Soloship — MANDATORY)
+
+Before the merge (the point of no return where "shipped" gets claimed), invoke
+the `verification-before-completion` skill and emit its **Scope Ledger**
+(shipped / remaining / out-of-scope) and **Touch Map** for the entire change
+set. `git grep` every value, name, field, and config key this work introduced
+or changed across the whole repo — one row per hit, each resolved with
+evidence. Do not proceed to Step 10 until the ledger is emitted and every
+Touch-Map row is resolved. If REMAINING is non-empty, the "Shipped (thorough)"
+report must state exactly what shipped and what remains — do not claim the plan
+is fully delivered when it is not. This is the in-run catch for stale-state
+bugs and premature phase-done over-claims.
+
 ### Step 10: Merge to Base Branch Locally (default)
 
 **Soloship default — no PR.** Shawn is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.
