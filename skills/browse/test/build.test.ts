@@ -13,7 +13,18 @@ describe('build: server-node.mjs', () => {
       // Skip rather than fail so plain `bun test` without a prior build passes.
       return;
     }
-    expect(() => execSync(`node --check ${SERVER_NODE}`, { stdio: 'pipe' })).not.toThrow();
+    expect(() => execSync(`node --check ${JSON.stringify(SERVER_NODE)}`, { stdio: 'pipe' })).not.toThrow();
+  });
+
+  test('contains no absolute build-machine path (privacy: git-tracked, ships publicly)', () => {
+    if (!fs.existsSync(SERVER_NODE)) return;
+    const bundle = fs.readFileSync(SERVER_NODE, 'utf-8');
+    // Bun's bundler injects `var __dirname = "<absolute build path>"`.
+    // build-node-server.sh Step 2 must rewrite it to the runtime shim and
+    // Step 5 must guard the build. If any /Users//home//root/ literal
+    // survives, the build machine's path shipped in a public plugin.
+    const leaks = bundle.match(/"\/(Users|home|root)\/[^"]+"/g);
+    expect(leaks).toBeNull();
   });
 
   test('does not inline @ngrok/ngrok (must be external)', () => {

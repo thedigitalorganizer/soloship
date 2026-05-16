@@ -4679,7 +4679,7 @@ function buildUnknownCommandError(command, commandSet, aliasMap = COMMAND_ALIASE
       msg += ` Did you mean '${best}'?`;
   }
   if (newInVersion[command]) {
-    msg += ` This command was added in browse v${newInVersion[command]}. Upgrade soloship (npm i -g soloship) or rebuild from source: cd ~/.claude/skills/soloship/skills/gs-browse && ./scripts/build-soloship.sh.`;
+    msg += ` This command was added in browse v${newInVersion[command]}. Upgrade soloship (npm i -g soloship) or rebuild from source: cd ~/.claude/skills/soloship/skills/browse && ./scripts/build-soloship.sh.`;
   }
   return msg;
 }
@@ -8284,7 +8284,7 @@ class TabSession {
 }
 
 // src/browser-manager.ts
-var __dirname = "/Users/shawn/Projects/Internal Tools/Soloship/skills/gs-browse/src";
+var __dirname = __browseNodeSrcDir;
 class BrowserManager {
   browser = null;
   context = null;
@@ -8344,12 +8344,12 @@ class BrowserManager {
       process.env.BROWSE_EXTENSIONS_DIR || "",
       path4.resolve(__dirname, "..", "extension"),
       path4.resolve(__dirname, "..", "..", "extension"),
-      path4.join(process.env.HOME || "", ".claude", "skills", "soloship", "skills", "gs-browse", "extension"),
+      path4.join(process.env.HOME || "", ".claude", "skills", "soloship", "skills", "browse", "extension"),
       (() => {
         const stateFile = process.env.BROWSE_STATE_FILE || "";
         if (stateFile) {
           const repoRoot = path4.resolve(path4.dirname(stateFile), "..");
-          return path4.join(repoRoot, ".claude", "skills", "soloship", "skills", "gs-browse", "extension");
+          return path4.join(repoRoot, ".claude", "skills", "soloship", "skills", "browse", "extension");
         }
         return "";
       })()
@@ -8459,7 +8459,7 @@ class BrowserManager {
         const iconCandidates = [
           path4.join(__dirname, "..", "scripts", "app", "icon.icns"),
           path4.join(__dirname, "..", "..", "scripts", "app", "icon.icns"),
-          path4.join(process.env.HOME || "", ".claude", "skills", "soloship", "skills", "gs-browse", "scripts", "app", "icon.icns")
+          path4.join(process.env.HOME || "", ".claude", "skills", "soloship", "skills", "browse", "scripts", "app", "icon.icns")
         ];
         const iconSrc = iconCandidates.find((p) => fs3.existsSync(p));
         if (iconSrc) {
@@ -10505,7 +10505,7 @@ import * as fs9 from "fs";
 import * as path9 from "path";
 import * as os7 from "os";
 import * as cp from "child_process";
-var __dirname = "/Users/shawn/Projects/Internal Tools/Soloship/skills/gs-browse/src";
+var __dirname = __browseNodeSrcDir;
 function defaultTierPaths(opts = {}) {
   const home = opts.home ?? os7.homedir();
   const projectRoot = opts.projectRoot ?? detectProjectRoot();
@@ -13115,7 +13115,7 @@ import * as fs17 from "fs";
 import * as net2 from "net";
 import * as path15 from "path";
 import * as crypto7 from "crypto";
-var __dirname = "/Users/shawn/Projects/Internal Tools/Soloship/skills/gs-browse/src";
+var __dirname = __browseNodeSrcDir;
 var config = resolveConfig();
 ensureStateDir(config);
 initAuditLog(config.auditLog);

@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.8.1] - 2026-05-16
+
+### Fixed — public-surface privacy sweep
+
+Audited everything that ships into other users' instances (plugin `skills/**`) and into their projects (emitted rules/templates/hooks from `dist/`). The emitted-into-user-projects surface was clean. Two leaks fixed:
+
+- **`skills/shipthorough/SKILL.md`** hardcoded the maintainer's first name ("Shawn is a solo developer") in a skill instruction that loads into every plugin user's Claude. Generalized to "Soloship's user."
+- **`skills/browse/dist/server-node.mjs`** (git-tracked, ships via plugin) had the maintainer's absolute build path baked in 3× as `var __dirname = "/Users/.../skills/gs-browse/src"`. Root cause: bun's bundler injects `var __dirname = "<absolute build path>"` and `scripts/build-node-server.sh` sanitized `import.meta.dir` but not `__dirname`. This was also a latent **correctness** bug — `__dirname` is load-bearing (`path.resolve(__dirname, "..", "extension")`, icon/welcome paths), so on any other machine those resolved to a nonexistent path. Fixed at source: the build now repoints `__dirname` at the existing portable `__browseNodeSrcDir` runtime shim, plus a new build-time leak guard (Step 5) that fails the build if any absolute `/Users//home//root/` path survives post-processing. Bundle rebuilt; a regression test asserts no absolute path ships; fixed a pre-existing unquoted-path bug in the build test.
+
+Author metadata in `.claude-plugin/plugin.json` / `marketplace.json` (`thedigitalorganizer`, contact email) is intentional published-package attribution and left as-is. The repo's own `CLAUDE.md` and `.claude/rules/*` reference the maintainer but are Soloship's own dev governance — not shipped via npm, not loaded into user instances — and are intentionally untouched.
+
 ## [0.8.0] - 2026-05-16
 
 ### Added — three friction-to-automatic gates (from `/insights`)

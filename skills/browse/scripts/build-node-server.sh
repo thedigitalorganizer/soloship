@@ -31,6 +31,14 @@ bun build "$SRC_DIR/server.ts" \
 # Step 2: Post-process
 # Replace import.meta.dir with a resolvable reference
 perl -pi -e 's/import\.meta\.dir/__browseNodeSrcDir/g' "$DIST_DIR/server-node.mjs"
+# Bun's bundler injects `var __dirname = "<absolute build-machine path>"` for
+# any module that references __dirname. That (a) bakes the build machine's
+# filesystem path into the shipped, git-tracked bundle — a privacy leak in a
+# public plugin — and (b) is wrong on every other machine, since that path
+# won't exist there. The injected value is always the source dir, which is
+# exactly what __browseNodeSrcDir resolves to at runtime — repoint __dirname
+# at the portable shim so the bundle is both leak-free and correct anywhere.
+perl -pi -e 's{var __dirname = "[^"]*";}{var __dirname = __browseNodeSrcDir;}g' "$DIST_DIR/server-node.mjs"
 # Stub out bun:sqlite (macOS-only cookie import, not needed on Windows)
 perl -pi -e 's|import { Database } from "bun:sqlite";|const Database = null; // bun:sqlite stubbed on Node|g' "$DIST_DIR/server-node.mjs"
 
@@ -50,5 +58,17 @@ mv "$DIST_DIR/server-node.tmp.mjs" "$DIST_DIR/server-node.mjs"
 
 # Step 4: Copy polyfill to dist/
 cp "$SRC_DIR/bun-polyfill.cjs" "$DIST_DIR/bun-polyfill.cjs"
+
+# Step 5: Leak guard — this bundle is git-tracked and ships in a public plugin.
+# Fail the build if any absolute build-machine path survived post-processing
+# (covers __dirname, __filename, or any other path the bundler might inject in
+# the future), so a leak can never reach a commit silently again.
+if grep -qE '"/(Users|home|root)/[^"]+"' "$DIST_DIR/server-node.mjs"; then
+  echo "ERROR: server-node.mjs contains an absolute build-machine path — refusing to ship." >&2
+  echo "Offending literals:" >&2
+  grep -oE '"/(Users|home|root)/[^"]+"' "$DIST_DIR/server-node.mjs" | sort -u >&2
+  echo "Add a Step 2 perl rewrite that repoints it at a runtime-resolvable reference." >&2
+  exit 1
+fi
 
 echo "Node server bundle ready: $DIST_DIR/server-node.mjs"
