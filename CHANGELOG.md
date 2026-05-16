@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.9.0] - 2026-05-16
+
+### Added — recurrence gate (cross-session pattern detection, externalized)
+
+Implements `docs/plans/2026-05-16-recurrence-gate.md`. The function this externalizes: noticing that the *same* non-fix has been applied before. `/clear` wipes the agent's memory of that; `.ai/learnings.jsonl` (written by `/learn`) does not. Until now only the maintainer caught repeats, by hand. This makes it mechanical.
+
+- **`PreToolUse`/`Bash` recurrence gate (`buildRecurrenceGateScript`).** On every `git commit`, reads the existing `.ai/learnings.jsonl` (never a new file) and counts deterministic matches: staged files ∩ an entry's `components` **and** commit-message tokens ∩ its `key`/`insight`. Escalation: **0 = silent allow**, **1 = block** (names the prior solution path; escape hatch `.ai/.recurrence-ack`), **2+ = hard stop** with full recurrence history. No LLM judgment — matching is mechanical on the existing schema, so it can't reintroduce the compliance failure it exists to remove.
+- **Degraded mode for heredoc commits.** CE/Soloship commit flows use heredoc bodies that can't be token-parsed from the command string. Rather than silently under-matching the most common commit style, the gate falls back to file-overlap-only and **warns instead of blocking at the 1-match tier** — but still **hard-stops at 2+** (verified). Under-catch, never false-block.
+- **`PostToolUse`/`Bash` recurrence audit (`buildRecurrenceAuditScript`).** A commit issued from inside a node/python script isn't a Bash commit the gate can block. This fires after the script's Bash call, detects the match post-hoc, records it to `.ai/.recurrence-log`, and surfaces it — so the bypass is loud and the next commit escalates. Hand-typed terminal commits outside Claude Code remain out of scope (documented).
+- **New auto-loaded rule `recurrence-gate.md`.** Deliberately *not* a "remember to check" rule (that would violate the plan's core constraint that nothing may depend on the agent choosing to check). Its sole job is the **anti-gaming clause** on the escape hatch — mirroring the billing gate's: writing `.ai/.recurrence-ack` to silence the block without a genuine reason that a mechanical fix isn't the right call defeats the instrument and violates the rule.
+
+Both hooks wired into `installHooks`; structurally cloned from the billing-confirmation gate. Verified by the spec's mandated observed-behavior tests (positive block, silent negative, ack escape, tier-2 hard stop, heredoc degraded-warn, no-ledger pass, 2+ overrides degraded, PostToolUse records scripted-commit bypass).
+
+### Migration
+
+Nothing to migrate. New `soloship init` / `soloship upgrade` runs include both hooks + the rule. v1 is per-project (`.ai/learnings.jsonl` is per-project today); cross-project matching is a tracked `BACKLOG.md` follow-up, sequenced after v1 proves it doesn't false-block.
+
 ## [0.8.1] - 2026-05-16
 
 ### Fixed — public-surface privacy sweep

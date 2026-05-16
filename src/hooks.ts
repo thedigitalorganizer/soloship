@@ -100,12 +100,23 @@ export async function installHooks(
         },
       ],
     },
+    {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildRecurrenceGateScript(),
+          timeout: 10000,
+        },
+      ],
+    },
   ];
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
   results.push("PreToolUse: billing/credit/rerun-window confirmation gate (blocks edits until data-model semantics confirmed)");
+  results.push("PreToolUse: recurrence gate (blocks a 2nd patch of a failure class already in .ai/learnings.jsonl)");
 
   // PostToolUse: Auto-lint after file edits + CHANGELOG check after commits
   const postToolUseHooks: HookEntry[] = [];
@@ -136,6 +147,20 @@ export async function installHooks(
     ],
   });
   results.push("PostToolUse: CHANGELOG check for feat/fix/refactor commits");
+
+  // Recurrence audit: catch script-issued commits the PreToolUse gate can't
+  // block; record the recurrence + surface it so the next commit escalates.
+  postToolUseHooks.push({
+    matcher: "Bash",
+    hooks: [
+      {
+        type: "command",
+        command: buildRecurrenceAuditScript(),
+        timeout: 8000,
+      },
+    ],
+  });
+  results.push("PostToolUse: recurrence audit (records + surfaces script-issued commits that bypass the gate)");
 
   if (postToolUseHooks.length > 0) {
     hooks.PostToolUse = postToolUseHooks;
@@ -731,5 +756,182 @@ WHY="$PATH_HIT"
 
 echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation violates the rule." >&2
 exit 2
+'`;
+}
+
+function buildRecurrenceGateScript(): string {
+  // Recurrence gate (PreToolUse/Bash). Externalizes the one cross-session
+  // function only the user does today: noticing the SAME non-fix has been
+  // applied before. /clear wipes the agent's memory; .ai/learnings.jsonl does
+  // not. On git commit this reads that existing ledger (never a new file),
+  // counts mechanical matches (staged-file ∩ components AND message-token ∩
+  // key/insight), and escalates: 0=silent, 1=block, 2+=hard stop with history.
+  // Structurally a clone of the billing gate: PreToolUse block + .ai/-ack
+  // escape hatch. No LLM judgment — match is deterministic on existing schema.
+  // Spec: docs/plans/2026-05-16-recurrence-gate.md.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+echo "$TI" | grep -qE "git[[:space:]]+commit" || exit 0
+
+L=.ai/learnings.jsonl
+[ -f "$L" ] || exit 0
+
+STAGED=$(git diff --cached --name-only 2>/dev/null | tr "A-Z" "a-z")
+[ -z "$STAGED" ] && exit 0
+
+# Commit message + degraded detection. Heredoc bodies (CE/soloship use them
+# heavily) cannot be token-parsed from the command string — fall back to
+# file-overlap-only and WARN instead of block at the 1-match tier.
+DEGRADED=0
+if echo "$TI" | grep -qE "<<.{0,6}EOF|<<-?[A-Za-z_]+"; then
+  DEGRADED=1
+  MSG=""
+else
+  MSG=$(echo "$TI" | grep -oE -- "-m[[:space:]]+\\"[^\\"]*\\"" | head -1 | sed -E "s/^-m[[:space:]]+\\"//; s/\\"$//")
+  [ -z "$MSG" ] && DEGRADED=1
+fi
+MSG_TOK=$(printf "%s" "$MSG" | tr "A-Z" "a-z" | tr -c "a-z0-9" " ")
+
+ACK=0
+[ -f .ai/.recurrence-ack ] && ACK=1
+RL=.ai/.recurrence-log
+
+MATCHED=0
+HIST=""
+MKEYS=""
+while IFS= read -r line; do
+  case "$line" in *key*components*) ;; *) continue;; esac
+  KEY=$(printf "%s" "$line" | grep -oE "\\"key\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"key\\":\\"//; s/\\"$//")
+  SOL=$(printf "%s" "$line" | grep -oE "\\"solution\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"solution\\":\\"//; s/\\"$//")
+  DT=$(printf "%s" "$line" | grep -oE "\\"date\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"date\\":\\"//; s/\\"$//")
+  INS=$(printf "%s" "$line" | grep -oE "\\"insight\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"insight\\":\\"//; s/\\"$//")
+  COMPS=$(printf "%s" "$line" | grep -oE "\\"components\\":\\[[^]]*\\]" | grep -oE "\\"[^\\"]+\\"" | tr -d "\\"" | tr "A-Z" "a-z")
+  [ -z "$COMPS" ] && continue
+
+  FILE_HIT=0
+  for c in $COMPS; do
+    case "$c" in ?|??) continue;; esac
+    if printf "%s" "$STAGED" | grep -qF "$c"; then FILE_HIT=1; break; fi
+    for ct in $(printf "%s" "$c" | tr -c "a-z0-9" " "); do
+      case "$ct" in ?|??|???) continue;; esac
+      if printf "%s" "$STAGED" | grep -qF "$ct"; then FILE_HIT=1; break; fi
+    done
+    [ $FILE_HIT -eq 1 ] && break
+  done
+  [ $FILE_HIT -eq 0 ] && continue
+
+  TOK_HIT=0
+  if [ $DEGRADED -eq 1 ]; then
+    TOK_HIT=1
+  else
+    KI=$(printf "%s %s" "$KEY" "$INS" | tr "A-Z" "a-z" | tr -c "a-z0-9" " ")
+    for t in $MSG_TOK; do
+      case "$t" in ?|??|???) continue;; esac
+      case " the and for with that this from into has have not are was were feat fix docs chore refactor " in *" $t "*) continue;; esac
+      for k in $KI; do
+        if [ "$t" = "$k" ]; then TOK_HIT=1; break; fi
+      done
+      [ $TOK_HIT -eq 1 ] && break
+    done
+  fi
+  [ $TOK_HIT -eq 0 ] && continue
+
+  MATCHED=$((MATCHED + 1))
+  HIST="$HIST | $DT  $KEY  ->  $SOL"
+  MKEYS="$MKEYS $KEY"
+done < "$L"
+
+[ $MATCHED -eq 0 ] && exit 0
+
+PRIOR=0
+if [ -f "$RL" ]; then
+  for k in $MKEYS; do
+    n=$(grep -cF "|$k|" "$RL" 2>/dev/null)
+    [ -z "$n" ] && n=0
+    PRIOR=$((PRIOR + n))
+  done
+fi
+TIER=$((MATCHED + PRIOR))
+
+if [ $ACK -eq 1 ]; then
+  echo "{\\"systemMessage\\": \\"recurrence-gate: .ai/.recurrence-ack present — allowing a commit that matches a recorded failure class ($HIST ). The ack records that a patch is justified THIS time; writing it without a real reason defeats the gate.\\"}"
+  exit 0
+fi
+
+if [ $TIER -ge 2 ]; then
+  echo "BLOCKED by recurrence-gate — HARD STOP (this failure class has recurred $TIER times):$HIST" >&2
+  echo "A repeat patch is not the fix. Escalate to a MECHANICAL fix (hook, test, or structural change) so it cannot recur. If a patch is genuinely correct this time, record why: mkdir -p .ai && echo \\"<reason> ($(date +%F))\\" >> .ai/.recurrence-ack then re-commit." >&2
+  exit 2
+fi
+
+if [ $DEGRADED -eq 1 ]; then
+  echo "{\\"systemMessage\\": \\"recurrence-gate WARNING (degraded match — heredoc/unparseable commit message, file-overlap only, not blocking on the weaker signal): this commit touches a recorded failure class:$HIST . If it is the same failure, escalate to a mechanical fix instead of re-patching.\\"}"
+  exit 0
+fi
+
+echo "BLOCKED by recurrence-gate — first recurrence:$HIST" >&2
+echo "This failure class was already addressed (see the solution path above). A second patch is not allowed. Either escalate to a mechanical fix (hook/test/structural change) so it cannot recur, or, if a patch is genuinely correct this time, record why: mkdir -p .ai && echo \\"<reason> ($(date +%F))\\" >> .ai/.recurrence-ack then re-commit. Writing that file without a real reason violates the recurrence-gate rule." >&2
+exit 2
+'`;
+}
+
+function buildRecurrenceAuditScript(): string {
+  // PostToolUse/Bash complement. A git commit made from inside a node/python
+  // script is not a Bash *commit* the PreToolUse gate can block — but the
+  // script invocation is itself a Bash tool call, so this fires after it.
+  // It cannot undo the commit; it records the recurrence to .ai/.recurrence-log
+  // and surfaces it, so the next commit-s PreToolUse gate escalates and the
+  // bypass is loud, not silent. Spec: docs/plans/2026-05-16-recurrence-gate.md.
+  return `bash -c '
+L=.ai/learnings.jsonl
+[ -f "$L" ] || exit 0
+SHA=$(git log -1 --format=%H 2>/dev/null)
+[ -z "$SHA" ] && exit 0
+CT=$(git log -1 --format=%ct 2>/dev/null)
+[ -z "$CT" ] && exit 0
+AGE=$(( $(date +%s) - CT ))
+[ $AGE -gt 120 ] && exit 0
+RL=.ai/.recurrence-log
+if [ -f "$RL" ] && grep -qF "$SHA" "$RL"; then exit 0; fi
+
+STAGED=$(git show --name-only --format= "$SHA" 2>/dev/null | tr "A-Z" "a-z")
+[ -z "$STAGED" ] && exit 0
+MSG_TOK=$(git log -1 --format=%B 2>/dev/null | tr "A-Z" "a-z" | tr -c "a-z0-9" " ")
+
+HITS=""
+while IFS= read -r line; do
+  case "$line" in *key*components*) ;; *) continue;; esac
+  KEY=$(printf "%s" "$line" | grep -oE "\\"key\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"key\\":\\"//; s/\\"$//")
+  SOL=$(printf "%s" "$line" | grep -oE "\\"solution\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"solution\\":\\"//; s/\\"$//")
+  DT=$(printf "%s" "$line" | grep -oE "\\"date\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"date\\":\\"//; s/\\"$//")
+  INS=$(printf "%s" "$line" | grep -oE "\\"insight\\":\\"[^\\"]*\\"" | head -1 | sed -E "s/\\"insight\\":\\"//; s/\\"$//")
+  COMPS=$(printf "%s" "$line" | grep -oE "\\"components\\":\\[[^]]*\\]" | grep -oE "\\"[^\\"]+\\"" | tr -d "\\"" | tr "A-Z" "a-z")
+  [ -z "$COMPS" ] && continue
+  FILE_HIT=0
+  for c in $COMPS; do
+    case "$c" in ?|??) continue;; esac
+    if printf "%s" "$STAGED" | grep -qF "$c"; then FILE_HIT=1; break; fi
+  done
+  [ $FILE_HIT -eq 0 ] && continue
+  KI=$(printf "%s %s" "$KEY" "$INS" | tr "A-Z" "a-z" | tr -c "a-z0-9" " ")
+  TOK_HIT=0
+  for t in $MSG_TOK; do
+    case "$t" in ?|??|???) continue;; esac
+    case " the and for with that this from into has have not are was were feat fix docs chore refactor " in *" $t "*) continue;; esac
+    for k in $KI; do
+      if [ "$t" = "$k" ]; then TOK_HIT=1; break; fi
+    done
+    [ $TOK_HIT -eq 1 ] && break
+  done
+  [ $TOK_HIT -eq 0 ] && continue
+  mkdir -p .ai
+  printf "%s|%s|%s|%s\\n" "$SHA" "$DT" "$KEY" "$SOL" >> "$RL"
+  HITS="$HITS | $DT $KEY -> $SOL"
+done < "$L"
+
+[ -z "$HITS" ] && exit 0
+echo "{\\"systemMessage\\": \\"recurrence-gate: a commit that just landed ($SHA) matches a recorded failure class and was recorded to .ai/.recurrence-log:$HITS . It could not be blocked (not a Bash commit call), but the next commit will escalate. Consider a mechanical fix now.\\"}"
+exit 0
 '`;
 }
