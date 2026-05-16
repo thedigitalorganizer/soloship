@@ -60,6 +60,20 @@ Detect the deployment platform and deploy:
 - `Dockerfile` exists → follow project-specific deploy instructions in CLAUDE.md
 - None detected → ask the user how to deploy
 
+### 7. Verify Live (do NOT skip — this is the recurring prod-gap fix)
+
+A deploy command exiting 0 does not mean the fix is live. The single most
+expensive recurring failure is "shipped" being reported when a stale bundle or
+unapplied migration meant the fix never reached users. Before reporting Done:
+
+1. Get the live URL (deploy command output, CLAUDE.md, or `wrangler pages deployment list` / `firebase hosting:channel:list`).
+2. Fetch it and confirm it is the NEW version, not cached/old:
+   ```
+   curl -sS -o /dev/null -w "%{http_code}" <live-url>      # expect 2xx
+   ```
+   Then verify the actual change is present — grep the deployed HTML/asset for a string unique to this fix, or open it with `/browse` and confirm the changed behavior is visible. A 200 alone is not proof; the old version also returns 200.
+3. If the live page does not reflect the change: the artifact was stale or the deploy targeted the wrong target. Rebuild, redeploy, re-verify. Do not report Done until the change is observably live.
+
 ### Done
 
 ```
@@ -88,4 +102,5 @@ Ship fast is not complete until ALL of these are true:
 - [ ] Changes committed with appropriate prefix (fix:/feat:/refactor:)
 - [ ] Pushed to remote
 - [ ] Deployed to detected platform (or user-specified target)
+- [ ] Live URL fetched and the specific change confirmed visible on it (not just a 2xx)
 - [ ] "Shipped." summary presented with commit hash and deploy target

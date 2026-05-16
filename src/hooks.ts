@@ -80,10 +80,21 @@ export async function installHooks(
         },
       ],
     },
+    {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildDeployFreshnessScript(),
+          timeout: 10000,
+        },
+      ],
+    },
   ];
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
+  results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
 
   // PostToolUse: Auto-lint after file edits + CHANGELOG check after commits
   const postToolUseHooks: HookEntry[] = [];
@@ -581,6 +592,95 @@ fi
 # Warn on medium findings
 if [ "$MEDIUM" -gt 0 ]; then
   echo "{\\"systemMessage\\": \\"Security scan: $MEDIUM medium-severity finding(s). Run semgrep for details. Consider fixing before shipping.\\"}"
+fi
+
+exit 0
+'`;
+}
+
+function buildDeployFreshnessScript(): string {
+  // Deploy-freshness gate. The single most expensive recurring friction (per
+  // /insights across 185 sessions) is correct code that never reaches prod
+  // because a build or migration step was skipped before deploy. This hook is
+  // the mechanical floor for that:
+  //
+  //   1. BLOCK (exit 2) a deploy that ships a LOCAL build artifact when the
+  //      newest source file is newer than the newest artifact file AND the
+  //      deploy command (or the npm "deploy" script it calls) does not itself
+  //      run a build. This is the exact stale-frontend-bundle bug.
+  //   2. WARN (exit 0 + systemMessage) on D1-backed wrangler deploys that are
+  //      not "migrations apply" — unapplied migrations don't auto-deploy.
+  //
+  // Auto-passes remote-build platforms (Vercel) where local artifact mtime is
+  // irrelevant, and any command that visibly builds. Pure filesystem + git +
+  // package.json inspection — no AI judgment, no conversation parsing.
+  return `bash -c '
+COMMAND="$HOOK_TOOL_INPUT"
+
+# Only engage on deploy commands
+if ! echo "$COMMAND" | grep -qE "(firebase[[:space:]]+deploy|wrangler[[:space:]]+(pages[[:space:]]+deploy|deploy)|netlify[[:space:]]+deploy|fly[[:space:]]+deploy|vercel([[:space:]]|$)|(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+deploy)"; then
+  exit 0
+fi
+
+# --- D1 unapplied-migration warning (warn only; cannot know remote state) ---
+if echo "$COMMAND" | grep -qE "wrangler[[:space:]]+(pages[[:space:]]+deploy|deploy)" \\
+   && ! echo "$COMMAND" | grep -qE "d1[[:space:]]+migrations[[:space:]]+apply" \\
+   && [ -f wrangler.toml ] && grep -qE "\\[\\[d1_databases\\]\\]" wrangler.toml 2>/dev/null \\
+   && [ -d migrations ] && ls migrations/*.sql >/dev/null 2>&1; then
+  echo "{\\"systemMessage\\": \\"Deploy targets a D1-backed Worker. Schema migrations do NOT ship with a wrangler deploy — confirm wrangler d1 migrations apply has been run for any new files in migrations/, or the deployed code will hit a stale schema.\\"}"
+fi
+
+# --- Stale-artifact block ---
+
+# Remote-build platforms build server-side; local artifact mtime is irrelevant.
+if echo "$COMMAND" | grep -qE "vercel([[:space:]]|$)|netlify[[:space:]]+deploy|fly[[:space:]]+deploy"; then
+  exit 0
+fi
+
+# Locate a build-output directory
+ARTIFACT_DIR=""
+for d in dist build .next out .output/public public/build; do
+  if [ -d "$d" ]; then ARTIFACT_DIR="$d"; break; fi
+done
+[ -z "$ARTIFACT_DIR" ] && exit 0
+
+# No build script => the artifact dir is not a build product (e.g. hand-authored
+# static public/). Nothing to be stale against.
+if [ ! -f package.json ] || ! grep -qE "\\"build\\"[[:space:]]*:" package.json; then
+  exit 0
+fi
+
+# Does the deploy command itself run a build?
+RUNS_BUILD=0
+if echo "$COMMAND" | grep -qE "(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+build|vite[[:space:]]+build|next[[:space:]]+build|(^|[[:space:];&|])tsc([[:space:]]|$)"; then
+  RUNS_BUILD=1
+fi
+# If it invokes the npm "deploy" script, inspect that script for a build step
+if [ "$RUNS_BUILD" -eq 0 ] && echo "$COMMAND" | grep -qE "(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+deploy"; then
+  DEPLOY_SCRIPT=$(node -p "(require(\\"./package.json\\").scripts||{}).deploy||\\"\\"" 2>/dev/null)
+  if echo "$DEPLOY_SCRIPT" | grep -qE "build|vite|next build|tsc"; then
+    RUNS_BUILD=1
+  fi
+fi
+[ "$RUNS_BUILD" -eq 1 ] && exit 0
+
+# Newest file currently in the artifact dir
+NEWEST_ARTIFACT=$(find "$ARTIFACT_DIR" -type f 2>/dev/null -print0 | xargs -0 ls -t 2>/dev/null | head -1)
+[ -z "$NEWEST_ARTIFACT" ] && exit 0
+
+# Any source file newer than the freshest artifact => artifact is stale.
+# Single pruned find from repo root so it catches both root-level entrypoints
+# (simple projects keep their main file at root, not under src/) and nested
+# source dirs, while skipping build output, deps, and VCS noise.
+STALE=$(find . \\
+  \\( -path "./$ARTIFACT_DIR" -o -name node_modules -o -name .git -o -name dist -o -name build -o -name .next -o -name out -o -name .output -o -name .worktrees -o -name .ai \\) -prune \\
+  -o -type f \\( -name "*.ts" -o -name "*.tsx" -o -name "*.js" -o -name "*.jsx" -o -name "*.mjs" -o -name "*.cjs" -o -name "*.css" -o -name "*.scss" -o -name "*.html" -o -name "*.vue" -o -name "*.svelte" -o -name "*.astro" \\) -newer "$NEWEST_ARTIFACT" -print 2>/dev/null \\
+  | grep -vE "\\.(config|test|spec)\\.(js|ts|mjs|cjs|jsx|tsx)$" | head -3)
+
+if [ -n "$STALE" ]; then
+  EXAMPLE=$(echo "$STALE" | head -1)
+  echo "BLOCKED: build artifact ($ARTIFACT_DIR/) is older than your source (e.g. $EXAMPLE). This deploy command does not run a build, so it would ship a STALE bundle and your fix would not reach production. Run your build (npm run build) first, then deploy." >&2
+  exit 2
 fi
 
 exit 0

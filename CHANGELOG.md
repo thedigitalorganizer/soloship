@@ -1,5 +1,22 @@
 # Changelog
 
+## [0.7.0] - 2026-05-16
+
+### Added — deploy-freshness gate (the recurring prod-gap fix)
+
+A `/insights` review across 185 sessions found the single most expensive recurring friction was correct code that never reached production because a build or migration step was skipped before deploy (stale frontend bundle, unapplied D1 migration, partial pricing fix). This release adds the mechanical floor for that.
+
+- **New `PreToolUse`/Bash hook in `src/hooks.ts` (`buildDeployFreshnessScript`).** Before any deploy command: **blocks (exit 2)** a deploy that ships a local build artifact (`dist/`, `build/`, `.next/`, `out/`, `.output/public`) when any source file is newer than the freshest artifact file *and* the command doesn't itself run a build (it inspects the `package.json` `deploy` script to decide). Auto-passes build+deploy commands and remote-build platforms (Vercel/Netlify/Fly). **Warns** on D1-backed `wrangler deploy` that isn't a `migrations apply`. Pure filesystem/git/package.json inspection — no AI judgment. Scans from the repo root (pruning deps/build/VCS) so root-entrypoint projects are covered, not just `src/`-layout ones.
+- **`/soloship:shipfast` and `/soloship:shipthorough` hardened.** Both gained a non-skippable post-deploy step: resolve the live URL, fetch it, and confirm the *specific change* is visible (a 2xx is not proof — the old version returns 2xx too) plus confirm migrations applied to prod. Matching verification-checklist items added so "Shipped" can't be claimed on an unverified deploy.
+
+### Why
+
+Everything else in the friction data was one-off; this pattern repeated and broke prod at least three times. The hook makes the stale-bundle failure mechanically impossible to repeat; the skill changes close the "reported done but never verified live" gap from the workflow side.
+
+### Migration
+
+Nothing to migrate. New `soloship init` runs include the hook automatically. Existing projects keep their current hooks until re-init; the deploy-freshness hook can be added to a project's `.claude/settings.local.json` `PreToolUse` array on its own.
+
 ## [0.6.0] - 2026-05-12
 
 ### Changed (solo-developer defaults)

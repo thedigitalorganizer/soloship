@@ -182,6 +182,17 @@ Same deployment detection as `/shipfast`:
 - `netlify.toml` → `netlify deploy --prod`
 - `fly.toml` → `fly deploy`
 
+### Step 13: Verify Live (do NOT skip)
+
+A deploy exiting 0 is not proof the fix reached production — stale bundles and
+unapplied migrations are the most expensive recurring prod gap. After deploy:
+
+1. Resolve the live URL (deploy output, CLAUDE.md, `wrangler pages deployment list`, `firebase hosting:channel:list`).
+2. `curl -sS -o /dev/null -w "%{http_code}" <live-url>` → expect 2xx.
+3. Confirm the **specific change** is present on the live page — grep the served HTML/asset for a string unique to this change, or open it with `/browse` and observe the new behavior. A 2xx alone is not proof; the old version returns 2xx too.
+4. If a D1/Postgres migration shipped, confirm it was applied against the prod database (`wrangler d1 migrations list <DB>` or equivalent), not just committed.
+5. If the live state doesn't reflect the change: rebuild, redeploy, re-verify. Do not proceed to Done until it is observably live.
+
 ## Common Rationalizations
 
 | Excuse | Reality |
@@ -226,4 +237,5 @@ Ship thorough is not complete until ALL of these are true:
 - [ ] CHANGELOG updated for all feat:/fix:/refactor: changes
 - [ ] Feature branch merged into base branch locally; base branch pushed; feature branch deleted (default), OR PR created with Summary/Coverage/Review/Test Plan sections (only if user explicitly requested PR)
 - [ ] Verification gate passed after merge or PR creation (tests + build re-run)
+- [ ] Live URL fetched post-deploy and the specific change confirmed visible (and any migration confirmed applied to prod) — not just a 2xx
 - [ ] Plan file archived or deleted per lifecycle rules
