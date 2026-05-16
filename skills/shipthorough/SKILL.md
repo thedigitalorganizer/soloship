@@ -122,7 +122,7 @@ bugs and premature phase-done over-claims.
 
 ### Step 10: Merge to Base Branch Locally (default)
 
-**Soloship default — no PR.** Shawn is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.
+**Soloship default — no PR.** Soloship's user is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.
 
 ```bash
 # Detect base branch
