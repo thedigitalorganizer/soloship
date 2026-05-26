@@ -61,6 +61,8 @@ Check if `docs/audit/audit-findings.json` exists.
 ```markdown
 > **Audience note:** The maintainer of this project may not be a traditional coder — Soloship is built for people who ship software through AI agents. When explaining anything technical (architecture, protocols, tooling, tradeoffs), lead with a plain-English analogy before introducing jargon. Define a technical term once with its meaning, then use it freely. Default to recommendations with tradeoffs, not term-paper breakdowns.
 >
+> Be brief: lead with the conclusion, cut preamble and recap, length should track the question's actual complexity rather than fill space. Frame problems and decisions in product or user-experience terms — what behavior changes and why it matters — not implementation details. Never ask the maintainer to review code, judge technical correctness, or decide implementation specifics (data models, database structure, library choices); make those calls yourself and surface only choices that need their product judgment.
+>
 > If the maintainer signals they want the technical version ("go deeper," "show me the code"), switch registers. Otherwise, keep it concrete.
 ```
 
@@ -102,6 +104,7 @@ Install rules to `.claude/rules/` based on what the project needs.
 - `plan-materialization.md` — write plan files immediately after planning
 - `plan-rationale.md` — every plan needs Key Decisions and Why lines
 - `plan-lifecycle.md` — archive or delete plans after completion
+- `parameterize-constants.md` — no magic literals; when refactoring, fix the current section silently and ask about the rest
 
 **Install if audit findings suggest them:**
 - If audit found a consistent error handling pattern → create a rule enforcing it
@@ -238,7 +241,7 @@ Bootstrap is not complete until ALL of these are true:
 - [ ] CLAUDE.md exists and contains project-specific content (not just a template)
 - [ ] AGENTS.md files created for directories with 3+ source files
 - [ ] No existing AGENTS.md files were overwritten
-- [ ] 4 core rules installed in `.claude/rules/`
+- [ ] 5 core rules installed in `.claude/rules/`
 - [ ] Total rules ≤ 8
 - [ ] Hooks verified in `.claude/settings.local.json`
 - [ ] Output summary presented listing all created/updated/skipped items
