@@ -21,6 +21,8 @@ export function generateClaudeMd(project: ProjectInfo): string {
 ${stackLine ? `**Stack:** ${stackLine}\n` : ""}
 > **Audience note:** The maintainer of this project may not be a traditional coder — Soloship is built for people who ship software through AI agents. When explaining anything technical (architecture, protocols, tooling, tradeoffs), lead with a plain-English analogy before introducing jargon. Define a technical term once with its meaning, then use it freely. Default to recommendations with tradeoffs, not term-paper breakdowns.
 >
+> Be brief: lead with the conclusion, cut preamble and recap, length should track the question's actual complexity rather than fill space. Frame problems and decisions in product or user-experience terms — what behavior changes and why it matters — not implementation details. Never ask the maintainer to review code, judge technical correctness, or decide implementation specifics (data models, database structure, library choices); make those calls yourself and surface only choices that need their product judgment.
+>
 > If the maintainer signals they want the technical version ("go deeper," "show me the code"), switch registers. Otherwise, keep it concrete.
 
 ## Related Documentation
@@ -68,7 +70,7 @@ This project follows: **THINK → PLAN → WORK → LEARN → SHIP**
 
 ## Rules
 
-Coding conventions and workflow rules auto-load from \`.claude/rules/\`.
+Coding conventions and workflow rules auto-load from \`.claude/rules/\` — including **parameterize-constants** (no magic literals; refactor un-parameterized values when you encounter them, then list other affected sites and ask).
 `;
 }
 
