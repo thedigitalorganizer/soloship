@@ -20,8 +20,27 @@ Apply the compound-knowledge methodology below (vendored from Compound Engineeri
 - What was the root cause
 - What prevention strategies apply
 
-The output goes to `docs/solutions/<category>/` with proper frontmatter. Ensure
-the frontmatter includes artifact contract fields:
+The output goes to `docs/solutions/<category>/` with proper frontmatter.
+
+### Pick the track first
+
+`problem_type` selects one of two tracks, and the track decides which fields are
+**required**:
+
+- **Bug track** — you fixed something broken (an error, failure, regression, or
+  misbehavior). `problem_type` is a bug-ish value: `build_error`, `test_failure`,
+  `runtime_error`, `performance_issue`, `database_issue`, `security_issue`,
+  `ui_bug`, `integration_issue`, `logic_error`. The bug track **requires**
+  `symptoms`, `root_cause`, and `resolution_type` — the doc is useless to a
+  future searcher without the observable symptom and the underlying cause.
+- **Knowledge track** — you captured durable guidance, a pattern, or a
+  convention (no single broken thing). `problem_type` is `best_practice`,
+  `pattern`, `convention`, or `concept`. Here `symptoms`/`root_cause`/
+  `resolution_type` are **optional** — include them only if a specific cause
+  genuinely applies.
+
+### Frontmatter (artifact contract)
+
 ```yaml
 ---
 title: Short descriptive title
@@ -29,14 +48,33 @@ date: YYYY-MM-DD
 producer: soloship-learn
 version: 1
 ttl_days: 90
+problem_type: <selects the track — see list above>
 category: one-of-the-categories
 components: [list, of, affected, components]
 files: [list, of, key, files]
-symptoms: [what, the, user, sees]
+symptoms: [what, the, user, sees]      # REQUIRED for bug track; optional for knowledge track
+root_cause: <one enum value below>     # REQUIRED for bug track; optional for knowledge track
+resolution_type: <one enum value below> # REQUIRED for bug track; optional for knowledge track
 error_messages: [exact, error, strings]
 tags: [searchable, keywords]
 ---
 ```
+
+**`root_cause` enum** (pick the closest): `missing_association`, `missing_include`,
+`missing_index`, `wrong_api`, `scope_issue`, `thread_violation`, `async_timing`,
+`memory_leak`, `config_error`, `logic_error`, `test_isolation`,
+`missing_validation`, `missing_permission`, `missing_workflow_step`,
+`inadequate_documentation`, `missing_tooling`, `incomplete_setup`.
+
+**`resolution_type` enum** (pick the closest): `code_fix`, `migration`,
+`config_change`, `test_fix`, `dependency_update`, `environment_setup`,
+`workflow_improvement`, `documentation_update`, `tooling_addition`,
+`seed_data_update`.
+
+The doc body must always carry a **Solution** section (the actual fix) and, for
+the bug track, a **Why This Works** section that states the root cause in prose
+and why the fix addresses it. The `root_cause` enum is the searchable index; the
+prose is what a future reader actually needs.
 
 After writing, compute and insert `content_hash` (first 12 chars of SHA-256 of the body).
 
@@ -159,7 +197,8 @@ parent directory (de-duplicated) as the scope. Check each for governance gaps:
 Learn is not complete until ALL of these are true:
 
 - [ ] Solution doc written to `docs/solutions/<category>/` with valid frontmatter
-- [ ] Frontmatter includes: title, date, category, components, symptoms, tags
+- [ ] Frontmatter includes: title, date, problem_type, category, components, tags — and, for **bug-track** docs (`problem_type` is build_error/test_failure/runtime_error/performance_issue/database_issue/security_issue/ui_bug/integration_issue/logic_error), also `symptoms`, `root_cause` (a value from the enum), and `resolution_type` (a value from the enum). Knowledge-track docs may omit the latter three.
+- [ ] Bug-track doc body has a **Solution** section and a **Why This Works** (root-cause) section
 - [ ] JSONL entry appended to `.ai/learnings.jsonl` with key, type, insight, solution path
 - [ ] Registry drift check completed (or registry confirmed absent)
 - [ ] AGENTS.md files updated for all affected directories where new knowledge applies (or "not transferable" noted)
@@ -169,8 +208,14 @@ Learn is not complete until ALL of these are true:
 
 ## Compounding Knowledge Methodology
 
+> **Authority note:** Step 1's two-track frontmatter contract above is the
+> authoritative schema — adapted from Compound Engineering's compound v3.14.3
+> (the bug/knowledge tracks, the `root_cause`/`resolution_type` enums, and the
+> required-fields-by-track rule). The methodology prose below is the older
+> v2.34.0 single-pass orchestration, kept for its documenting guidance; where it
+> and Step 1 differ on required fields, **Step 1 governs.**
 
-<!-- Vendored from compound-engineering v2.34.0 (Kieran Klaassen). See skills/vendored/ce/LICENSE. -->
+<!-- Vendored from compound-engineering v2.34.0 (Kieran Klaassen). See skills/vendored/ce/LICENSE. Step 1's frontmatter contract above was upgraded to compound v3.14.3's two-track schema; this orchestration prose remains v2.34.0. -->
 
 # /compound
 

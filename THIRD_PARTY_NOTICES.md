@@ -38,7 +38,7 @@ Thank you, Kieran. The brainstorm → plan → work → compound loop is the bac
 
 **Author:** [Jesse Vincent](https://github.com/obra)
 **License:** MIT ([`skills/vendored/superpowers/LICENSE`](skills/vendored/superpowers/LICENSE))
-**Version pinned:** 4.1.1
+**Version pinned:** 6.0.3 (newest; skills are cherry-picked per-skill — `using-git-worktrees`, `finish`, `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development` are at 6.0.3; `systematic-debugging`, `brainstorming`, `executing-plans` remain at 4.1.1. See each skill's `<!-- Vendored from ... -->` header for its own pin, and the per-skill pin note in Modifications below.)
 **Source:** https://github.com/obra/superpowers
 
 **Vendored into Soloship as:** `/soloship:debug` (from `systematic-debugging`), `/soloship:test-driven-development`, `/soloship:brainstorm` (merged with CE's brainstorming variants), `/soloship:verification-before-completion`, `/soloship:writing-plans`, `/soloship:executing-plans`, `/soloship:subagent-driven-development`, `/soloship:using-git-worktrees`, `/soloship:finish` (from `finishing-a-development-branch`). 9 upstream skills.
@@ -97,7 +97,7 @@ Thank you, nextlevelbuilder. When the agent needs a font pairing or a palette, t
 
 **Author:** [Garry Tan](https://x.com/garrytan) (Y Combinator)
 **License:** MIT ([`skills/vendored/gstack/LICENSE`](skills/vendored/gstack/LICENSE))
-**Version pinned:** 1.31.1.0
+**Version pinned:** 1.32.0.0 (newest; skills are cherry-picked per-skill — `office-hours` is at 1.32.0.0, `browse` at 1.31.1.0, the review/context skills at 1.12.1.0. See each skill's `<!-- Vendored from ... -->` header for its own pin, and the per-skill pin note in Modifications below.)
 **Source:** https://github.com/garrytan/gstack
 
 **Vendored into Soloship as:** `/soloship:autoplan`, `/soloship:browse`, `/soloship:context-save`, `/soloship:context-restore` (the `checkpoint` skill), `/soloship:qa`, `/soloship:design-review` (merged with Soloship's own design-review wrapper), `/soloship:ceo-review` (from `plan-ceo-review`), `/soloship:eng-review` (from `plan-eng-review`), `/soloship:plan-design-review`, `/soloship:devex-review` (from `plan-devex-review`), `/soloship:office-hours`, `/soloship:cso`. 12 upstream skills.
@@ -142,6 +142,19 @@ on their own.
 ## Modifications
 
 Vendored files are **unmodified copies** of their upstream counterparts unless explicitly marked. Apache 2.0 files (Impeccable) carry modification notes in the file header per the license. MIT files preserve copyright.
+
+**Per-skill pins (curated cherry-pick, not a verbatim version mirror).** Soloship
+selects and refreshes skills *individually*, so different skills from the same
+source can sit at different upstream versions. The authoritative pin for any one
+skill is its own `<!-- Vendored from <source> v<version> ... -->` header — not the
+source's aggregate `skills/vendored/<source>/VERSION`, which records the **newest**
+version any skill from that source was pulled from. A "Version pinned: vX" line
+above therefore means "substantive changes through vX have been folded into at
+least the newest skills," not "every file is byte-identical to vX." Examples as of
+2026-06-24: gstack's review/context skills are at 1.12.1.0, `browse` at 1.31.1.0,
+and `office-hours` at 1.32.0.0 (the source's aggregate VERSION); Superpowers'
+`using-git-worktrees`/`finish`/`writing-plans` are at 6.0.3 while
+`systematic-debugging` is at 4.1.1.
 
 **Pocock's `grill-me` is an exception:** the active Soloship `grill-me` skill is a substantial adaptation, not a verbatim copy. The original is preserved unmodified at `skills/vendored/pocock/grill-me-original.md` for reference and license compliance; the adaptation carries an attribution header pointing back to the source.
 

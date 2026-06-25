@@ -7,7 +7,7 @@ Claude Code's plugin loader discovers skills at one level under `skills/` — so
 Every subdirectory here has three things:
 
 - `LICENSE` — the original license from the upstream project (MIT or Apache 2.0). Attribution obligations travel with the file.
-- `VERSION` — the upstream version we copied from. The sync/drift watcher compares against this to detect upstream changes.
+- `VERSION` — the **newest** upstream version any skill from this source was copied from. Because Soloship cherry-picks and refreshes skills individually, skills from the same source can sit at different pins; the authoritative pin for a given skill is its own `<!-- Vendored from ... -->` header, not this aggregate file. The sync/drift watcher compares against this to detect upstream changes.
 - `README.md` — what we vendored from this source, what we didn't, and a link to install the full upstream plugin.
 
 Individual active skill files (`skills/<prefix>-<name>/SKILL.md`) carry a one-line header pointing back to this archive: `<!-- Vendored from <source> v<version> (<author>). See skills/vendored/<source>/LICENSE. -->`. That's how a reader opening any vendored skill can trace it to its source in one hop.

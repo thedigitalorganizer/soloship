@@ -3,7 +3,7 @@ name: test-driven-development
 description: Use when implementing any feature or bugfix, before writing implementation code
 ---
 
-<!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->
+<!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Content (SKILL.md + testing-anti-patterns.md) unchanged from 4.1.1 through 6.0.3; bumped to confirm currency. The `@testing-anti-patterns.md` reference uses Claude Code's @-syntax (Soloship adaptation of upstream's markdown link). -->
 
 # Test-Driven Development (TDD)
 
