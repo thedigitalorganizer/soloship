@@ -302,13 +302,12 @@ The orchestrating agent (main conversation) performs these steps:
 
 <parallel_tasks>
 
-Based on problem type, optionally invoke specialized agents to review the documentation:
+Based on problem type, optionally dispatch a general-purpose subagent to sanity-check the documentation against the relevant Soloship checklist before saving:
 
-- **performance_issue** → `performance-oracle`
-- **security_issue** → `security-sentinel`
-- **database_issue** → `data-integrity-guardian`
-- **test_failure** → `cora-test-reviewer`
-- Any code-heavy issue → `kieran-rails-reviewer` + `code-simplicity-reviewer`
+- **performance_issue** → `references/performance-checklist.md`
+- **security_issue** → `references/security-checklist.md`
+- **test_failure** → `references/testing-patterns.md`
+- Any code-heavy issue → `references/code-review-axes.md`
 
 </parallel_tasks>
 
@@ -373,11 +372,9 @@ Subagent Results:
   ✓ Prevention Strategist: Prevention strategies, test suggestions
   ✓ Category Classifier: `performance-issues`
 
-Specialized Agent Reviews (Auto-Triggered):
-  ✓ performance-oracle: Validated query optimization approach
-  ✓ kieran-rails-reviewer: Code examples meet Rails standards
-  ✓ code-simplicity-reviewer: Solution is appropriately minimal
-  ✓ every-style-editor: Documentation style verified
+Checklist Sanity-Check (optional):
+  ✓ performance-checklist.md: query optimization approach holds up
+  ✓ code-review-axes.md: solution is appropriately minimal
 
 File created:
 - docs/solutions/performance-issues/n-plus-one-brief-generation.md
@@ -418,36 +415,20 @@ Build → Test → Find Issue → Research → Improve → Document → Validate
 
 <manual_override> Use /soloship:learn [context] to document immediately without waiting for auto-detection. </manual_override> </auto_invoke>
 
-## Routes To
+## Optional Enhancement
 
-`compound-docs` skill
+Before saving, you can optionally dispatch a general-purpose subagent to enrich
+or sanity-check the doc — using one of Soloship's shared rubrics as the lens:
 
-## Applicable Specialized Agents
+- Industry best-practices enrichment → `references/agents/best-practices-researcher.md`
+- Framework/library doc links → `references/agents/framework-docs-researcher.md`
+- Security review of the solution → `references/security-checklist.md`
+- Performance review → `references/performance-checklist.md`
+- Test-coverage suggestions → `references/testing-patterns.md`
+- Minimalism / anti-pattern check → `references/code-review-axes.md`
 
-Based on problem type, these agents can enhance documentation:
-
-### Code Quality & Review
-- **kieran-rails-reviewer**: Reviews code examples for Rails best practices
-- **code-simplicity-reviewer**: Ensures solution code is minimal and clear
-- **pattern-recognition-specialist**: Identifies anti-patterns or repeating issues
-
-### Specific Domain Experts
-- **performance-oracle**: Analyzes performance_issue category solutions
-- **security-sentinel**: Reviews security_issue solutions for vulnerabilities
-- **cora-test-reviewer**: Creates test cases for prevention strategies
-- **data-integrity-guardian**: Reviews database_issue migrations and queries
-
-### Enhancement & Documentation
-- **best-practices-researcher**: Enriches solution with industry best practices
-- **every-style-editor**: Reviews documentation style and clarity
-- **framework-docs-researcher**: Links to Rails/gem documentation references
-
-### When to Invoke
-- **Auto-triggered** (optional): Agents can run post-documentation for enhancement
-- **Manual trigger**: User can invoke agents after /soloship:learn completes for deeper review
-- **Customize agents**: Edit `compound-engineering.local.md` or invoke the `setup` skill to configure which review agents are used across all workflows
+These are optional polish, not required to complete the capture.
 
 ## Related Commands
 
-- `/research [topic]` - Deep investigation (searches docs/solutions/ for patterns)
 - `/soloship:plan` - Planning workflow (references documented solutions)

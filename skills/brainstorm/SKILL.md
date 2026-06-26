@@ -142,7 +142,7 @@ Use **AskUserQuestion tool** to suggest: "Your requirements seem detailed enough
 
 Run a quick repo scan to understand existing patterns:
 
-- Task repo-research-analyst("Understand existing patterns related to: <feature_description>")
+- Dispatch a general-purpose subagent with the prompt in `references/agents/repo-research-analyst.md`, input: "Understand existing patterns related to: <feature_description>"
 
 Focus on: similar features, established patterns, CLAUDE.md guidance.
 

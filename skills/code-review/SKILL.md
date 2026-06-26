@@ -61,25 +61,20 @@ The following paths are compound-engineering pipeline artifacts and must never b
 If a review agent flags any file in these directories for cleanup or removal, discard that finding during synthesis. Do not create a todo for it.
 </protected_artifacts>
 
-#### Load Review Agents
+#### Run the Review Lenses
 
-Read `compound-engineering.local.md` in the project root. If found, use `review_agents` from YAML frontmatter. If the markdown body contains review context, pass it to each agent as additional instructions.
-
-If no settings file exists, invoke the `setup` skill to create one. Then read the newly created file and continue.
-
-#### Parallel Agents to review the PR:
+Review the PR across these lenses in parallel — each is a general-purpose subagent given the PR content plus the relevant Soloship checklist as its rubric:
 
 <parallel_tasks>
 
-Run all configured review agents in parallel using Task tool. For each agent in the `review_agents` list:
+- **Correctness & quality** — rubric: `references/code-review-axes.md`
+- **Security** — rubric: `references/security-checklist.md`
+- **Performance** — rubric: `references/performance-checklist.md`
+- **Test coverage** — rubric: `references/testing-patterns.md`
+- **Accessibility** (only if the PR touches UI) — rubric: `references/accessibility-checklist.md`
 
-```
-Task {agent-name}(PR content + review context from settings body)
-```
-
-Additionally, always run these regardless of settings:
-- Task agent-native-reviewer(PR content) - Verify new features are agent-accessible
-- Task learnings-researcher(PR content) - Search docs/solutions/ for past issues related to this PR's modules and patterns
+Additionally, always run this regardless of the above:
+- Dispatch a general-purpose subagent with the prompt in `references/agents/learnings-researcher.md`, input: the PR content — searches `docs/solutions/` for past issues related to this PR's modules and patterns
 
 </parallel_tasks>
 
@@ -87,24 +82,21 @@ Additionally, always run these regardless of settings:
 
 <conditional_agents>
 
-These agents are run ONLY when the PR matches specific criteria. Check the PR files list to determine if they apply:
+Run these extra checks ONLY when the PR matches specific criteria. Check the PR files list to determine if they apply:
 
-**MIGRATIONS: If PR contains database migrations, schema.rb, or data backfills:**
+**MIGRATIONS / DATA CHANGES: If the PR contains schema/data migrations or backfills** (e.g. Cloudflare D1 SQL migrations, Drizzle/Prisma migrations, KV/R2/Durable Object data reshapes, or Apps Script Sheet-schema changes):
 
-- Task schema-drift-detector(PR content) - Detects unrelated schema.rb changes by cross-referencing against included migrations (run FIRST)
-- Task data-migration-expert(PR content) - Validates ID mappings match production, checks for swapped values, verifies rollback safety
-- Task deployment-verification-agent(PR content) - Creates Go/No-Go deployment checklist with SQL verification queries
+Dispatch a general-purpose subagent to review migration safety. Have it check:
+- **Drift:** the migration changes only what the PR intends — no unrelated schema/column changes pulled in from local state.
+- **Mapping correctness:** any hard-coded ID/enum/mapping values match production reality (the classic swapped-value bug); associations aren't orphaned; dual-write/backfill ordering is safe.
+- **Rollback:** there's a documented rollback path, and a Go/No-Go pre/post-deploy checklist with the exact verification queries to run.
+
+This is also where the billing/credit/rerun-window confirmation gate applies — if the migration touches any of that state, stop and confirm the data-model semantics first (see the project's billing-confirmation-gate rule).
 
 **When to run:**
-- PR includes files matching `db/migrate/*.rb` or `db/schema.rb`
-- PR modifies columns that store IDs, enums, or mappings
-- PR includes data backfill scripts or rake tasks
+- PR includes migration files (D1 `migrations/*.sql`, Drizzle/Prisma migration dirs, etc.) or backfill scripts
+- PR modifies columns/fields that store IDs, enums, or mappings
 - PR title/body mentions: migration, backfill, data transformation, ID mapping
-
-**What these agents check:**
-- `schema-drift-detector`: Cross-references schema.rb changes against PR migrations to catch unrelated columns/indexes from local database state
-- `data-migration-expert`: Verifies hard-coded mappings match production reality (prevents swapped IDs), checks for orphaned associations, validates dual-write patterns
-- `deployment-verification-agent`: Produces executable pre/post-deploy checklists with SQL queries, rollback procedures, and monitoring plans
 
 </conditional_agents>
 
@@ -205,7 +197,7 @@ Complete system context map with component interactions
 
 ### 4. Simplification and Minimalism Review
 
-Run the Task code-simplicity-reviewer() to see if we can simplify the code.
+Check whether the code can be simplified — dispatch a general-purpose subagent (or run `/soloship:simplify`) to look for over-engineering, premature abstraction, and dead code, judged against `references/code-review-axes.md`.
 
 ### 5. Findings Synthesis and Todo Creation Using file-todos Skill
 
@@ -381,14 +373,14 @@ After creating all todo files, present comprehensive summary:
 
 - `005-pending-p3-{finding}.md` - {description}
 
-### Review Agents Used:
+### Review Lenses Applied:
 
-- kieran-rails-reviewer
-- security-sentinel
-- performance-oracle
-- architecture-strategist
-- agent-native-reviewer
-- [other agents]
+- Correctness & quality (`references/code-review-axes.md`)
+- Security (`references/security-checklist.md`)
+- Performance (`references/performance-checklist.md`)
+- Test coverage (`references/testing-patterns.md`)
+- Accessibility, where UI is touched (`references/accessibility-checklist.md`)
+- Prior-art / known patterns (`references/agents/learnings-researcher.md`)
 
 ### Next Steps:
 
@@ -443,43 +435,14 @@ After creating all todo files, present comprehensive summary:
 
 ### 7. End-to-End Testing (Optional)
 
-<detect_project_type>
-
-**First, detect the project type from PR files:**
-
-| Indicator | Project Type |
-|-----------|--------------|
-| `*.xcodeproj`, `*.xcworkspace`, `Package.swift` (iOS) | iOS/macOS |
-| `Gemfile`, `package.json`, `app/views/*`, `*.html.*` | Web |
-| Both iOS files AND web files | Hybrid (test both) |
-
-</detect_project_type>
-
 <offer_testing>
 
-After presenting the Summary Report, offer appropriate testing based on project type:
+If the PR touches UI (pages, components, views), after the Summary Report offer browser testing:
 
-**For Web Projects:**
 ```markdown
 **"Want to run browser tests on the affected pages?"**
-1. Yes - run `/test-browser`
+1. Yes - drive `/soloship:browse` over the affected pages
 2. No - skip
-```
-
-**For iOS Projects:**
-```markdown
-**"Want to run Xcode simulator tests on the app?"**
-1. Yes - run `/xcode-test`
-2. No - skip
-```
-
-**For Hybrid Projects (e.g., Rails + Hotwire Native):**
-```markdown
-**"Want to run end-to-end tests?"**
-1. Web only - run `/test-browser`
-2. iOS only - run `/xcode-test`
-3. Both - run both commands
-4. No - skip
 ```
 
 </offer_testing>
@@ -488,41 +451,16 @@ After presenting the Summary Report, offer appropriate testing based on project 
 
 Spawn a subagent to run browser tests (preserves main context):
 
-```
-Task general-purpose("Run /test-browser for PR #[number]. Test all affected pages, check for console errors, handle failures by creating todos and fixing.")
-```
+Dispatch a general-purpose subagent to drive `/soloship:browse`: identify the pages affected by the PR, navigate to each, capture snapshots, and report issues.
 
 The subagent will:
 1. Identify pages affected by the PR
-2. Navigate to each page and capture snapshots (using Playwright MCP or agent-browser CLI)
+2. Navigate to each page and capture snapshots (using `/soloship:browse`)
 3. Check for console errors
 4. Test critical interactions
 5. Pause for human verification on OAuth/email/payment flows
 6. Create P1 todos for any failures
 7. Fix and retry until all tests pass
-
-**Standalone:** `/test-browser [PR number]`
-
-#### If User Accepts iOS Testing:
-
-Spawn a subagent to run Xcode tests (preserves main context):
-
-```
-Task general-purpose("Run /xcode-test for scheme [name]. Build for simulator, install, launch, take screenshots, check for crashes.")
-```
-
-The subagent will:
-1. Verify XcodeBuildMCP is installed
-2. Discover project and schemes
-3. Build for iOS Simulator
-4. Install and launch app
-5. Take screenshots of key screens
-6. Capture console logs for errors
-7. Pause for human verification (Sign in with Apple, push, IAP)
-8. Create P1 todos for any failures
-9. Fix and retry until all tests pass
-
-**Standalone:** `/xcode-test [scheme]`
 
 ### Important: P1 Findings Block Merge
 

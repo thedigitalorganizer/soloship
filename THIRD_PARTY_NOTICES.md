@@ -19,7 +19,7 @@ If any of these plugins look valuable to you, install the full upstream version 
 
 **Author:** [Kieran Klaassen](https://github.com/kieranklaassen) (Every)
 **License:** MIT ([`skills/vendored/ce/LICENSE`](skills/vendored/ce/LICENSE))
-**Version pinned:** 2.34.0
+**Version pinned:** 3.14.3 (newest; cherry-picked per-asset — the 5 research-agent prompts in `skills/references/agents/` (`repo-research-analyst`, `learnings-researcher`, `best-practices-researcher`, `framework-docs-researcher`, `spec-flow-analyzer`) are vendored from 3.14.3 and scrubbed stack-neutral; the embedded workflow methodology inside `plan`/`implement`/`code-review`/`brainstorm`/`document-review`/`learn` remains the 2.34.0 single-pass prose (see each skill's `<!-- Vendored from ... -->` header). Soloship deliberately does NOT adopt CE 3.x's multi-file/multi-agent architecture — that runs counter to its keep-surface-small design.)
 **Source:** https://github.com/EveryInc/compound-engineering-plugin
 
 **Vendored into Soloship as:** `/soloship:brainstorm` (merged from `workflows:brainstorm` + `brainstorming`), `/soloship:plan` (from `workflows:plan`), `/soloship:implement` (from `workflows:work`), `/soloship:learn` (from `workflows:compound`), `/soloship:code-review` (from `workflows:review`), `/soloship:document-review`, `/soloship:deepen-plan`. 8 upstream skills consolidated into 7 Soloship commands.

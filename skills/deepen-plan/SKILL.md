@@ -133,13 +133,9 @@ The skill tells you what to do - follow it. Execute the skill completely."
 
 **Example spawns:**
 ```
-Task general-purpose: "Use the dhh-rails-style skill at ~/.claude/plugins/.../dhh-rails-style. Read SKILL.md and apply it to: [Rails sections of plan]"
+Dispatch a general-purpose subagent: "Apply the `/soloship:frontend-design` skill to the UI sections of the plan."
 
-Task general-purpose: "Use the frontend-design skill at ~/.claude/plugins/.../frontend-design. Read SKILL.md and apply it to: [UI sections of plan]"
-
-Task general-purpose: "Use the agent-native-architecture skill at ~/.claude/plugins/.../agent-native-architecture. Read SKILL.md and apply it to: [agent/tool sections of plan]"
-
-Task general-purpose: "Use the security-patterns skill at ~/.claude/skills/security-patterns. Read SKILL.md and apply it to: [full plan]"
+Dispatch a general-purpose subagent: "Review the full plan against `references/security-checklist.md` and flag any security gaps."
 ```
 
 **No limit on skill sub-agents. Spawn one for every skill that could possibly be relevant.**
@@ -361,7 +357,7 @@ Task [agent-name]: "Review this plan using your expertise. Apply all your checks
 
 **Step 4: Also discover and run research agents**
 
-Research agents (like `best-practices-researcher`, `framework-docs-researcher`, `git-history-analyzer`, `repo-research-analyst`) should also be run for relevant plan sections.
+The vendored research prompts in `references/agents/` (`best-practices-researcher.md`, `framework-docs-researcher.md`, `repo-research-analyst.md`) should also be run — as general-purpose subagents — for the relevant plan sections.
 
 ### 6. Wait for ALL Agents and Synthesize Everything
 
