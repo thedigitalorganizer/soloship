@@ -344,7 +344,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    For UI work with Figma designs:
 
    - Implement components following design specs
-   - Use figma-design-sync agent iteratively to compare
+   - Compare the result against the design iteratively (screenshot the running UI and diff it against the design spec); a general-purpose subagent can do this comparison pass
    - Fix visual differences identified
    - Repeat until implementation matches design
 
@@ -368,9 +368,9 @@ This command takes a work document (plan, specification, or todo file) and execu
    # Use linting-agent before pushing to origin
    ```
 
-2. **Consider Reviewer Agents** (Optional)
+2. **Consider Reviewer Subagents** (Optional)
 
-   Use for complex, risky, or large changes. Read agents from `compound-engineering.local.md` frontmatter (`review_agents`). If no settings file, invoke the `setup` skill to create one.
+   For complex, risky, or large changes, dispatch general-purpose review subagents using Soloship's shared rubrics (`references/code-review-axes.md`, `references/security-checklist.md`, `references/performance-checklist.md`, `references/testing-patterns.md`), or run `/soloship:review` for a full pass.
 
    Run configured agents in parallel with Task tool. Present findings and address critical issues.
 
@@ -422,30 +422,15 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-2. **Capture and Upload Screenshots for UI Changes** (REQUIRED for any UI work)
+2. **Capture Screenshots for UI Changes** (for any UI work)
 
-   For **any** design changes, new views, or UI modifications, you MUST capture and upload screenshots:
+   For design changes, new views, or UI modifications, capture before/after screenshots so the change is reviewable by eye.
 
-   **Step 1: Start dev server** (if not running)
-   ```bash
-   bin/dev  # Run in background
-   ```
+   **Step 1: Start the dev server** (if not running) — use the project's dev command (e.g. `npm run dev`), run in the background.
 
-   **Step 2: Capture screenshots with agent-browser CLI**
-   ```bash
-   agent-browser open http://localhost:3000/[route]
-   agent-browser snapshot -i
-   agent-browser screenshot output.png
-   ```
-   See the `agent-browser` skill for detailed usage.
+   **Step 2: Capture screenshots with `/soloship:browse`** — navigate to the route and take a screenshot. `/soloship:browse` is Soloship's headless browser (open a URL, interact, screenshot, diff before/after).
 
-   **Step 3: Upload using imgup skill**
-   ```bash
-   skill: imgup
-   # Then upload each screenshot:
-   imgup -h pixhost screenshot.png  # pixhost works without API key
-   # Alternative hosts: catbox, imagebin, beeimg
-   ```
+   Keep the screenshots local (attach them when you show the result). There's no upload step — Soloship's default finish path is a local merge, not a PR, so screenshots are for the maintainer to eyeball, not to embed in a remote PR.
 
    **What to capture:**
    - **New screens**: Screenshot of the new UI

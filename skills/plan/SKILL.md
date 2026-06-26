@@ -43,8 +43,9 @@ Before planning anything, search `docs/solutions/` for prior art:
 2. Search the entire directory — never limit to one category
 3. If matches are found, read them and note any prevention strategies or pitfalls
 
-Note: the planning methodology below also runs a `learnings-researcher`
-agent that searches `docs/solutions/`. Doing it up front here makes the findings
+Note: the planning methodology below also runs the `learnings-researcher`
+prompt (`references/agents/learnings-researcher.md`) via a general-purpose
+subagent that searches `docs/solutions/`. Doing it up front here makes the findings
 explicit in the conversation before the methodology starts.
 
 ## Step 2: Read Architecture Context (with Freshness Check)
@@ -252,10 +253,10 @@ Refine the idea through collaborative dialogue using the **AskUserQuestion tool*
 First, I need to understand the project's conventions, existing patterns, and any documented learnings. This is fast and local - it informs whether external research is needed.
 </thinking>
 
-Run these agents **in parallel** to gather local context:
+Run these **in parallel** to gather local context — each is a general-purpose subagent handed a specialist research prompt from `references/agents/` (vendored from Compound Engineering, scrubbed stack-neutral):
 
-- Task repo-research-analyst(feature_description)
-- Task learnings-researcher(feature_description)
+- Dispatch a general-purpose subagent with the prompt in `references/agents/repo-research-analyst.md`, input: the feature description
+- Dispatch a general-purpose subagent with the prompt in `references/agents/learnings-researcher.md`, input: the feature description
 
 **What to look for:**
 - **Repo research:** existing patterns, CLAUDE.md guidance, technology familiarity, pattern consistency
@@ -283,10 +284,10 @@ Examples:
 
 **Only run if Step 1.5 indicates external research is valuable.**
 
-Run these agents in parallel:
+Run these in parallel — general-purpose subagents handed specialist prompts from `references/agents/`:
 
-- Task best-practices-researcher(feature_description)
-- Task framework-docs-researcher(feature_description)
+- Dispatch a general-purpose subagent with the prompt in `references/agents/best-practices-researcher.md`, input: the feature description
+- Dispatch a general-purpose subagent with the prompt in `references/agents/framework-docs-researcher.md`, input: the feature description
 
 ### 1.6. Consolidate Research
 
@@ -330,7 +331,7 @@ Think like a product manager - what would make this issue clear and actionable? 
 
 After planning the issue structure, run SpecFlow Analyzer to validate and refine the feature specification:
 
-- Task spec-flow-analyzer(feature_description, research_findings)
+- Dispatch a general-purpose subagent with the prompt in `references/agents/spec-flow-analyzer.md`, input: the feature description and the research findings so far
 
 **SpecFlow Analyzer Output:**
 
