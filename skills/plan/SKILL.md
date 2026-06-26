@@ -675,25 +675,25 @@ After writing the plan file, use the **AskUserQuestion tool** to present these o
 **Options:**
 1. **Open plan in editor** - Open the plan file for review
 2. **Run `/deepen-plan`** - Enhance each section with parallel research agents (best practices, performance, UI)
-3. **Run `/technical_review`** - Technical feedback from code-focused reviewers (DHH, Kieran, Simplicity)
+3. **Run `/soloship:review`** - Technical feedback from code-focused reviewers (DHH, Kieran, Simplicity)
 4. **Review and refine** - Improve the document through structured self-review
-5. **Start `/workflows:work`** - Begin implementing this plan locally
-6. **Start `/workflows:work` on remote** - Begin implementing in Claude Code on the web (use `&` to run in background)
+5. **Start `/soloship:implement`** - Begin implementing this plan locally
+6. **Start `/soloship:implement` on remote** - Begin implementing in Claude Code on the web (use `&` to run in background)
 7. **Create Issue** - Create issue in project tracker (GitHub/Linear)
 
 Based on selection:
 - **Open plan in editor** → Run `open docs/plans/<plan_filename>.md` to open the file in the user's default editor
 - **`/deepen-plan`** → Call the /deepen-plan command with the plan file path to enhance with research
-- **`/technical_review`** → Call the /technical_review command with the plan file path
+- **`/soloship:review`** → Call the /soloship:review command with the plan file path
 - **Review and refine** → Load `document-review` skill.
-- **`/workflows:work`** → Call the /workflows:work command with the plan file path
-- **`/workflows:work` on remote** → Run `/workflows:work docs/plans/<plan_filename>.md &` to start work in background for Claude Code web
+- **`/soloship:implement`** → Call the /soloship:implement command with the plan file path
+- **`/soloship:implement` on remote** → Run `/soloship:implement docs/plans/<plan_filename>.md &` to start work in background for Claude Code web
 - **Create Issue** → See "Issue Creation" section below
 - **Other** (automatically provided) → Accept free text for rework or specific changes
 
-**Note:** If running `/workflows:plan` with ultrathink enabled, automatically run `/deepen-plan` after plan creation for maximum depth and grounding.
+**Note:** If running `/soloship:plan` with ultrathink enabled, automatically run `/deepen-plan` after plan creation for maximum depth and grounding.
 
-Loop back to options after Simplify or Other changes until user selects `/workflows:work` or `/technical_review`.
+Loop back to options after Simplify or Other changes until user selects `/soloship:implement` or `/soloship:review`.
 
 ## Issue Creation
 
@@ -723,6 +723,6 @@ When user selects "Create Issue", detect their project tracker from CLAUDE.md:
 
 5. **After creation:**
    - Display the issue URL
-   - Ask if they want to proceed to `/workflows:work` or `/technical_review`
+   - Ask if they want to proceed to `/soloship:implement` or `/soloship:review`
 
 NEVER CODE! Just research and write the plan.

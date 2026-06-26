@@ -230,8 +230,8 @@ Captures problem solutions while context is fresh, creating structured documenta
 ## Usage
 
 ```bash
-/workflows:compound                    # Document the most recent fix
-/workflows:compound [brief context]    # Provide additional context hint
+/soloship:learn                    # Document the most recent fix
+/soloship:learn [brief context]    # Provide additional context hint
 ```
 
 ## Execution Strategy: Two-Phase Orchestration
@@ -416,7 +416,7 @@ Build → Test → Find Issue → Research → Improve → Document → Validate
 
 <auto_invoke> <trigger_phrases> - "that worked" - "it's fixed" - "working now" - "problem solved" </trigger_phrases>
 
-<manual_override> Use /workflows:compound [context] to document immediately without waiting for auto-detection. </manual_override> </auto_invoke>
+<manual_override> Use /soloship:learn [context] to document immediately without waiting for auto-detection. </manual_override> </auto_invoke>
 
 ## Routes To
 
@@ -444,10 +444,10 @@ Based on problem type, these agents can enhance documentation:
 
 ### When to Invoke
 - **Auto-triggered** (optional): Agents can run post-documentation for enhancement
-- **Manual trigger**: User can invoke agents after /workflows:compound completes for deeper review
+- **Manual trigger**: User can invoke agents after /soloship:learn completes for deeper review
 - **Customize agents**: Edit `compound-engineering.local.md` or invoke the `setup` skill to configure which review agents are used across all workflows
 
 ## Related Commands
 
 - `/research [topic]` - Deep investigation (searches docs/solutions/ for patterns)
-- `/workflows:plan` - Planning workflow (references documented solutions)
+- `/soloship:plan` - Planning workflow (references documented solutions)
