@@ -71,7 +71,7 @@ The debug is not complete until ALL of these are true:
 ## Systematic Debugging Methodology
 
 
-<!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->
+<!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Body unchanged from 4.1.1 through 6.0.3; bumped to confirm currency. Soloship keeps its scrubbed sibling-skill refs (test-driven-development, verification-before-completion — upstream still namespaces these `superpowers:`). Sidecar references (root-cause-tracing.md, defense-in-depth.md, condition-based-waiting.md + .ts example) now vendored alongside, fixing previously-dangling links. -->
 
 # Systematic Debugging
 

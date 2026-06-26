@@ -38,7 +38,7 @@ Thank you, Kieran. The brainstorm → plan → work → compound loop is the bac
 
 **Author:** [Jesse Vincent](https://github.com/obra)
 **License:** MIT ([`skills/vendored/superpowers/LICENSE`](skills/vendored/superpowers/LICENSE))
-**Version pinned:** 6.0.3 (newest; skills are cherry-picked per-skill — `using-git-worktrees`, `finish`, `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development` are at 6.0.3; `systematic-debugging`, `brainstorming`, `executing-plans` remain at 4.1.1. See each skill's `<!-- Vendored from ... -->` header for its own pin, and the per-skill pin note in Modifications below.)
+**Version pinned:** 6.0.3 (newest; skills are cherry-picked per-skill — `using-git-worktrees`, `finish`, `writing-plans`, `subagent-driven-development`, `verification-before-completion`, `test-driven-development`, `systematic-debugging` are at 6.0.3; `executing-plans` stays at 4.1.1 by design — Soloship keeps the batch-checkpoint model upstream removed in v6; `brainstorming` is a CE+Superpowers merge, not a 1:1 vendor. See each skill's `<!-- Vendored from ... -->` header for its own pin, and the per-skill pin note in Modifications below.)
 **Source:** https://github.com/obra/superpowers
 
 **Vendored into Soloship as:** `/soloship:debug` (from `systematic-debugging`), `/soloship:test-driven-development`, `/soloship:brainstorm` (merged with CE's brainstorming variants), `/soloship:verification-before-completion`, `/soloship:writing-plans`, `/soloship:executing-plans`, `/soloship:subagent-driven-development`, `/soloship:using-git-worktrees`, `/soloship:finish` (from `finishing-a-development-branch`). 9 upstream skills.
