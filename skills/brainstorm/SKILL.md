@@ -109,7 +109,7 @@ The brainstorm is not complete until ALL of these are true:
 
 **Note: The current year is 2026.** Use this when dating brainstorm documents.
 
-Brainstorming helps answer **WHAT** to build through collaborative dialogue. It precedes `/workflows:plan`, which answers **HOW** to build it.
+Brainstorming helps answer **WHAT** to build through collaborative dialogue. It precedes `/soloship:plan`, which answers **HOW** to build it.
 
 **Process knowledge:** Load the `brainstorming` skill for detailed question techniques, approach exploration patterns, and YAGNI principles.
 
@@ -134,7 +134,7 @@ Evaluate whether brainstorming is needed based on the feature description.
 - Constrained, well-defined scope
 
 **If requirements are already clear:**
-Use **AskUserQuestion tool** to suggest: "Your requirements seem detailed enough to proceed directly to planning. Should I run `/workflows:plan` instead, or would you like to explore the idea further?"
+Use **AskUserQuestion tool** to suggest: "Your requirements seem detailed enough to proceed directly to planning. Should I run `/soloship:plan` instead, or would you like to explore the idea further?"
 
 ### Phase 1: Understand the Idea
 
@@ -189,7 +189,7 @@ Use **AskUserQuestion tool** to present next steps:
 
 **Options:**
 1. **Review and refine** - Improve the document through structured self-review
-2. **Proceed to planning** - Run `/workflows:plan` (will auto-detect this brainstorm)
+2. **Proceed to planning** - Run `/soloship:plan` (will auto-detect this brainstorm)
 3. **Ask more questions** - I have more questions to clarify before moving on
 4. **Done for now** - Return later
 
@@ -201,8 +201,8 @@ Load the `document-review` skill and apply it to the brainstorm document.
 
 When document-review returns "Review complete", present next steps:
 
-1. **Move to planning** - Continue to `/workflows:plan` with this document
-2. **Done for now** - Brainstorming complete. To start planning later: `/workflows:plan [document-path]`
+1. **Move to planning** - Continue to `/soloship:plan` with this document
+2. **Done for now** - Brainstorming complete. To start planning later: `/soloship:plan [document-path]`
 
 ## Output Summary
 
@@ -217,7 +217,7 @@ Key decisions:
 - [Decision 1]
 - [Decision 2]
 
-Next: Run `/workflows:plan` when ready to implement.
+Next: Run `/soloship:plan` when ready to implement.
 ```
 
 ## Important Guidelines
@@ -362,7 +362,7 @@ topic: <kebab-case-topic>
 - [Any unresolved questions for the planning phase]
 
 ## Next Steps
-→ `/workflows:plan` for implementation details
+→ `/soloship:plan` for implementation details
 ```
 
 **Output Location:** `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`
@@ -371,7 +371,7 @@ topic: <kebab-case-topic>
 
 Present clear options for what to do next:
 
-1. **Proceed to planning** → Run `/workflows:plan`
+1. **Proceed to planning** → Run `/soloship:plan`
 2. **Refine further** → Continue exploring the design
 3. **Done for now** → User will return later
 
@@ -418,7 +418,7 @@ Planning answers **HOW** to build it:
 - Technical details and code patterns
 - Testing strategy and verification
 
-When brainstorm output exists, `/workflows:plan` should detect it and use it as input, skipping its own idea refinement phase.
+When brainstorm output exists, `/soloship:plan` should detect it and use it as input, skipping its own idea refinement phase.
 
 ---
 

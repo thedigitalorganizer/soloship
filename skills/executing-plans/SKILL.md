@@ -3,7 +3,7 @@ name: executing-plans
 description: Use when partner provides a complete implementation plan to execute in controlled batches with review checkpoints - loads plan, reviews critically, executes tasks in batches, reports for review between batches
 ---
 
-<!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. -->
+<!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. DELIBERATELY pinned at 4.1.1: upstream v6.0.3 removed the batch-execution-with-checkpoints model (execute-all-then-finish, steering to subagent-driven-development instead). Soloship keeps the batch+checkpoint model on purpose — it's the human-in-the-loop alternative to subagent-driven-development for a non-coder architect reviewing between batches. Only the "never start on main without consent" safety line was pulled forward from 6.0.3. -->
 
 # Executing Plans
 
@@ -70,6 +70,7 @@ After all tasks complete and verified:
 **Don't force through blockers** - stop and ask.
 
 ## Remember
+- Never start implementation on main/master without explicit user consent — work in a worktree/branch first
 - Review plan critically first
 - Follow plan steps exactly
 - Don't skip verifications
