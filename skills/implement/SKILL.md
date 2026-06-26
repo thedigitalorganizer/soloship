@@ -115,6 +115,10 @@ for five-minute changes.
 | "I'll adjust the plan as I go" | Adjustments are fine — but update the plan file. An executed plan that doesn't match the written plan is worse than no plan at all. |
 | "I'll skip the methodology and just code it" | The execution methodology handles branch setup, clarification gates, and quality checks that are easy to forget when coding solo. Apply it unless the change is genuinely trivial. |
 | "I'll skip `/learn` — this was routine" | "Routine" work that needed a plan and an implementation skill is, by definition, not trivial. Capture what you learned. |
+| "The build passes, so the feature works" | A green build proves it compiles, not that the button does the thing. The Browser QA Gate (Step 2.6) is not optional. Drive the real flow. |
+| "I changed the rendering code, so the page is obviously fine" | You changed code you *believe* renders correctly. You haven't watched it. Open it in `/soloship:browse` and look. |
+| "I can't test that flow — it needs a login / paid account / specific data" | That's an unmet gate, not an exemption. Use a test account or seeded fixture; if none exists, ask the user for one. Don't call an untested authenticated flow done. |
+| "It's done, I'll just note the QA is pending" | "Done with QA pending" is not done. Nothing ships until the affected flows were observed working and any fixes were re-verified. |
 
 ---
 
@@ -161,6 +165,35 @@ Report the merge target, the commit hash that's now on the base branch, and conf
 
 If the user later wants a PR for an already-merged change, they can run it manually from the base branch, or use `/soloship:finish` Option 2 on a new branch.
 
+## Step 2.6: Browser QA Gate (Soloship — MANDATORY before "done")
+
+**No plan is finished until the change has been exercised in a real browser and any issues found have been fixed and re-verified.** This gate runs AFTER implementation and the quality checks, and BEFORE the finishing/merge step (Step 2.5 / CE Phase 4). "Tests pass" and "build succeeds" are necessary but not sufficient — they do not prove the actual user-facing behavior works. Only driving the real UI does.
+
+This is a hard gate. Passing it requires observed evidence, not assertion. "It should work," "the build is green so the page is fine," or "I changed the code that renders it" do NOT satisfy this gate — only watching the real flow happen does. This is `verification-before-completion` applied to the user-facing surface.
+
+### What "browser QA" means here
+
+Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows the change touches**, end to end, on the running app (local dev server or deployed preview):
+
+1. **Identify the affected surface.** From the diff, list every page, route, component, and user flow this change can reach. That list is what must be exercised — not just the one page you were thinking about.
+2. **Exercise the real flow, not just page load.** Click through the happy path *and* the key states the change introduces or affects: empty state, error state, loading, validation failures, the specific interaction you built. Loading a page without interacting with it is not QA.
+3. **Use test accounts when a flow needs auth or specific state.** If a flow requires being logged in, having a particular role, an existing record, a paid plan, etc., use a test account / seeded state to reach it. **If no test account or fixture exists, ask the user for one (or for how to create it) — do not skip the authenticated path and do not call it done.** "Couldn't test because it needs login" is an unmet gate, not an exemption.
+4. **Capture evidence.** Screenshots (before/after where relevant) and the observed result of each flow. The evidence is what proves the gate was met.
+
+### The fix-and-re-verify loop
+
+If browser QA surfaces ANY issue (visual break, broken interaction, console error, wrong behavior, regression on an adjacent flow):
+
+1. Fix it.
+2. **Re-run the browser QA for that flow** — observe the fix actually working. A fix is not "done" because the code changed; it's done when the re-run shows the correct behavior.
+3. Repeat until every affected flow passes clean.
+
+Only when every affected flow has been observed working — with the fixes re-verified — may the work proceed to the finishing/merge step.
+
+### The only valid exemption
+
+If the change genuinely has **no browser-reachable surface** — a pure CLI change, an internal script, a config/infra-only change, a data migration with no UI effect — state that explicitly with the reason ("No browser QA: this change only touches the build script; nothing user-facing renders differently"), and instead verify the actual observable outcome by the right means (run the CLI and show the output, hit the endpoint and show the response, query the data and show the row). The exemption is "there is nothing in a browser to test," never "browser testing is inconvenient" or "I'm confident." When in doubt, test it in the browser.
+
 ## Step 3: After Implementation
 
 When implementation is complete:
@@ -178,6 +211,7 @@ Implementation is not complete until ALL of these are true:
 - [ ] Tests pass (`npm test` or equivalent — show the output)
 - [ ] Build succeeds (`npm run build` or equivalent — show the output)
 - [ ] No unrelated changes introduced (diff stays within plan scope)
+- [ ] **Browser QA Gate passed (Step 2.6)** — every affected user-facing flow was exercised in a real browser via `/soloship:browse` (with a test account where auth/state was needed), issues found were fixed AND re-verified by re-running the flow, and evidence (screenshots/observed results) was captured. OR an explicit "no browser-reachable surface" exemption was stated with its reason and the outcome verified another way. Never satisfied by "tests pass" or "should work."
 
 ---
 
@@ -381,6 +415,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Code follows existing patterns
    - Figma designs match (if applicable)
    - No console errors or warnings
+   - **Browser QA Gate passed (Step 2.6) — MANDATORY.** Every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed and re-verified by re-running the flow, evidence captured. Or an explicit "no browser surface" exemption with the outcome verified another way. **Do not enter Phase 4 (Ship It) until this passes** — a green build is not browser QA.
 
 4. **Prepare Operational Validation Plan** (REQUIRED)
    - Add a `## Post-Deploy Monitoring & Validation` section to the PR description for every change.
@@ -603,7 +638,7 @@ See the `orchestrating-swarms` skill for detailed swarm patterns and best practi
 
 ## Quality Checklist
 
-Before creating PR, verify:
+Before finishing (merge/ship), verify:
 
 - [ ] All clarifying questions asked and answered
 - [ ] All TodoWrite tasks marked completed
@@ -611,11 +646,9 @@ Before creating PR, verify:
 - [ ] Linting passes (use linting-agent)
 - [ ] Code follows existing patterns
 - [ ] Figma designs match implementation (if applicable)
-- [ ] Before/after screenshots captured and uploaded (for UI changes)
+- [ ] **Browser QA Gate passed (Step 2.6) — every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed AND re-verified, evidence captured — or an explicit "no browser surface" exemption verified another way. This is mandatory; a green build is not browser QA.**
+- [ ] Before/after screenshots captured (for UI changes) — kept local for the maintainer to eyeball
 - [ ] Commit messages follow conventional format
-- [ ] PR description includes Post-Deploy Monitoring & Validation section (or explicit no-impact rationale)
-- [ ] PR description includes summary, testing notes, and screenshots
-- [ ] PR description includes Compound Engineered badge
 
 ## When to Use Reviewer Agents
 
