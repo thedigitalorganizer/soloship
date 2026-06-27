@@ -1,5 +1,35 @@
 # Changelog
 
+## [0.11.0] - 2026-06-26
+
+### Added — Browser QA Gate (no plan is "done" without real browser QA)
+
+- **New auto-loaded rule `browser-qa-gate.md`**, installed into every project by `init` / `upgrade`. No work is "done / complete / fixed / shipped" until every user-facing flow it touches has been exercised in a real browser via `/soloship:browse`, any issue found is fixed **and re-verified by re-running the flow**, and evidence is captured. A green build and passing tests are necessary but not sufficient. The only exemption is a change with genuinely no browser-reachable surface, stated explicitly and verified another way.
+- **Test-account flow.** Authenticated flows are QA'd as a real logged-in user. If no test account is documented at `docs/testing/test-accounts.md`, the agent stops and asks whether to create + document one (credentials kept in a gitignored file, non-production / disposable only); thereafter that documented default is used unless a specific account is named. Never skip an authenticated flow and call it done.
+- **Enforced across every completion path:** `/soloship:implement` (new Step 2.6, blocks entering Ship It), `/soloship:shipthorough` (new Step 9.6, before the merge), and `/soloship:shipfast` (Step 7 now browser-QAs the actual fixed flow on the live URL).
+
+### Changed — vendored skills refreshed and made fully self-contained
+
+- **Superpowers refreshed to 6.0.3.** `using-git-worktrees` (isolation detection + `.worktrees/` default), `finish` (environment detection), `writing-plans` (Global Constraints + per-task Interfaces blocks), `subagent-driven-development` (full v6 rewrite with vendored scripts + prompt files), `verification-before-completion` / `test-driven-development` (confirmed current), and `debug` (+ its 4 sidecar files vendored, fixing dangling links). `executing-plans` is deliberately kept on its batch-checkpoint model — the human-in-loop alternative to subagent-driven-development that upstream v6 dropped.
+- **`learn` upgraded to Compound Engineering's compound 3.14.3 two-track schema** — bug-track solution docs now require `root_cause` (from an enum) and `resolution_type`; knowledge-track docs make them optional.
+- **5 CE research agents vendored** (`repo-research-analyst`, `learnings-researcher`, `best-practices-researcher`, `framework-docs-researcher`, `spec-flow-analyzer`) into `skills/references/agents/`, scrubbed stack-neutral for Soloship's stacks. `plan` / `brainstorm` / `code-review` / `deepen-plan` now dispatch these instead of naming agents that don't exist for Soloship-only users.
+- **Every dangling Compound Engineering ecosystem reference scrubbed** across the 7 CE-derived skills: broken `/workflows:*` and `/technical_review` commands mapped to their `/soloship:*` equivalents; CE-only review personas pointed at Soloship's existing checklists; CE / Rails / iOS-specific tooling (`bin/rails`, `agent-browser`, `imgup`, `/xcode-test`, hardcoded plugin paths) genericized or removed.
+
+### Fixed
+
+- Reconciled conflicting vendored-version stamps and documented the **per-skill cherry-pick model** in `THIRD_PARTY_NOTICES.md`: each skill's own `<!-- Vendored from ... -->` header is the authoritative pin, and the aggregate `VERSION` records the newest. (Superpowers → 6.0.3, Compound Engineering → 3.14.3, gstack NOTICES corrected to 1.32.0.0.)
+
+### Note
+
+CE 3.x's multi-file / multi-agent architecture is **deliberately not adopted** — Soloship keeps its curated single-file-embed-in-a-wrapper model on purpose, per its anti-complexity premise for non-coders. The CE work here closes self-containment leaks and ports the genuinely transferable research specialists, not the architecture.
+
+## [0.10.0] - 2026-05-25
+
+### Added
+
+- **New auto-loaded rule `parameterize-constants.md`**, installed by `init` / `upgrade`: meaningful literals (numbers, URLs, limits, file paths, repeated strings) get named constants. Refactor un-parameterized values in the section you're editing, then surface other sites for the user to decide on.
+- `.worktrees/` added to the ignore set; extended the CLAUDE.md Audience note for the non-coder framing.
+
 ## [0.9.0] - 2026-05-16
 
 ### Added — recurrence gate (cross-session pattern detection, externalized)
