@@ -120,6 +120,23 @@ report must state exactly what shipped and what remains — do not claim the pla
 is fully delivered when it is not. This is the in-run catch for stale-state
 bugs and premature phase-done over-claims.
 
+### Step 9.6: Browser QA Gate (Soloship — MANDATORY)
+
+Before the merge, the user-facing surface must have been exercised in a real
+browser — not just "tests pass." Per the auto-loaded `browser-qa-gate` rule:
+drive every affected page/route/flow this change touches with `/soloship:browse`
+(happy path **and** the states it affects), using a **test account** for any
+authenticated flow. If the project has no documented test account
+(`docs/testing/test-accounts.md`) and a flow needs a login, **stop and ask the
+user** whether to create and document one — do not ship an untested authenticated
+flow. Any issue found is fixed and **re-verified by re-running the flow** before
+proceeding. Capture evidence (screenshots / observed results).
+
+The only exemption is a change with no browser-reachable surface (pure CLI /
+config / infra / non-UI migration) — state it explicitly and verify the outcome
+another way. "Tests pass" / "build is green" does NOT satisfy this gate. Do not
+proceed to Step 10 until it passes.
+
 ### Step 10: Merge to Base Branch Locally (default)
 
 **Soloship default — no PR.** Soloship's user is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.

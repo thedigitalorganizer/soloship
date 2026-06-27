@@ -167,6 +167,9 @@ If the user later wants a PR for an already-merged change, they can run it manua
 
 ## Step 2.6: Browser QA Gate (Soloship — MANDATORY before "done")
 
+> This step implements the auto-loaded `browser-qa-gate` rule. The rule is the
+> always-on source of truth; this step is where `/implement` enforces it.
+
 **No plan is finished until the change has been exercised in a real browser and any issues found have been fixed and re-verified.** This gate runs AFTER implementation and the quality checks, and BEFORE the finishing/merge step (Step 2.5 / CE Phase 4). "Tests pass" and "build succeeds" are necessary but not sufficient — they do not prove the actual user-facing behavior works. Only driving the real UI does.
 
 This is a hard gate. Passing it requires observed evidence, not assertion. "It should work," "the build is green so the page is fine," or "I changed the code that renders it" do NOT satisfy this gate — only watching the real flow happen does. This is `verification-before-completion` applied to the user-facing surface.
@@ -177,7 +180,11 @@ Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows
 
 1. **Identify the affected surface.** From the diff, list every page, route, component, and user flow this change can reach. That list is what must be exercised — not just the one page you were thinking about.
 2. **Exercise the real flow, not just page load.** Click through the happy path *and* the key states the change introduces or affects: empty state, error state, loading, validation failures, the specific interaction you built. Loading a page without interacting with it is not QA.
-3. **Use test accounts when a flow needs auth or specific state.** If a flow requires being logged in, having a particular role, an existing record, a paid plan, etc., use a test account / seeded state to reach it. **If no test account or fixture exists, ask the user for one (or for how to create it) — do not skip the authenticated path and do not call it done.** "Couldn't test because it needs login" is an unmet gate, not an exemption.
+3. **Use test accounts when a flow needs auth or specific state.** If a flow requires being logged in, having a particular role, an existing record, a paid plan, etc., reach it as a real logged-in user:
+   - **Look for a documented test account** at `docs/testing/test-accounts.md`. If it exists, use the account it names as the default (read its credentials from the gitignored secrets file it points to). Use a different account only if the task specifically calls for one.
+   - **If none is documented and the flow needs a login, STOP and ask the user:** *"This project has no documented test account and this flow needs a login. Want me to create a test account and document it so QA always uses it from now on (unless a specific account is needed)?"*
+     - **If yes:** create one the cheapest reliable way — the app's own signup via `/soloship:browse`, or a seed/admin script. If it can't be self-served (manual provisioning / external IdP), ask the user to provision one and hand you the credentials. Then **document it** in `docs/testing/test-accounts.md` (each account, role/purpose, environment, and which is the QA default), storing the actual secrets in a gitignored file (`.ai/test-credentials.json` or the project's secret store — never commit credentials; use non-production, disposable creds only). From then on, that documented default account is what QA uses unless the task names a specific one.
+     - **If no:** the authenticated flow is untested — say so plainly and do not call the work done. "Couldn't test because it needs login" is an unmet gate, not an exemption.
 4. **Capture evidence.** Screenshots (before/after where relevant) and the observed result of each flow. The evidence is what proves the gate was met.
 
 ### The fix-and-re-verify loop
