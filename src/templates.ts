@@ -71,6 +71,11 @@ This project follows: **THINK → PLAN → WORK → LEARN → SHIP**
 ## Rules
 
 Coding conventions and workflow rules auto-load from \`.claude/rules/\` — including **parameterize-constants** (no magic literals; refactor un-parameterized values when you encounter them, then list other affected sites and ask).
+
+## Agent Surfaces
+
+Claude Code uses this \`CLAUDE.md\` file plus \`.claude/rules/\` and \`.claude/settings.local.json\`.
+Codex uses \`AGENTS.md\` plus \`.codex/rules/\`. Keep behavior aligned across both when changing project guardrails.
 `;
 }
 
@@ -81,9 +86,14 @@ export function generateAgentsMd(project: ProjectInfo): string {
 
 Top-level project configuration, documentation, and cross-cutting concerns.
 
+## Audience Note
+
+The maintainer may not be a traditional coder. Explain technical work with a plain-English analogy before jargon, define each technical term once, and frame decisions by user impact instead of implementation detail.
+
 ## Owns
 
 - CLAUDE.md — project configuration for AI agents
+- AGENTS.md — project configuration for Codex
 - CHANGELOG.md — version history
 - docs/ — plans, solutions, architecture, audit reports
 - Project configuration files (package.json, tsconfig.json, etc.)
@@ -98,9 +108,26 @@ Top-level project configuration, documentation, and cross-cutting concerns.
 
 | File | Purpose |
 |------|---------|
-| CLAUDE.md | AI agent configuration |
+| AGENTS.md | Codex project guidance |
+| CLAUDE.md | Claude Code project guidance |
 | CHANGELOG.md | Version history |
 | docs/SOLUTION_GUIDE.md | Schema for solution docs |
+
+## Workflow
+
+This project follows: THINK -> PLAN -> WORK -> LEARN -> SHIP.
+
+- Think: use Soloship brainstorm/spec skills for new work.
+- Plan: write plans to \`docs/plans/YYYY-MM-DD-<slug>.md\`.
+- Work: implement from the latest approved plan.
+- Learn: write solution docs for non-obvious fixes.
+- Ship: run the appropriate Soloship shipping workflow.
+
+## Rules
+
+Coding conventions and workflow rules auto-load from \`.codex/rules/\`. The important project-wide rule is **browser-qa-gate**: no user-facing change is done until the affected flow has been exercised in a real browser, any issue found has been fixed, and the flow has been re-run successfully. If a flow needs login, use the default test account documented at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask to create a test account before claiming the flow is verified.
+
+Claude Code uses \`CLAUDE.md\`, \`.claude/rules/\`, and \`.claude/settings.local.json\`. Codex uses this file and \`.codex/rules/\`.
 
 <!-- Run /audit to discover and populate subdirectory AGENTS.md files -->
 `;

@@ -1,14 +1,21 @@
 import { input } from "@inquirer/prompts";
 import { execSync } from "node:child_process";
 import chalk from "chalk";
+import {
+  formatAgentSelection,
+  parseAgentTarget,
+  resolveAgentSelection,
+  type AgentTarget,
+} from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
 import { installHooks } from "./hooks.js";
-import { installRules } from "./rules.js";
+import { installClaudeRules, installCodexRules } from "./rules.js";
 import { installCi } from "./ci.js";
 
 interface InitOptions {
   skipPrompts?: boolean;
+  agent?: AgentTarget;
 }
 
 export async function runInit(options: InitOptions): Promise<void> {
@@ -17,9 +24,13 @@ export async function runInit(options: InitOptions): Promise<void> {
   // Step 1: Detect project
   console.log(chalk.blue("Detecting project..."));
   const detected = detectProject(root);
+  const agentTarget = parseAgentTarget(options.agent);
 
   const stack = detected.stack!;
   const existingDocs = detected.existingDocs!;
+  const agentSelection = resolveAgentSelection(agentTarget, {
+    hasCodex: detected.hasCodex || false,
+  });
 
   if (stack.language !== "unknown") {
     console.log(
@@ -32,6 +43,12 @@ export async function runInit(options: InitOptions): Promise<void> {
   if (existingDocs.hasClaudeMd) {
     console.log(`  ${chalk.yellow("CLAUDE.md already exists")} — will not overwrite`);
   }
+  if (existingDocs.hasAgentsMd) {
+    console.log(`  ${chalk.yellow("AGENTS.md already exists")} — will not overwrite`);
+  }
+  console.log(
+    `  Guardrails: ${chalk.cyan(formatAgentSelection(agentSelection))}`
+  );
 
   console.log("");
 
@@ -60,32 +77,54 @@ export async function runInit(options: InitOptions): Promise<void> {
     stack,
     hasGit: detected.hasGit || false,
     hasClaude: detected.hasClaude || false,
+    hasCodex: detected.hasCodex || false,
     existingDocs,
   };
 
   // Step 3: Scaffold documentation infrastructure
   console.log("");
   console.log(chalk.blue("Creating documentation infrastructure..."));
-  const scaffoldResults = await scaffoldDocs(root, projectInfo);
+  const scaffoldResults = await scaffoldDocs(root, projectInfo, {
+    createClaudeMd: agentSelection.claude,
+    createAgentsMd: true,
+  });
   for (const result of scaffoldResults) {
-    const icon = result.action === "created" ? chalk.green("+") : chalk.yellow("~");
+    const icon =
+      result.action === "created"
+        ? chalk.green("+")
+        : result.action === "skipped"
+          ? chalk.dim("-")
+          : chalk.yellow("~");
     console.log(`  ${icon} ${result.path} ${chalk.dim(`(${result.action})`)}`);
   }
 
   // Step 4: Install Claude Code hooks
-  console.log("");
-  console.log(chalk.blue("Configuring Claude Code hooks..."));
-  const hookResults = await installHooks(root, projectInfo);
-  for (const result of hookResults) {
-    console.log(`  ${chalk.green("+")} ${result}`);
+  if (agentSelection.claude) {
+    console.log("");
+    console.log(chalk.blue("Configuring Claude Code hooks..."));
+    const hookResults = await installHooks(root, projectInfo);
+    for (const result of hookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+  } else {
+    console.log("");
+    console.log(chalk.dim("Skipping Claude Code hooks (--agent codex)."));
   }
 
   // Step 5: Install rules
   console.log("");
   console.log(chalk.blue("Installing workflow rules..."));
-  const ruleResults = await installRules(root);
-  for (const result of ruleResults) {
-    console.log(`  ${chalk.green("+")} ${result}`);
+  if (agentSelection.claude) {
+    const ruleResults = await installClaudeRules(root);
+    for (const result of ruleResults) {
+      console.log(`  ${chalk.green("+")} Claude: ${result}`);
+    }
+  }
+  if (agentSelection.codex) {
+    const ruleResults = await installCodexRules(root);
+    for (const result of ruleResults) {
+      console.log(`  ${chalk.green("+")} Codex: ${result}`);
+    }
   }
 
   // Step 6: Install CI + architecture fitness functions
@@ -111,5 +150,15 @@ export async function runInit(options: InitOptions): Promise<void> {
     for (const note of notes) {
       console.log(`  ${chalk.dim("→")} ${note}`);
     }
+  }
+
+  if (agentSelection.codex) {
+    console.log("");
+    console.log(chalk.dim("Codex note: hooks are not installed yet."));
+    console.log(
+      chalk.dim(
+        "  Soloship installs Codex rules and AGENTS.md guidance now; Claude hook parity waits until Codex hook payloads are verified."
+      )
+    );
   }
 }

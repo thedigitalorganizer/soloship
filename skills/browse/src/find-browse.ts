@@ -32,11 +32,18 @@ export function locateBinary(): string | null {
 
   // 1. Workspace-local (for development inside a Soloship-installed project)
   if (root) {
+    candidates.push(join(root, '.codex', 'skills', 'soloship', 'skills', 'browse', 'dist', 'browse'));
+    candidates.push(join(root, '.agents', 'skills', 'soloship', 'skills', 'browse', 'dist', 'browse'));
     candidates.push(join(root, '.claude', 'skills', 'soloship', 'skills', 'browse', 'dist', 'browse'));
     candidates.push(join(root, '.claude', 'skills', 'browse', 'dist', 'browse'));
   }
 
-  // 2. Global Soloship installs — Claude Code plugin and user skill paths
+  // 2. Global Soloship installs — Codex local plugin, Claude Code plugin,
+  //    and user skill paths.
+  candidates.push(join(home, 'plugins', 'soloship', 'skills', 'browse', 'dist', 'browse'));
+  candidates.push(join(home, '.codex', '.tmp', 'marketplaces', 'soloship', 'skills', 'browse', 'dist', 'browse'));
+  candidates.push(join(home, '.codex', '.tmp', 'plugins', 'plugins', 'soloship', 'skills', 'browse', 'dist', 'browse'));
+  candidates.push(join(home, '.agents', 'skills', 'soloship', 'skills', 'browse', 'dist', 'browse'));
   candidates.push(join(home, '.claude', 'plugins', 'marketplaces', 'soloship', 'skills', 'browse', 'dist', 'browse'));
   candidates.push(join(home, '.claude', 'skills', 'soloship', 'skills', 'browse', 'dist', 'browse'));
   candidates.push(join(home, '.claude', 'skills', 'browse', 'dist', 'browse'));
@@ -45,10 +52,25 @@ export function locateBinary(): string | null {
     if (existsSync(c)) return c;
   }
 
-  // 3. Glob fallback: any plugin-style install under ~/.claude/plugins/.
-  //    Plugins land under a marketplace dir; the soloship plugin can also be
-  //    installed directly. Scan one level deep.
+  // 3. Glob fallback: any plugin-style install under Codex or Claude caches.
   try {
+    const codexMarketplacesRoot = join(home, '.codex', '.tmp', 'marketplaces');
+    if (existsSync(codexMarketplacesRoot)) {
+      for (const dir of readdirSync(codexMarketplacesRoot)) {
+        const direct = join(codexMarketplacesRoot, dir, 'skills', 'browse', 'dist', 'browse');
+        if (existsSync(direct)) return direct;
+        const marketplaceDir = join(codexMarketplacesRoot, dir);
+        try {
+          for (const sub of readdirSync(marketplaceDir)) {
+            const candidate = join(marketplaceDir, sub, 'skills', 'browse', 'dist', 'browse');
+            if (existsSync(candidate)) return candidate;
+          }
+        } catch {
+          // not a dir or unreadable — keep going
+        }
+      }
+    }
+
     const pluginsRoot = join(home, '.claude', 'plugins');
     if (existsSync(pluginsRoot)) {
       for (const dir of readdirSync(pluginsRoot)) {
@@ -67,7 +89,7 @@ export function locateBinary(): string | null {
       }
     }
   } catch {
-    // home/.claude/plugins missing — fall through to null
+    // Plugin caches missing — fall through to null
   }
 
   return null;

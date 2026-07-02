@@ -8,6 +8,10 @@ description: |
   Cherry-picks the learnings.jsonl persistence pattern for quick cross-session search.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Learn
 
 Your job is to capture what was learned from non-obvious work so future sessions

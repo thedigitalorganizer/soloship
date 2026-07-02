@@ -1,5 +1,20 @@
 # Changelog
 
+## [Unreleased]
+
+## [0.12.0] - 2026-07-02
+
+### Added
+
+- First-class Codex plugin packaging: `.codex-plugin/plugin.json`, repo-local `.agents/plugins/marketplace.json`, plugin metadata validation, and local Codex dogfood sync/install scripts.
+- `npx soloship init|upgrade --agent claude|codex|both` with Codex-facing `.codex/rules/` installation and `AGENTS.md` guidance.
+- Shared skill compatibility guidance for Codex, including fallbacks for Claude-only tool names, AskUserQuestion, subagent dispatch, Codex/Claude install paths, and nested `codex exec` outside-voice behavior.
+
+### Changed
+
+- `soloship doctor` now reports Claude Code, Codex, and shared project guardrail status separately.
+- README install/update docs now separate Claude plugin, Codex plugin, and npm project guardrails.
+
 ## [0.11.0] - 2026-06-26
 
 ### Added — Browser QA Gate (no plan is "done" without real browser QA)

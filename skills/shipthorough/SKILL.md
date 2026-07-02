@@ -6,6 +6,10 @@ description: |
   Use after significant work when everything needs to be solid.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Ship Thorough
 
 This is the full pipeline. You've done real work — make sure it's solid before
@@ -194,7 +198,7 @@ EOF
 )"
 ```
 
-See `~/.claude/rules/no-auto-pr.md` for the global rule that drives this default.
+See the project rule set (`.codex/rules/` or `.claude/rules/`) for the global rule that drives this default.
 
 ### Step 11: Verification Gate
 

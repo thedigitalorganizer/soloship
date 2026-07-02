@@ -11,14 +11,17 @@ import {
 
 interface ScaffoldResult {
   path: string;
-  action: "created" | "exists" | "updated";
+  action: "created" | "exists" | "updated" | "skipped";
 }
 
 export async function scaffoldDocs(
   root: string,
-  project: ProjectInfo
+  project: ProjectInfo,
+  options: { createClaudeMd?: boolean; createAgentsMd?: boolean } = {}
 ): Promise<ScaffoldResult[]> {
   const results: ScaffoldResult[] = [];
+  const createClaudeMd = options.createClaudeMd ?? true;
+  const createAgentsMd = options.createAgentsMd ?? true;
 
   // Create directory structure
   const dirs = [
@@ -40,8 +43,10 @@ export async function scaffoldDocs(
     }
   }
 
-  // CLAUDE.md — only create if doesn't exist
-  if (!project.existingDocs.hasClaudeMd) {
+  // CLAUDE.md — only create for Claude-targeted setup and never overwrite.
+  if (!createClaudeMd) {
+    results.push({ path: "CLAUDE.md", action: "skipped" });
+  } else if (!project.existingDocs.hasClaudeMd) {
     const content = generateClaudeMd(project);
     writeFileSync(join(root, "CLAUDE.md"), content);
     results.push({ path: "CLAUDE.md", action: "created" });
@@ -50,7 +55,9 @@ export async function scaffoldDocs(
   }
 
   // AGENTS.md — root level, only if doesn't exist
-  if (!project.existingDocs.hasAgentsMd) {
+  if (!createAgentsMd) {
+    results.push({ path: "AGENTS.md", action: "skipped" });
+  } else if (!project.existingDocs.hasAgentsMd) {
     const content = generateAgentsMd(project);
     writeFileSync(join(root, "AGENTS.md"), content);
     results.push({ path: "AGENTS.md", action: "created" });

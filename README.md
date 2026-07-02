@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It's a Claude Code plugin that gives you three things a traditional engineering team would: **mechanical enforcement** that fires automatically (9 hooks, 9 always-on rules, CI checks — no judgment calls required), **43 workflow skills** drawn from Soloship's own work plus four best-in-class upstream plugins (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max — full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires everything into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (9 Claude hooks, 9 always-on rules, CI checks — no judgment calls required), **43 shared workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max — full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 **Quick reference:** [aifoundationlevels.com/soloship-cheatsheet](https://aifoundationlevels.com/soloship-cheatsheet)
 
@@ -10,78 +10,151 @@ Soloship is guardrails for non-coders building software through AI agents. It's 
 
 ### Prerequisites
 
-You need two things before you start:
+You need the agent you want to use and Node.js 20 or newer:
 
-1. **[Claude Code](https://claude.com/claude-code)** — install it if you haven't yet. Soloship runs inside it.
-2. **Node.js 18 or newer** — `npx` ships with Node and is how Soloship's CLI runs. Check by running `node -v` in a terminal. If you don't have it, install from [nodejs.org](https://nodejs.org).
+- **Codex** for the Codex plugin surface.
+- **[Claude Code](https://claude.com/claude-code)** for the Claude plugin surface.
+- **Node.js 20+** for `npx soloship init`, `upgrade`, `doctor`, and `rollback`.
 
-You don't need to install anything from npm by hand. `npx` downloads `soloship` on demand and caches it. Soloship is [live on npm](https://www.npmjs.com/package/soloship) — you can verify with `npm view soloship`.
+You don't need to install anything from npm by hand. `npx` downloads `soloship` on demand and caches it. Soloship is [live on npm](https://www.npmjs.com/package/soloship) — verify with `npm view soloship`.
 
-### How Soloship is structured
+### How Soloship Is Structured
 
-Soloship has two parts that work together:
+| Surface | What it gives you | Install/update owner |
+|---|---|---|
+| **Codex plugin** | Soloship skills for audit, bootstrap, plan, implement, review, browse, and ship workflows | `codex plugin ...` |
+| **Claude Code plugin** | `/soloship:*` slash commands backed by the same `skills/` source tree | `/plugin ...` in Claude Code |
+| **npm CLI** | Project guardrails: docs, rules, Claude hooks, CI, rollback stamp | `npx soloship ...` |
 
-| Part | What it gives you | How it's installed | When it runs |
-|------|-------------------|--------------------|--------------|
-| **Plugin** (`thedigitalorganizer/soloship`) | The `/soloship:*` slash commands (audit, bootstrap, brainstorm, plan, etc.) | Claude Code plugin marketplace | Once per machine |
-| **npm CLI** (`soloship` on npm) | The `init` / `upgrade` / `doctor` / `rollback` commands that install hooks, rules, CI, and `CLAUDE.md` into a project | Auto-downloaded by `npx` (no manual install) | Once per project, then `upgrade` whenever a new version ships |
+Use the plugin for daily workflow. Use the npm CLI once per project, then again when guardrails need refreshing.
 
-You need both for the full experience. The plugin gives you the slash commands. The npm CLI installs the project-level guardrails. The plugin's `/soloship:bootstrap` calls `npx soloship init` for you, so in practice you only ever type slash commands.
+### Choose Your Setup
 
-### Step 1 — Install the plugin (once per machine)
+Use one of these paths.
 
-Inside any Claude Code session, run these two slash commands **one at a time** — run the first, wait for it to finish, then run the second.
+**Codex only** — use this if you work in the Codex app or Codex CLI:
 
-**1a. Add the marketplace:**
-
+```bash
+codex plugin marketplace add thedigitalorganizer/soloship
+codex plugin add soloship@soloship
+npx soloship init --agent codex
 ```
+
+Start a new Codex thread after the plugin install. The project setup creates `AGENTS.md` and `.codex/rules/`; it does not create Claude hooks.
+
+**Claude Code only** — use this if you only work in Claude Code:
+
+```text
 /plugin marketplace add thedigitalorganizer/soloship
-```
-
-This points Claude Code at the Soloship marketplace on GitHub. Nothing is installed yet — this just registers where to find the plugin.
-
-**1b. Install the plugin:**
-
-```
 /plugin install soloship@soloship
 ```
 
-The syntax is `<plugin-name>@<marketplace-name>` — both happen to be `soloship`, which is why it reads twice. Once this finishes, every `/soloship:*` slash command is available in every project you open in Claude Code.
+Then set up each project:
 
-### Step 2 — Set up a project (once per project)
-
-Open the project you want to use Soloship in — a brand-new empty folder or an existing codebase, either works — then run one of these in Claude Code. **You don't need to open a terminal.** The bootstrap skill calls `npx soloship init` for you.
-
-**Brand-new project (no code yet):**
-
-```
-/soloship:bootstrap
+```bash
+npx soloship init --agent claude
 ```
 
-Bootstrap asks four questions about your project, then sets up the guardrails (hooks, rules, folder structure, `CLAUDE.md`). When it finishes, you're ready to build. Start your first feature with `/soloship:brainstorm`.
+This creates `CLAUDE.md`, `.claude/rules/`, and `.claude/settings.local.json`.
 
-**Existing project (already has code):**
+**Both Codex and Claude Code** — use this if you switch between them:
 
-```
-/soloship:audit
-/soloship:bootstrap
-```
-
-`/soloship:audit` investigates the codebase first (it dispatches 10 parallel agents to map architecture, conventions, quality, and risk). `/soloship:bootstrap` then reads what audit found and tailors the setup to your actual code instead of guessing. Takes a few minutes, but it's what keeps the guardrails from fighting your existing conventions.
-
-After bootstrap, the daily loop is `/soloship:brainstorm` → `/soloship:plan` → `/soloship:implement` → `/soloship:shipthorough`.
-
-### Keeping Soloship up to date
-
-After install, every Claude Code session checks once a day whether a new Soloship version has been published. When one is, you'll see a single line at the top of the session:
-
-```
-Soloship update available: 0.1.2 → 0.1.3. Run: npx soloship upgrade
+```bash
+codex plugin marketplace add thedigitalorganizer/soloship
+codex plugin add soloship@soloship
 ```
 
-Run that command from your project root whenever you see it. It refreshes hooks, rules, and CI, then re-stamps the version. Your project docs (`CLAUDE.md`, `AGENTS.md`, `CHANGELOG.md`) are preserved.
+```text
+/plugin marketplace add thedigitalorganizer/soloship
+/plugin install soloship@soloship
+```
 
-To update the plugin itself (the slash commands), Claude Code handles it via `/plugin update soloship@soloship`.
+Then set up each project once:
+
+```bash
+npx soloship init --agent both
+```
+
+Both agents use the same `skills/` source and the same `docs/plans/` and `docs/solutions/` project artifacts. Claude Code gets `.claude/` hooks/rules; Codex gets `.codex/rules/` and `AGENTS.md`.
+
+### Codex Plugin
+
+Add the Soloship marketplace, then install the plugin:
+
+```bash
+codex plugin marketplace add thedigitalorganizer/soloship
+codex plugin add soloship@soloship
+```
+
+Start a new Codex thread after installing or updating so Codex loads the refreshed skills.
+
+### Claude Code Plugin
+
+Inside Claude Code, run these one at a time:
+
+```text
+/plugin marketplace add thedigitalorganizer/soloship
+/plugin install soloship@soloship
+```
+
+Once installed, every `/soloship:*` slash command is available in Claude Code.
+
+### Project Guardrails
+
+Open the project you want to use Soloship in and run one setup path.
+
+For Codex:
+
+```bash
+npx soloship init --agent codex
+```
+
+For Claude Code:
+
+```bash
+npx soloship init --agent claude
+```
+
+For both:
+
+```bash
+npx soloship init --agent both
+```
+
+`init` creates the documentation structure, 9 workflow rules, CI checks, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+
+For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
+
+### Keeping Soloship Up To Date
+
+Update each surface separately:
+
+```bash
+# Project guardrails
+npx soloship upgrade --agent codex
+npx soloship upgrade --agent claude
+npx soloship upgrade --agent both
+
+# Codex plugin
+codex plugin marketplace upgrade soloship
+codex plugin add soloship@soloship
+
+# Claude Code plugin
+/plugin update soloship@soloship
+```
+
+For local Codex dogfooding while developing this repo:
+
+```bash
+npm run codex:sync-local
+codex plugin add soloship@personal
+```
+
+Start a new Codex thread after any plugin reinstall.
+
+### Switching Between Claude Code And Codex
+
+Both agents use the same repo, the same `skills/` source tree, and the same plan/solution artifacts under `docs/`. Claude Code reads `CLAUDE.md`, `.claude/rules/`, and `.claude/settings.local.json`. Codex reads `AGENTS.md` and `.codex/rules/`. Claude uses `/soloship:*`; Codex uses the installed Soloship plugin skills.
 
 ## How we got here
 
@@ -103,11 +176,11 @@ That became Soloship.
 
 Three layers, from most mechanical to most guided:
 
-**Hooks** fire automatically on git events. They can't be rationalized away. Dangerous command blocking, security scanning, auto-lint, CHANGELOG enforcement, plan validation, architecture fitness functions. If the agent forgets, the hook remembers.
+**Hooks** fire automatically in Claude Code sessions. They can't be rationalized away. Dangerous command blocking, security scanning, auto-lint, CHANGELOG enforcement, plan validation, architecture fitness functions. If the agent forgets, the hook remembers. Codex hook parity is intentionally deferred until Codex hook payloads are verified.
 
 **Rules** are injected into every agent session as always-on context. Solution search before planning, plan materialization after plan mode, plan rationale and claim-verification requirements, plan lifecycle enforcement, the billing-confirmation and recurrence gates, parameterize-constants, and a **browser-QA gate that blocks "done" until the change has been exercised in a real browser** (with a test account where a flow needs login). The agent can't not see them, even if a skill doesn't reference them.
 
-**Skills** are guided workflows invoked as `/soloship:*` commands. Each adds enforcement gates (checklists the agent must complete), anti-rationalization tables (preemptive counters to the ways agents cut corners), and routing to the right underlying tool.
+**Skills** are guided workflows. Claude Code exposes them as `/soloship:*` commands; Codex exposes them through the installed Soloship plugin. Each adds enforcement gates (checklists the agent must complete), anti-rationalization tables (preemptive counters to the ways agents cut corners), and routing to the right underlying tool.
 
 ### Skill architecture
 
@@ -145,7 +218,7 @@ When you run `/soloship:bootstrap` (or `/soloship:audit` → `/soloship:bootstra
 
 - **Folder scaffolding** — `docs/plans/`, `docs/solutions/`, `docs/audit/`, `AGENTS.md` stubs
 - **9 Claude Code hooks** — dangerous command blocking, security scanning, auto-lint, CHANGELOG check, plan validation, workflow navigator, handoff reminder, checkpoint/rollback, architecture fitness
-- **4 workflow rules** — solution search, plan materialization, plan rationale, plan lifecycle
+- **9 workflow rules** — solution search, plan materialization, plan rationale, plan lifecycle, claim verification, billing confirmation, recurrence, parameterized constants, and Browser QA Gate
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs** — `CLAUDE.md`, `AGENTS.md`, `CHANGELOG`, `SOLUTION_GUIDE`, sized to your stack
 
@@ -158,7 +231,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 **Setup & orientation**
 
 - `/soloship:audit` — Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 6 more to assess quality, entanglement, security, dependencies, gaps, and leverage points. Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
-- `/soloship:bootstrap` — Configures governance from audit findings or interactive questions. Creates CLAUDE.md, AGENTS.md files (3+ source file threshold), installs 4 core rules, and wires up hooks. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
+- `/soloship:bootstrap` — Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs 9 workflow rules, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard` — Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. No external routing — fully self-contained.
 
 **Daily work**
@@ -187,7 +260,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 ## Quick start
 
-See the [Install](#install) section above for the two commands to install the plugin. Once installed, the daily flow inside any project is:
+See the [Install](#install) section above for the Codex and Claude install commands. Once installed, the daily flow inside any project is:
 
 **New project:**
 
@@ -209,9 +282,9 @@ See the [Install](#install) section above for the two commands to install the pl
 `/soloship:bootstrap` calls `npx soloship init` under the hood, so you don't usually need to think about the npm CLI. But it's there if you want to script setup, run it in CI, or skip the slash command entirely. Run any of these from your project root:
 
 ```bash
-npx soloship init        # initial setup — creates docs, hooks, rules, CI, CLAUDE.md
+npx soloship init --agent both   # initial setup — creates docs, rules, CI, AGENTS.md, and Claude hooks
 npx soloship upgrade     # refresh hooks, rules, CI, and the .soloship/version stamp
-npx soloship doctor      # check Claude Code environment for missing companions
+npx soloship doctor      # check Claude Code, Codex, and project guardrail status
 npx soloship rollback    # restore the last safety snapshot
 ```
 
@@ -222,7 +295,7 @@ npx soloship rollback    # restore the last safety snapshot
 1. **Audit before bootstrap on existing projects.** Don't impose governance on a codebase you haven't understood yet.
 2. **Design-first principle.** `/soloship:brainstorm` nudges you toward visual design before `/soloship:plan`. Design catches problems text can't.
 3. **Hooks for enforcement, skills for intelligence.** Hooks are mechanical and fire automatically. Skills are guided and require judgment. Rules sit underneath both — they're always on, even when the skill forgets.
-4. **npm installer + Claude Code plugin.** Installer handles one-time infrastructure. Skills handle daily workflow. Different jobs, different tools.
+4. **npm installer + Claude Code + Codex plugins.** Installer handles one-time infrastructure. Shared skills handle daily workflow. Different jobs, different tools.
 5. **Routers, not rewrites.** Where [Superpowers](https://github.com/anthropics/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), or [gstack](https://github.com/garrytan/gstack) already do the job well, Soloship routes to them and adds enforcement gates, routing logic, and solo-operator defaults on top. When upstream skills improve, Soloship benefits automatically.
 
 ## Status
@@ -231,15 +304,15 @@ npx soloship rollback    # restore the last safety snapshot
 |-------|--------|-------------------|
 | 1-2 | Done | Cleanup + `npx soloship init` with stack detection |
 | 3-4 | Done | `/audit` + `/bootstrap` skills |
-| 5-6 | Done | 17 more skills (19 total) + 9 hooks + 4 rules |
-| 7 | Not started | Safety floor hardening, surface simplification, CLAUDE.md governance |
+| 5-6 | Done | 17 more skills (19 total) + 9 hooks + 9 rules |
+| 7 | Not started | Safety floor hardening, surface simplification, AGENTS.md/CLAUDE.md governance |
 | 8 | Not started | Graduation system, methodology documentation |
 
 Phases 1-6 are shipped and usable today. Phases 7-8 were restructured after a 3-round adversarial review that identified rationalization traps in the original design. Phase 7 adds mechanical safety enforcement (Semgrep scanning, automated rollback, phone-a-friend triggers) and consolidates the native skills into 3-4 meta-workflows. Phase 8 adds a graduation system with calibrated thresholds that tell you when your project has outgrown solo mode.
 
 ## Built on the shoulders of
 
-Soloship curates and vendors skills from five outstanding Claude Code plugins. One plugin install for the user; full credit and install links for the authors. Full attribution and version pins live in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
+Soloship curates and vendors skills from five outstanding Claude Code plugin ecosystems. One Soloship plugin install per host gives users the curated set; full credit and install links for the authors stay here. Full attribution and version pins live in [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md).
 
 [**Compound Engineering**](https://github.com/EveryInc/compound-engineering-plugin) — Kieran Klaassen (Every). The brainstorm → plan → work → compound loop is the spine of how Soloship thinks about engineering. Also: `/review` inherits CE's multi-agent review pattern.
 
@@ -264,7 +337,9 @@ The broader design traces back to a research pass across: Ousterhout on strategi
 ## Repo layout
 
 ```
-.claude-plugin/        # Plugin manifest (plugin.json, marketplace.json)
+.claude-plugin/        # Claude Code plugin manifest (plugin.json, marketplace.json)
+.codex-plugin/        # Codex plugin manifest
+.agents/plugins/      # Codex marketplace entry
 bin/soloship.js        # CLI entry point
 src/                   # TypeScript source for the installer
   cli.ts               # Commander CLI definition
@@ -272,10 +347,10 @@ src/                   # TypeScript source for the installer
   detect.ts            # Stack detection
   scaffold.ts          # Folder + doc creation
   hooks.ts             # Claude Code hook configuration
-  rules.ts             # Workflow rule installation
+  rules.ts             # Claude and Codex workflow rule installation
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
-skills/                # Claude Code skills shipped by the plugin (43 total)
+skills/                # Shared Claude Code and Codex skills shipped by the plugins (43 total)
   # All skills are invoked as /soloship:<name>. Source attribution lives
   # in THIRD_PARTY_NOTICES.md; no source prefixes leak into command names.
 

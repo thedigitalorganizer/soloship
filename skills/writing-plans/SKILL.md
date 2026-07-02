@@ -3,6 +3,10 @@ name: writing-plans
 description: Use when you have a spec or requirements for a multi-step task, before touching code
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Superpowers namespace refs rewritten to Soloship's vendored skill names; plan path changed from docs/superpowers/plans/ to Soloship's docs/plans/ convention. -->
 
 # Writing Plans

@@ -18,6 +18,10 @@ program
   .command("init")
   .description("Initialize Soloship in the current project")
   .option("--skip-prompts", "Use defaults without asking questions")
+  .option(
+    "--agent <agent>",
+    "Project guardrail target: claude, codex, or both"
+  )
   .action(async (options) => {
     console.log("");
     console.log(
@@ -37,10 +41,12 @@ program
       console.log("");
       console.log("Next steps:");
       console.log(
-        chalk.dim("  Existing project: ") + "Run /audit in Claude Code"
+        chalk.dim("  Existing project: ") +
+          "Run /soloship:audit in Claude Code or invoke the Soloship audit skill in Codex"
       );
       console.log(
-        chalk.dim("  New project:      ") + "Run /bootstrap in Claude Code"
+        chalk.dim("  New project:      ") +
+          "Run /soloship:bootstrap in Claude Code or invoke the Soloship bootstrap skill in Codex"
       );
       console.log("");
     } catch (err) {
@@ -54,7 +60,11 @@ program
   .description(
     "Refresh hooks, rules, and CI to the version of Soloship being run via npx"
   )
-  .action(async () => {
+  .option(
+    "--agent <agent>",
+    "Project guardrail target: claude, codex, or both"
+  )
+  .action(async (options) => {
     console.log("");
     console.log(chalk.bold("Soloship Upgrade"));
     console.log(
@@ -65,7 +75,7 @@ program
     console.log("");
 
     try {
-      await runUpgrade();
+      await runUpgrade(options);
     } catch (err) {
       console.error(chalk.red("Upgrade failed:"), err);
       process.exit(1);
@@ -87,14 +97,14 @@ program
 program
   .command("doctor")
   .description(
-    "Audit your Claude Code environment for Soloship companion dependencies"
+    "Audit your Claude Code and Codex environment for Soloship readiness"
   )
   .action(async () => {
     console.log("");
     console.log(chalk.bold("Soloship Doctor"));
     console.log(
       chalk.dim(
-        "Checking plugins, MCP servers, global skills, and hooks against the Soloship manifest."
+        "Checking Claude Code, Codex, and shared project guardrail status."
       )
     );
     console.log("");

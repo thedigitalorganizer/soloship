@@ -1,0 +1,20 @@
+{
+  "name": "soloship",
+  "interface": {
+    "displayName": "Soloship"
+  },
+  "plugins": [
+    {
+      "name": "soloship",
+      "source": {
+        "source": "url",
+        "url": "https://github.com/thedigitalorganizer/soloship.git"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Coding"
+    }
+  ]
+}

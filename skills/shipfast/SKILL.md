@@ -6,6 +6,10 @@ description: |
   checks, maximum speed.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Ship Fast
 
 This is the emergency path. Use when something is broken in production and the

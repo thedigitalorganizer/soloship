@@ -26,6 +26,10 @@ triggers:
   - check the implementation plan
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from gstack v1.12.1.0 (Garry Tan). See skills/vendored/gstack/LICENSE. -->
 <!-- AUTO-GENERATED from SKILL.md.tmpl — do not edit directly -->
 <!-- Regenerate: bun run gen:skill-docs -->
@@ -51,7 +55,7 @@ echo "REPO_MODE: ${REPO_MODE:-solo}"
 
 **Rule:** if any `mcp__*__AskUserQuestion` variant is in your tool list, prefer it. Hosts may disable native AUQ via `--disallowedTools AskUserQuestion` (Conductor does, by default) and route through their MCP variant; calling native there silently fails. Same questions/options shape; same decision-brief format applies.
 
-**If no AskUserQuestion variant appears in your tool list, this skill is BLOCKED.** Stop, report `BLOCKED — AskUserQuestion unavailable`, and wait for the user. Do not write decisions to the plan file as a substitute, do not emit them as prose and stop, and do not silently auto-decide.
+**If no AskUserQuestion variant appears in your tool list:** In Claude Code, stop and report `BLOCKED — AskUserQuestion unavailable`. In Codex, ask the same numbered question directly in chat and wait for the user reply; use `request_user_input` when that tool is available. Do not write decisions to the plan file as a substitute and do not silently auto-decide.
 
 ### Format
 

@@ -7,6 +7,10 @@ description: |
   Use periodically or when docs/solutions/ has grown since the last cleanup.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Cleanup
 
 Your job is to maintain the knowledge system that `/learn`, `/audit`, and `/bootstrap`

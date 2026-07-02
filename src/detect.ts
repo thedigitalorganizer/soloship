@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
 export interface ProjectInfo {
@@ -7,6 +8,7 @@ export interface ProjectInfo {
   stack: StackInfo;
   hasGit: boolean;
   hasClaude: boolean;
+  hasCodex: boolean;
   existingDocs: ExistingDocs;
 }
 
@@ -43,8 +45,20 @@ export function detectProject(root: string): Partial<ProjectInfo> {
     stack,
     hasGit: existsSync(join(root, ".git")),
     hasClaude: existsSync(join(root, ".claude")),
+    hasCodex: existsSync(join(root, ".codex")) || commandExists("codex"),
     existingDocs,
   };
+}
+
+function commandExists(command: string): boolean {
+  try {
+    execFileSync("sh", ["-c", `command -v ${command}`], {
+      stdio: "ignore",
+    });
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function detectStack(root: string): StackInfo {

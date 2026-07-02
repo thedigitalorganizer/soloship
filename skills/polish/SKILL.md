@@ -7,6 +7,10 @@ args:
     required: false
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from impeccable v1.0.0 (Paul Bakaus, Apache 2.0). See skills/vendored/impeccable/LICENSE and skills/vendored/impeccable/NOTICE.md. -->
 
 **First**: Use the frontend-design skill for design principles and anti-patterns.

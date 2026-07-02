@@ -6,6 +6,10 @@ description: |
   actual project. Use after /audit on existing projects, or standalone on new projects.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Bootstrap
 
 You are configuring a project's governance infrastructure. Your job is to create

@@ -3,6 +3,10 @@ name: finish
 description: Use when implementation is complete, all tests pass, and you need to decide how to integrate the work - guides completion of development work by presenting structured options for merge, PR, or cleanup
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Renamed `finishing-a-development-branch` → `finish` for Soloship's user-facing `/soloship:finish` command. Soloship keeps `gh pr create` in Option 2 because that menu pick is Soloship's explicit PR opt-in surface (see the no-auto-PR rule); upstream went forge-neutral and only pushes. -->
 
 # Finishing a Development Branch

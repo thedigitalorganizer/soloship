@@ -6,6 +6,10 @@ description: |
   Superpowers). Iron law: no fixes without root cause investigation.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Debug
 
 Your job is to find and fix bugs through systematic investigation, not guessing.

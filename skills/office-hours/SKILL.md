@@ -30,6 +30,10 @@ triggers:
   - office hours
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from gstack v1.32.0.0 (Garry Tan). See skills/vendored/gstack/LICENSE. -->
 <!-- Soloship modifications: rendering-rule sections (AskUserQuestion Format, Voice, Writing Style, etc.) re-introduced 2026-05-11 after v0.1.1 over-stripped them. See docs/plans/2026-05-11-revendor-gstack-skills-cleanly.md. -->
 
@@ -39,14 +43,25 @@ triggers:
 [ -d "$HOME/.bun/bin" ] && export PATH="$HOME/.bun/bin:$PATH"
 GSB_DIR=""
 for CANDIDATE in \
+  "$HOME/plugins/soloship/skills/browse" \
+  "$HOME/.codex/.tmp/marketplaces/soloship/skills/browse" \
+  "$HOME/.codex/.tmp/plugins/plugins/soloship/skills/browse" \
+  "$HOME/.agents/skills/soloship/skills/browse" \
   "$HOME/.claude/plugins/marketplaces/soloship/skills/browse" \
   "$HOME/.claude/skills/soloship/skills/browse" \
   "$HOME/.claude/skills/browse" \
+  ".codex/skills/soloship/skills/browse" \
+  ".agents/skills/soloship/skills/browse" \
   ".claude/skills/soloship/skills/browse"; do
   if [ -d "$CANDIDATE" ]; then GSB_DIR="$CANDIDATE"; break; fi
 done
 if [ -z "$GSB_DIR" ]; then
-  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/browse \
+  for FOUND in "$HOME"/plugins/soloship/skills/browse \
+               "$HOME"/.codex/.tmp/marketplaces/*/skills/browse \
+               "$HOME"/.codex/.tmp/marketplaces/*/*/skills/browse \
+               "$HOME"/.codex/.tmp/plugins/plugins/soloship/skills/browse \
+               "$HOME"/.codex/plugins/*/soloship*/skills/browse \
+               "$HOME"/.claude/plugins/*/soloship*/skills/browse \
                "$HOME"/.claude/plugins/marketplaces/*/skills/browse; do
     if [ -d "$FOUND" ]; then GSB_DIR="$FOUND"; break; fi
   done
@@ -58,7 +73,7 @@ if [ -n "$GSB_DIR" ] && [ -x "$GSB_DIR/dist/browse" ]; then
 elif [ -n "$GSB_DIR" ]; then
   echo "NEEDS_SETUP: $GSB_DIR/scripts/build-soloship.sh"
 else
-  echo "NEEDS_SETUP_NO_DIR: browse skill directory not found under \$HOME/.claude/"
+  echo "NEEDS_SETUP_NO_DIR: browse skill directory not found under Codex or Claude plugin paths"
 fi
 ```
 
@@ -90,7 +105,7 @@ echo "REPO_MODE: ${REPO_MODE:-solo}"
 
 **Rule:** if any `mcp__*__AskUserQuestion` variant is in your tool list, prefer it. Hosts may disable native AUQ via `--disallowedTools AskUserQuestion` (Conductor does, by default) and route through their MCP variant; calling native there silently fails. Same questions/options shape; same decision-brief format applies.
 
-**If no AskUserQuestion variant appears in your tool list, this skill is BLOCKED.** Stop, report `BLOCKED — AskUserQuestion unavailable`, and wait for the user. Do not write decisions to the plan file as a substitute, do not emit them as prose and stop, and do not silently auto-decide.
+**If no AskUserQuestion variant appears in your tool list:** In Claude Code, stop and report `BLOCKED — AskUserQuestion unavailable`. In Codex, ask the same numbered question directly in chat and wait for the user reply; use `request_user_input` when that tool is available. Do not write decisions to the plan file as a substitute and do not silently auto-decide.
 
 ### Format
 

@@ -11,6 +11,10 @@ description: |
   for original and attribution.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Grill Me
 
 Your job is to extract every constraint, edge case, and scope decision the user

@@ -4,6 +4,10 @@ description: Perform exhaustive code reviews using multi-agent analysis, ultra-t
 argument-hint: "[PR number, GitHub URL, branch name, or latest]"
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from compound-engineering v2.34.0 (Kieran Klaassen). See skills/vendored/ce/LICENSE. -->
 
 # Review Command

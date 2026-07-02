@@ -10,13 +10,19 @@ fi
 ROOT=$(git rev-parse --show-toplevel 2>/dev/null || true)
 CANDIDATES=()
 [ -n "$ROOT" ] && CANDIDATES+=(
-  "$ROOT/.claude/skills/soloship/skills/gs-browse/dist/browse"
-  "$ROOT/.claude/skills/gs-browse/dist/browse"
+  "$ROOT/.codex/skills/soloship/skills/browse/dist/browse"
+  "$ROOT/.agents/skills/soloship/skills/browse/dist/browse"
+  "$ROOT/.claude/skills/soloship/skills/browse/dist/browse"
+  "$ROOT/.claude/skills/browse/dist/browse"
 )
 CANDIDATES+=(
-  "$HOME/.claude/plugins/marketplaces/soloship/skills/gs-browse/dist/browse"
-  "$HOME/.claude/skills/soloship/skills/gs-browse/dist/browse"
-  "$HOME/.claude/skills/gs-browse/dist/browse"
+  "$HOME/plugins/soloship/skills/browse/dist/browse"
+  "$HOME/.codex/.tmp/marketplaces/soloship/skills/browse/dist/browse"
+  "$HOME/.codex/.tmp/plugins/plugins/soloship/skills/browse/dist/browse"
+  "$HOME/.agents/skills/soloship/skills/browse/dist/browse"
+  "$HOME/.claude/plugins/marketplaces/soloship/skills/browse/dist/browse"
+  "$HOME/.claude/skills/soloship/skills/browse/dist/browse"
+  "$HOME/.claude/skills/browse/dist/browse"
 )
 for C in "${CANDIDATES[@]}"; do
   if test -x "$C"; then
@@ -25,12 +31,17 @@ for C in "${CANDIDATES[@]}"; do
   fi
 done
 # Glob fallback for non-standard plugin install paths.
-for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/gs-browse/dist/browse \
-             "$HOME"/.claude/plugins/marketplaces/*/skills/gs-browse/dist/browse; do
+for FOUND in "$HOME"/plugins/soloship/skills/browse/dist/browse \
+             "$HOME"/.codex/.tmp/marketplaces/*/skills/browse/dist/browse \
+             "$HOME"/.codex/.tmp/marketplaces/*/*/skills/browse/dist/browse \
+             "$HOME"/.codex/.tmp/plugins/plugins/soloship/skills/browse/dist/browse \
+             "$HOME"/.codex/plugins/*/soloship*/skills/browse/dist/browse \
+             "$HOME"/.claude/plugins/*/soloship*/skills/browse/dist/browse \
+             "$HOME"/.claude/plugins/marketplaces/*/skills/browse/dist/browse; do
   if test -x "$FOUND"; then
     echo "$FOUND"
     exit 0
   fi
 done
-echo "ERROR: browse binary not found. Run scripts/build-soloship.sh inside the gs-browse skill dir." >&2
+echo "ERROR: browse binary not found. Run scripts/build-soloship.sh inside the browse skill dir." >&2
 exit 1

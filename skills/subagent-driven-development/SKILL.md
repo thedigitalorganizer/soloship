@@ -3,6 +3,10 @@ name: subagent-driven-development
 description: Use when executing implementation plans with independent tasks in the current session
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Superpowers namespace refs rewritten to Soloship's vendored skill names; finishing-a-development-branch -> /soloship:finish; the final whole-branch reviewer is Soloship's code-reviewer agent (agents/code-reviewer.md), not upstream's requesting-code-review skill; SDD scratch dir .superpowers/sdd -> .ai/sdd. Scripts (scripts/) and prompt files vendored alongside. -->
 
 # Subagent-Driven Development

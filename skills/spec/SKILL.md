@@ -5,6 +5,10 @@ description: |
   need explicit success conditions, data models, or API contracts before planning.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Spec
 
 Your job is to create a formal specification for a feature that needs more rigor

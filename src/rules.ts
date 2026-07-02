@@ -1,28 +1,33 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-export async function installRules(
+export async function installClaudeRules(
   root: string,
   options: { force?: boolean } = {}
 ): Promise<string[]> {
+  return installRulesAt(join(root, ".claude", "rules"), options);
+}
+
+export async function installCodexRules(
+  root: string,
+  options: { force?: boolean } = {}
+): Promise<string[]> {
+  return installRulesAt(join(root, ".codex", "rules"), options);
+}
+
+export const installRules = installClaudeRules;
+
+async function installRulesAt(
+  rulesDir: string,
+  options: { force?: boolean } = {}
+): Promise<string[]> {
   const results: string[] = [];
-  const rulesDir = join(root, ".claude", "rules");
 
   if (!existsSync(rulesDir)) {
     mkdirSync(rulesDir, { recursive: true });
   }
 
-  const rules: Record<string, string> = {
-    "solution-search.md": RULE_SOLUTION_SEARCH,
-    "plan-materialization.md": RULE_PLAN_MATERIALIZATION,
-    "plan-rationale.md": RULE_PLAN_RATIONALE,
-    "plan-lifecycle.md": RULE_PLAN_LIFECYCLE,
-    "plan-claim-verification.md": RULE_PLAN_CLAIM_VERIFICATION,
-    "billing-confirmation-gate.md": RULE_BILLING_CONFIRMATION_GATE,
-    "recurrence-gate.md": RULE_RECURRENCE_GATE,
-    "parameterize-constants.md": RULE_PARAMETERIZE_CONSTANTS,
-    "browser-qa-gate.md": RULE_BROWSER_QA_GATE,
-  };
+  const rules = getWorkflowRules();
 
   for (const [filename, content] of Object.entries(rules)) {
     const path = join(rulesDir, filename);
@@ -38,6 +43,20 @@ export async function installRules(
   }
 
   return results;
+}
+
+export function getWorkflowRules(): Record<string, string> {
+  return {
+    "solution-search.md": RULE_SOLUTION_SEARCH,
+    "plan-materialization.md": RULE_PLAN_MATERIALIZATION,
+    "plan-rationale.md": RULE_PLAN_RATIONALE,
+    "plan-lifecycle.md": RULE_PLAN_LIFECYCLE,
+    "plan-claim-verification.md": RULE_PLAN_CLAIM_VERIFICATION,
+    "billing-confirmation-gate.md": RULE_BILLING_CONFIRMATION_GATE,
+    "recurrence-gate.md": RULE_RECURRENCE_GATE,
+    "parameterize-constants.md": RULE_PARAMETERIZE_CONSTANTS,
+    "browser-qa-gate.md": RULE_BROWSER_QA_GATE,
+  };
 }
 
 const RULE_SOLUTION_SEARCH = `# Solution Search Before Work (Auto-Loaded)

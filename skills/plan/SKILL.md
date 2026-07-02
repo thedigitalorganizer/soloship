@@ -8,6 +8,10 @@ description: |
   devex plan-review skills, or autoplan for all-in-one).
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Plan
 
 Your job is to create a thorough implementation plan that a fresh agent with

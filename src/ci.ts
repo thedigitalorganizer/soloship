@@ -160,8 +160,10 @@ describe("Architecture Fitness Functions", () => {
     expect(true).toBe(true);
   });
 
-  test("CLAUDE.md exists", () => {
-    expect(existsSync(join(ROOT, "CLAUDE.md"))).toBe(true);
+  test("agent guidance exists", () => {
+    const hasClaudeGuide = existsSync(join(ROOT, "CLAUDE.md"));
+    const hasCodexGuide = existsSync(join(ROOT, "AGENTS.md"));
+    expect(hasClaudeGuide || hasCodexGuide).toBe(true);
   });
 
   test("CHANGELOG.md exists", () => {

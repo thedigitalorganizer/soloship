@@ -7,6 +7,10 @@ description: |
   for drift. Produces docs/audit/AUDIT-YYYY-MM-DD.md + audit-findings.json.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Audit
 
 You are performing a comprehensive codebase investigation. Your job is to deeply

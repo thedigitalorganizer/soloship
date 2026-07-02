@@ -1,0 +1,43 @@
+{
+  "name": "soloship",
+  "version": "0.12.0",
+  "description": "Ship solo, safely. Guardrails for non-coders building software through AI agents.",
+  "author": {
+    "name": "thedigitalorganizer",
+    "email": "shawn@thedigitalorganizer.com",
+    "url": "https://github.com/thedigitalorganizer"
+  },
+  "homepage": "https://github.com/thedigitalorganizer/soloship",
+  "repository": "https://github.com/thedigitalorganizer/soloship",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "ai-development",
+    "methodology",
+    "workflow",
+    "guardrails"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Soloship",
+    "shortDescription": "Guardrails and workflows for solo AI-assisted software shipping",
+    "longDescription": "Soloship gives Codex structured workflows for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping, backed by project guardrails installed with npx soloship init.",
+    "developerName": "thedigitalorganizer",
+    "category": "Coding",
+    "capabilities": [
+      "Interactive",
+      "Read",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/thedigitalorganizer/soloship",
+    "privacyPolicyURL": "https://github.com/thedigitalorganizer/soloship",
+    "termsOfServiceURL": "https://github.com/thedigitalorganizer/soloship",
+    "defaultPrompt": [
+      "Audit this project with Soloship",
+      "Plan this feature with Soloship",
+      "Implement the latest Soloship plan"
+    ],
+    "brandColor": "#2563EB"
+  }
+}

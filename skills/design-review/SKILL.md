@@ -6,6 +6,10 @@ description: |
   AI-generated design fingerprints, then fixes them.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Design Review
 
 Your job is to find visual and design quality issues, then fix them.
@@ -96,7 +100,7 @@ echo "REPO_MODE: ${REPO_MODE:-solo}"
 
 **Rule:** if any `mcp__*__AskUserQuestion` variant is in your tool list, prefer it. Hosts may disable native AUQ via `--disallowedTools AskUserQuestion` (Conductor does, by default) and route through their MCP variant; calling native there silently fails. Same questions/options shape; same decision-brief format applies.
 
-**If no AskUserQuestion variant appears in your tool list, this skill is BLOCKED.** Stop, report `BLOCKED — AskUserQuestion unavailable`, and wait for the user. Do not write decisions to the plan file as a substitute, do not emit them as prose and stop, and do not silently auto-decide.
+**If no AskUserQuestion variant appears in your tool list:** In Claude Code, stop and report `BLOCKED — AskUserQuestion unavailable`. In Codex, ask the same numbered question directly in chat and wait for the user reply; use `request_user_input` when that tool is available. Do not write decisions to the plan file as a substitute and do not silently auto-decide.
 
 ### Format
 
@@ -260,14 +264,25 @@ After the user chooses, execute their choice (commit or stash), then continue wi
 [ -d "$HOME/.bun/bin" ] && export PATH="$HOME/.bun/bin:$PATH"
 GSB_DIR=""
 for CANDIDATE in \
+  "$HOME/plugins/soloship/skills/browse" \
+  "$HOME/.codex/.tmp/marketplaces/soloship/skills/browse" \
+  "$HOME/.codex/.tmp/plugins/plugins/soloship/skills/browse" \
+  "$HOME/.agents/skills/soloship/skills/browse" \
   "$HOME/.claude/plugins/marketplaces/soloship/skills/browse" \
   "$HOME/.claude/skills/soloship/skills/browse" \
   "$HOME/.claude/skills/browse" \
+  ".codex/skills/soloship/skills/browse" \
+  ".agents/skills/soloship/skills/browse" \
   ".claude/skills/soloship/skills/browse"; do
   if [ -d "$CANDIDATE" ]; then GSB_DIR="$CANDIDATE"; break; fi
 done
 if [ -z "$GSB_DIR" ]; then
-  for FOUND in "$HOME"/.claude/plugins/*/soloship*/skills/browse \
+  for FOUND in "$HOME"/plugins/soloship/skills/browse \
+               "$HOME"/.codex/.tmp/marketplaces/*/skills/browse \
+               "$HOME"/.codex/.tmp/marketplaces/*/*/skills/browse \
+               "$HOME"/.codex/.tmp/plugins/plugins/soloship/skills/browse \
+               "$HOME"/.codex/plugins/*/soloship*/skills/browse \
+               "$HOME"/.claude/plugins/*/soloship*/skills/browse \
                "$HOME"/.claude/plugins/marketplaces/*/skills/browse; do
     if [ -d "$FOUND" ]; then GSB_DIR="$FOUND"; break; fi
   done
@@ -279,7 +294,7 @@ if [ -n "$GSB_DIR" ] && [ -x "$GSB_DIR/dist/browse" ]; then
 elif [ -n "$GSB_DIR" ]; then
   echo "NEEDS_SETUP: $GSB_DIR/scripts/build-soloship.sh"
 else
-  echo "NEEDS_SETUP_NO_DIR: browse skill directory not found under \$HOME/.claude/"
+  echo "NEEDS_SETUP_NO_DIR: browse skill directory not found under Codex or Claude plugin paths"
 fi
 ```
 
@@ -461,9 +476,15 @@ fi
 B=""
 # Discover the Soloship-bundled browse binary across common install paths.
 for CANDIDATE in \
+  "$HOME/plugins/soloship/skills/browse/dist/browse" \
+  "$HOME/.codex/.tmp/marketplaces/soloship/skills/browse/dist/browse" \
+  "$HOME/.codex/.tmp/plugins/plugins/soloship/skills/browse/dist/browse" \
+  "$HOME/.agents/skills/soloship/skills/browse/dist/browse" \
   "$HOME/.claude/plugins/marketplaces/soloship/skills/browse/dist/browse" \
   "$HOME/.claude/skills/soloship/skills/browse/dist/browse" \
   "$HOME/.claude/skills/browse/dist/browse" \
+  ".codex/skills/soloship/skills/browse/dist/browse" \
+  ".agents/skills/soloship/skills/browse/dist/browse" \
   ".claude/skills/soloship/skills/browse/dist/browse"; do
   if [ -x "$CANDIDATE" ]; then B="$CANDIDATE"; break; fi
 done

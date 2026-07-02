@@ -287,7 +287,7 @@ export function buildUnknownCommandError(
   }
 
   if (newInVersion[command]) {
-    msg += ` This command was added in browse v${newInVersion[command]}. Upgrade soloship (npm i -g soloship) or rebuild from source: cd ~/.claude/skills/soloship/skills/browse && ./scripts/build-soloship.sh.`;
+    msg += ` This command was added in browse v${newInVersion[command]}. Upgrade Soloship or rebuild from source inside the installed skills/browse directory with ./scripts/build-soloship.sh.`;
   }
 
   return msg;

@@ -4,6 +4,10 @@ description: Enhance a plan with parallel research agents for each section to ad
 argument-hint: "[path to plan file]"
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 <!-- Vendored from compound-engineering v2.34.0 (Kieran Klaassen). See skills/vendored/ce/LICENSE. -->
 
 # Deepen Plan - Power Enhancement Mode
@@ -67,19 +71,22 @@ Dynamically discover all available skills and match them to plan sections. Don't
 
 ```bash
 # 1. Project-local skills (highest priority - project-specific)
-ls .claude/skills/
+ls .codex/skills/ .agents/skills/ .claude/skills/ 2>/dev/null
 
-# 2. User's global skills (~/.claude/)
-ls ~/.claude/skills/
+# 2. User's global skills
+ls ~/.agents/skills/ ~/.claude/skills/ 2>/dev/null
 
-# 3. compound-engineering plugin skills
-ls ~/.claude/plugins/cache/*/compound-engineering/*/skills/
+# 3. Soloship local Codex staging and installed plugin caches
+ls ~/plugins/soloship/skills/ 2>/dev/null
+find ~/.codex/.tmp/marketplaces -type d -name "skills" 2>/dev/null
+find ~/.codex/.tmp/plugins -type d -name "skills" 2>/dev/null
 
-# 4. ALL other installed plugins - check every plugin for skills
+# 4. Claude Code plugin caches, including compound-engineering if installed
+ls ~/.claude/plugins/cache/*/compound-engineering/*/skills/ 2>/dev/null
 find ~/.claude/plugins/cache -type d -name "skills" 2>/dev/null
 
-# 5. Also check installed_plugins.json for all plugin locations
-cat ~/.claude/plugins/installed_plugins.json
+# 5. Also check installed plugin registries when present
+cat ~/.claude/plugins/installed_plugins.json 2>/dev/null
 ```
 
 **Important:** Check EVERY source. Don't assume compound-engineering is the only plugin. Use skills from ANY installed plugin that's relevant.
@@ -173,8 +180,8 @@ Run these commands to get every learning file:
 find docs/solutions -name "*.md" -type f 2>/dev/null
 
 # If docs/solutions doesn't exist, check alternate locations:
-find .claude/docs -name "*.md" -type f 2>/dev/null
-find ~/.claude/docs -name "*.md" -type f 2>/dev/null
+find .codex/docs .agents/docs .claude/docs -name "*.md" -type f 2>/dev/null
+find ~/.agents/docs ~/.claude/docs -name "*.md" -type f 2>/dev/null
 ```
 
 **Step 2: Read frontmatter of each learning to filter**
@@ -303,27 +310,31 @@ Dynamically discover every available agent and run them ALL against the plan. Do
 
 ```bash
 # 1. Project-local agents (highest priority - project-specific)
-find .claude/agents -name "*.md" 2>/dev/null
+find .agents/agents .claude/agents -name "*.md" 2>/dev/null
 
-# 2. User's global agents (~/.claude/)
-find ~/.claude/agents -name "*.md" 2>/dev/null
+# 2. User's global agents
+find ~/.agents/agents ~/.claude/agents -name "*.md" 2>/dev/null
 
-# 3. compound-engineering plugin agents (all subdirectories)
+# 3. Codex local staging and plugin caches
+find ~/plugins/soloship/agents -name "*.md" 2>/dev/null
+find ~/.codex/.tmp/marketplaces -path "*/agents/*.md" 2>/dev/null
+
+# 4. compound-engineering plugin agents (all subdirectories)
 find ~/.claude/plugins/cache/*/compound-engineering/*/agents -name "*.md" 2>/dev/null
 
-# 4. ALL other installed plugins - check every plugin for agents
+# 5. ALL other installed Claude plugins - check every plugin for agents
 find ~/.claude/plugins/cache -path "*/agents/*.md" 2>/dev/null
 
-# 5. Check installed_plugins.json to find all plugin locations
-cat ~/.claude/plugins/installed_plugins.json
+# 6. Check installed_plugins.json to find all plugin locations
+cat ~/.claude/plugins/installed_plugins.json 2>/dev/null
 
-# 6. For local plugins (isLocal: true), check their source directories
+# 7. For local plugins (isLocal: true), check their source directories
 # Parse installed_plugins.json and find local plugin paths
 ```
 
 **Important:** Check EVERY source. Include agents from:
-- Project `.claude/agents/`
-- User's `~/.claude/agents/`
+- Project `.agents/agents/` or `.claude/agents/`
+- User's `~/.agents/agents/` or `~/.claude/agents/`
 - compound-engineering plugin (but SKIP workflow/ agents - only use review/, research/, design/, docs/)
 - ALL other installed plugins (agent-sdk-dev, frontend-design, etc.)
 - Any local plugins

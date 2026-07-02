@@ -7,6 +7,10 @@ description: |
   instead. Ends with a nudge to design visually before running /soloship:plan.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Brainstorm
 
 Your job is to help the user think through what they're building before they

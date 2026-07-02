@@ -1,26 +1,17 @@
 /**
- * `soloship doctor` — audit the user's Claude Code environment against
- * Soloship's dependency manifest.
+ * `soloship doctor` — report Claude Code, Codex, and project guardrail status.
  *
- * Reads the local filesystem only — no network calls. Reports what's present,
- * what's missing, and how to install the missing pieces. Exits 0 if all
- * REQUIRED dependencies are present (recommended ones are informational),
- * exits 1 if any required dep is missing.
+ * This is intentionally filesystem/CLI based. It does not try to infer quality;
+ * it reports whether the install surfaces Soloship relies on are present.
  */
 
 import chalk from "chalk";
+import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
-import { join } from "node:path";
 import { homedir } from "node:os";
+import { join } from "node:path";
 
-import {
-  SOLOSHIP_MANIFEST,
-  type HookDep,
-  type McpServerDep,
-  type PluginDep,
-  type Severity,
-  type SkillDep,
-} from "./manifest.js";
+type Severity = "required" | "recommended";
 
 interface CheckResult {
   name: string;
@@ -29,7 +20,6 @@ interface CheckResult {
   purpose: string;
   install: string;
   notes?: string;
-  usedBy?: string[];
 }
 
 interface ReportSection {
@@ -38,35 +28,93 @@ interface ReportSection {
 }
 
 export async function runDoctor(): Promise<void> {
+  const root = process.cwd();
   const home = homedir();
-  const settingsPath = join(home, ".claude", "settings.json");
-  const claudeJsonPath = join(home, ".claude.json");
-  const skillsDir = join(home, ".claude", "skills");
+  const projectHasClaude = existsSync(join(root, ".claude"));
+  const projectHasCodex = existsSync(join(root, ".codex"));
 
-  const settings = readJsonSafe(settingsPath);
-  const claudeJson = readJsonSafe(claudeJsonPath);
-
-  console.log(chalk.dim("Checking your Claude Code environment..."));
+  console.log(chalk.dim("Checking Soloship surfaces..."));
   console.log("");
 
   const sections: ReportSection[] = [
     {
-      title: "Plugins",
-      results: SOLOSHIP_MANIFEST.plugins.map((dep) => checkPlugin(dep, settings)),
+      title: "Claude Code",
+      results: [
+        checkCommand("claude", {
+          severity: "recommended",
+          purpose: "Claude Code CLI available for the Claude plugin surface.",
+          install: "Install Claude Code from https://claude.com/claude-code",
+        }),
+        checkClaudePlugin(home),
+        checkProjectFile(join(root, ".claude", "settings.local.json"), {
+          name: ".claude/settings.local.json",
+          severity: projectHasClaude ? "required" : "recommended",
+          purpose: "Project-level Claude hooks installed by npx soloship init.",
+          install: "npx soloship init --agent claude",
+        }),
+        checkRuleSet(join(root, ".claude", "rules"), {
+          name: ".claude/rules",
+          severity: projectHasClaude ? "required" : "recommended",
+          purpose: "Claude-facing auto-loaded Soloship workflow rules.",
+          install: "npx soloship upgrade --agent claude",
+        }),
+      ],
     },
     {
-      title: "MCP servers",
-      results: SOLOSHIP_MANIFEST.mcpServers.map((dep) =>
-        checkMcpServer(dep, claudeJson)
-      ),
+      title: "Codex",
+      results: [
+        checkCommand("codex", {
+          severity: "recommended",
+          purpose: "Codex CLI available for the Codex plugin surface.",
+          install: "Install Codex, then run: codex login",
+        }),
+        checkCodexPlugin(),
+        checkCodexMarketplace(root, home),
+        checkProjectFile(join(root, "AGENTS.md"), {
+          name: "AGENTS.md",
+          severity: projectHasCodex ? "required" : "recommended",
+          purpose: "Codex-facing project guidance.",
+          install: "npx soloship init --agent codex",
+        }),
+        checkRuleSet(join(root, ".codex", "rules"), {
+          name: ".codex/rules",
+          severity: projectHasCodex ? "required" : "recommended",
+          purpose: "Codex-facing Soloship workflow rules, including Browser QA Gate.",
+          install: "npx soloship upgrade --agent codex",
+        }),
+        {
+          name: ".codex/hooks.json",
+          present: existsSync(join(root, ".codex", "hooks.json")),
+          severity: "recommended",
+          purpose:
+            "Codex hook adapters. Not installed by Soloship until Codex hook payloads are verified.",
+          install:
+            "No action for this release; use .codex/rules and AGENTS.md guidance.",
+        },
+      ],
     },
     {
-      title: "Global skills",
-      results: SOLOSHIP_MANIFEST.skills.map((dep) => checkSkill(dep, skillsDir)),
-    },
-    {
-      title: "Hooks",
-      results: SOLOSHIP_MANIFEST.hooks.map((dep) => checkHook(dep, settings)),
+      title: "Shared Package",
+      results: [
+        checkProjectFile(join(root, ".soloship", "version"), {
+          name: ".soloship/version",
+          severity: "recommended",
+          purpose: "Pinned Soloship npm guardrail version for this project.",
+          install: "npx soloship init",
+        }),
+        checkProjectFile(join(root, "docs", "plans"), {
+          name: "docs/plans/",
+          severity: "recommended",
+          purpose: "Plan artifact directory used by Soloship workflows.",
+          install: "npx soloship init",
+        }),
+        checkProjectFile(join(root, "docs", "solutions"), {
+          name: "docs/solutions/",
+          severity: "recommended",
+          purpose: "Solution memory searched before planning/debugging.",
+          install: "npx soloship init",
+        }),
+      ],
     },
   ];
 
@@ -78,93 +126,147 @@ export async function runDoctor(): Promise<void> {
   process.exit(exitCode);
 }
 
-// ---------------------------------------------------------------------------
-// Individual check functions
-// ---------------------------------------------------------------------------
+function checkCommand(
+  command: string,
+  metadata: Omit<CheckResult, "name" | "present">
+): CheckResult {
+  return {
+    name: `${command} CLI`,
+    present: commandExists(command),
+    ...metadata,
+  };
+}
 
-function checkPlugin(dep: PluginDep, settings: Record<string, unknown> | null): CheckResult {
+function checkClaudePlugin(home: string): CheckResult {
+  const settings = readJsonSafe(join(home, ".claude", "settings.json"));
   const enabled = (settings?.enabledPlugins as Record<string, boolean> | undefined) || {};
-  // Plugin keys in settings.json look like "superpowers@superpowers-marketplace"
-  const expectedKey = `${dep.id}@${dep.source}`;
-  // Also accept a bare id match for marketplaces whose names we may not know
-  // precisely — any key starting with "dep.id@" counts as present.
-  const present = Object.keys(enabled).some(
-    (key) => key === expectedKey || key.startsWith(`${dep.id}@`)
+  const present = Object.keys(enabled).some((key) => key.startsWith("soloship@"));
+
+  return {
+    name: "soloship Claude plugin",
+    present,
+    severity: "recommended",
+    purpose: "Claude slash-command surface for /soloship:* workflows.",
+    install:
+      "/plugin marketplace add thedigitalorganizer/soloship, then /plugin install soloship@soloship",
+  };
+}
+
+function checkCodexPlugin(): CheckResult {
+  const result = readCodexPluginList();
+  const installed = Array.isArray(result?.installed) ? result.installed : [];
+  const present = installed.some((plugin) => plugin?.name === "soloship");
+
+  return {
+    name: "soloship Codex plugin",
+    present,
+    severity: "recommended",
+    purpose: "Codex skill surface for Soloship workflows.",
+    install:
+      "codex plugin marketplace add thedigitalorganizer/soloship, then codex plugin add soloship@soloship",
+    notes: result === null ? "codex plugin list --json was unavailable" : undefined,
+  };
+}
+
+function checkCodexMarketplace(root: string, home: string): CheckResult {
+  const repoMarketplace = join(root, ".agents", "plugins", "marketplace.json");
+  const personalMarketplace = join(home, ".agents", "plugins", "marketplace.json");
+  const marketplaceText = runCommandText("codex", ["plugin", "marketplace", "list"]);
+  const marketplaceFileHasSoloship =
+    marketplaceHasPlugin(repoMarketplace, "soloship") ||
+    marketplaceHasPlugin(personalMarketplace, "soloship");
+  const present =
+    marketplaceFileHasSoloship ||
+    Boolean(marketplaceText && /^soloship\s/m.test(marketplaceText));
+
+  return {
+    name: "soloship Codex marketplace",
+    present,
+    severity: "recommended",
+    purpose: "Marketplace source that lets Codex install or update Soloship.",
+    install: "codex plugin marketplace add thedigitalorganizer/soloship",
+  };
+}
+
+function checkProjectFile(
+  path: string,
+  metadata: Omit<CheckResult, "present">
+): CheckResult {
+  return {
+    present: existsSync(path),
+    ...metadata,
+  };
+}
+
+function checkRuleSet(
+  path: string,
+  metadata: Omit<CheckResult, "present">
+): CheckResult {
+  const browserQaGate = join(path, "browser-qa-gate.md");
+  const ruleCount = existsSync(path)
+    ? readdirSync(path).filter((entry) => entry.endsWith(".md")).length
+    : 0;
+
+  return {
+    present: existsSync(browserQaGate) && ruleCount >= 9,
+    notes: existsSync(path)
+      ? `${ruleCount} rule files found`
+      : "rules directory missing",
+    ...metadata,
+  };
+}
+
+function marketplaceHasPlugin(path: string, pluginName: string): boolean {
+  const marketplace = readJsonSafe(path);
+  return Boolean(
+    marketplace?.plugins?.some((plugin: { name?: string }) => plugin?.name === pluginName)
   );
-
-  return {
-    name: dep.id,
-    present,
-    severity: dep.severity,
-    purpose: dep.purpose,
-    install: dep.install,
-    usedBy: dep.usedBy,
-  };
 }
 
-function checkMcpServer(dep: McpServerDep, claudeJson: Record<string, unknown> | null): CheckResult {
-  const servers = (claudeJson?.mcpServers as Record<string, unknown> | undefined) || {};
-  const present = Object.prototype.hasOwnProperty.call(servers, dep.name);
-
-  return {
-    name: dep.name,
-    present,
-    severity: dep.severity,
-    purpose: dep.purpose,
-    install: dep.install,
-    notes: dep.notes,
-  };
-}
-
-function checkSkill(dep: SkillDep, skillsDir: string): CheckResult {
-  let present = false;
-  if (existsSync(skillsDir)) {
-    try {
-      const entries = readdirSync(skillsDir);
-      present = entries.includes(dep.name);
-    } catch {
-      // Permission error or similar — treat as missing
-    }
+function readCodexPluginList(): Record<string, unknown> | null {
+  const output = runCommandText("codex", ["plugin", "list", "--json"]);
+  if (!output) return null;
+  const jsonStart = output.indexOf("{");
+  if (jsonStart < 0) return null;
+  try {
+    return JSON.parse(output.slice(jsonStart));
+  } catch {
+    return null;
   }
-
-  return {
-    name: dep.name,
-    present,
-    severity: dep.severity,
-    purpose: dep.purpose,
-    install: dep.install,
-  };
 }
 
-function checkHook(dep: HookDep, settings: Record<string, unknown> | null): CheckResult {
-  const hooks = (settings?.hooks as Record<string, unknown> | undefined) || {};
-  const eventEntries = (hooks[dep.event] as Array<Record<string, unknown>> | undefined) || [];
-
-  const present = eventEntries.some((entry) => {
-    const matcher = entry.matcher as string | undefined;
-    if (dep.matcher !== null && matcher !== dep.matcher) {
-      return false;
-    }
-    const nestedHooks = (entry.hooks as Array<Record<string, unknown>> | undefined) || [];
-    return nestedHooks.some((h) => {
-      const command = h.command as string | undefined;
-      return typeof command === "string" && command.includes(dep.commandContains);
+function commandExists(command: string): boolean {
+  try {
+    execFileSync("sh", ["-c", `command -v ${command}`], {
+      stdio: "ignore",
     });
-  });
-
-  const matcherLabel = dep.matcher ? `(${dep.matcher})` : "";
-  return {
-    name: `${dep.event}${matcherLabel}`,
-    present,
-    severity: dep.severity,
-    purpose: dep.purpose,
-    install: dep.install,
-  };
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-// ---------------------------------------------------------------------------
-// Formatting
-// ---------------------------------------------------------------------------
+function runCommandText(command: string, args: string[]): string | null {
+  try {
+    return execFileSync(command, args, {
+      encoding: "utf-8",
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+  } catch {
+    return null;
+  }
+}
+
+function readJsonSafe(path: string): Record<string, any> | null {
+  if (!existsSync(path)) {
+    return null;
+  }
+  try {
+    return JSON.parse(readFileSync(path, "utf-8"));
+  } catch {
+    return null;
+  }
+}
 
 function printSection(section: ReportSection): void {
   const present = section.results.filter((r) => r.present).length;
@@ -196,21 +298,18 @@ function printResult(result: CheckResult): void {
       ? chalk.red("  ✗")
       : chalk.yellow("  ✗");
 
-  const nameColumn = result.name.padEnd(28);
+  const nameColumn = result.name.padEnd(30);
   const severityTag =
     result.severity === "required" ? chalk.red("[required]") : chalk.dim("[recommended]");
 
   console.log(`${marker} ${nameColumn} ${severityTag}`);
   console.log(`     ${chalk.dim(result.purpose)}`);
 
+  if (result.notes) {
+    console.log(`     ${chalk.cyan("notes:")}   ${result.notes}`);
+  }
   if (!result.present) {
     console.log(`     ${chalk.cyan("install:")} ${result.install}`);
-    if (result.notes) {
-      console.log(`     ${chalk.cyan("notes:")}   ${result.notes}`);
-    }
-    if (result.usedBy && result.usedBy.length > 0) {
-      console.log(`     ${chalk.cyan("used by:")} ${result.usedBy.join(", ")}`);
-    }
   }
 }
 
@@ -222,13 +321,13 @@ function printSummary(sections: ReportSection[]): number {
   console.log(chalk.bold("SUMMARY"));
 
   if (requiredMissing.length === 0 && recommendedMissing.length === 0) {
-    console.log(chalk.green("  All dependencies present — environment is Soloship-ready."));
+    console.log(chalk.green("  All Soloship surfaces are present."));
     console.log("");
     return 0;
   }
 
   if (requiredMissing.length > 0) {
-    console.log(chalk.red(`  ${requiredMissing.length} required dependency missing:`));
+    console.log(chalk.red(`  ${requiredMissing.length} required item missing:`));
     for (const r of requiredMissing) {
       console.log(`    - ${r.name}`);
     }
@@ -236,7 +335,7 @@ function printSummary(sections: ReportSection[]): number {
 
   if (recommendedMissing.length > 0) {
     console.log(
-      chalk.yellow(`  ${recommendedMissing.length} recommended dependency missing:`)
+      chalk.yellow(`  ${recommendedMissing.length} recommended item missing:`)
     );
     for (const r of recommendedMissing) {
       console.log(`    - ${r.name}`);
@@ -244,38 +343,5 @@ function printSummary(sections: ReportSection[]): number {
   }
 
   console.log("");
-
-  if (requiredMissing.length > 0) {
-    console.log(
-      chalk.red(
-        "Some Soloship skills will not work until the required dependencies are installed."
-      )
-    );
-    console.log("");
-    return 1;
-  }
-
-  console.log(
-    chalk.dim(
-      "Recommended dependencies improve non-coder workflow but are not strictly required."
-    )
-  );
-  console.log("");
-  return 0;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function readJsonSafe(path: string): Record<string, unknown> | null {
-  if (!existsSync(path)) {
-    return null;
-  }
-  try {
-    const raw = readFileSync(path, "utf-8");
-    return JSON.parse(raw);
-  } catch {
-    return null;
-  }
+  return requiredMissing.length > 0 ? 1 : 0;
 }

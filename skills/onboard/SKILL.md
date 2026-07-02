@@ -5,6 +5,10 @@ description: |
   AGENTS.md files, recent git history, and audit reports to produce a quick briefing.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Onboard
 
 Your job is to quickly orient someone (human or AI agent) to this codebase.

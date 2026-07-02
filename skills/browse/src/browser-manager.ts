@@ -146,9 +146,27 @@ export class BrowserManager {
       path.resolve(__dirname, '..', 'extension'),
       // Also try the legacy two-up location used in some build layouts.
       path.resolve(__dirname, '..', '..', 'extension'),
-      // Global Soloship install (skill ships under ~/.claude/skills/soloship/skills/browse/extension)
+      // Global Soloship installs (Codex local plugin, user skills, Claude Code)
+      path.join(process.env.HOME || '', 'plugins', 'soloship', 'skills', 'browse', 'extension'),
+      path.join(process.env.HOME || '', '.agents', 'skills', 'soloship', 'skills', 'browse', 'extension'),
       path.join(process.env.HOME || '', '.claude', 'skills', 'soloship', 'skills', 'browse', 'extension'),
       // Git repo root (detected via BROWSE_STATE_FILE location)
+      (() => {
+        const stateFile = process.env.BROWSE_STATE_FILE || '';
+        if (stateFile) {
+          const repoRoot = path.resolve(path.dirname(stateFile), '..');
+          return path.join(repoRoot, '.codex', 'skills', 'soloship', 'skills', 'browse', 'extension');
+        }
+        return '';
+      })(),
+      (() => {
+        const stateFile = process.env.BROWSE_STATE_FILE || '';
+        if (stateFile) {
+          const repoRoot = path.resolve(path.dirname(stateFile), '..');
+          return path.join(repoRoot, '.agents', 'skills', 'soloship', 'skills', 'browse', 'extension');
+        }
+        return '';
+      })(),
       (() => {
         const stateFile = process.env.BROWSE_STATE_FILE || '';
         if (stateFile) {
@@ -338,7 +356,9 @@ export class BrowserManager {
         const iconCandidates = [
           path.join(__dirname, '..', 'scripts', 'app', 'icon.icns'),             // browse repo dev mode
           path.join(__dirname, '..', '..', 'scripts', 'app', 'icon.icns'),       // legacy two-up dev layout
-          path.join(process.env.HOME || '', '.claude', 'skills', 'soloship', 'skills', 'browse', 'scripts', 'app', 'icon.icns'), // global install
+          path.join(process.env.HOME || '', 'plugins', 'soloship', 'skills', 'browse', 'scripts', 'app', 'icon.icns'), // Codex local plugin
+          path.join(process.env.HOME || '', '.agents', 'skills', 'soloship', 'skills', 'browse', 'scripts', 'app', 'icon.icns'), // user skill
+          path.join(process.env.HOME || '', '.claude', 'skills', 'soloship', 'skills', 'browse', 'scripts', 'app', 'icon.icns'), // Claude global install
         ];
         const iconSrc = iconCandidates.find(p => fs.existsSync(p));
         if (iconSrc) {

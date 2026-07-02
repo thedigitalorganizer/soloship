@@ -9,6 +9,10 @@ description: |
   checks.
 ---
 
+## Host Compatibility
+
+If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
 # Soloship Review
 
 Your job is to review work from multiple perspectives. First, determine what

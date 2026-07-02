@@ -1,6 +1,6 @@
 {
   "name": "soloship",
-  "version": "0.11.0",
+  "version": "0.12.0",
   "description": "Systematic programming methodology for AI-assisted development",
   "type": "module",
   "bin": {
@@ -10,10 +10,15 @@
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
+    "codex:sync-local": "node scripts/sync-codex-plugin.js",
+    "codex:install-local": "npm run codex:sync-local && codex plugin add soloship@personal",
+    "codex:validate-plugin": "node scripts/validate-plugin-metadata.js",
+    "validate:plugins": "node scripts/validate-plugin-metadata.js",
     "prepare": "tsc",
     "prepublishOnly": "node scripts/check-version.js"
   },
   "keywords": [
+    "codex",
     "claude-code",
     "ai-development",
     "methodology",
