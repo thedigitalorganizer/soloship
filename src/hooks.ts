@@ -2,6 +2,17 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ProjectInfo } from "./detect.js";
 
+// Session-coordination thresholds. Single definition site: these values are
+// interpolated into the generated hook scripts below AND rewritten to
+// <git-common-dir>/soloship/config.json on every SessionStart, which the
+// skills (status dashboard, deploy sequence) read instead of hardcoding
+// copies. Regenerating the file each session means upgraded thresholds
+// propagate; a write-once file would freeze stale values.
+export const SESSION_PRUNE_HOURS = 24; // session files older than this are deleted
+export const SESSION_ACTIVE_MIN = 15; // heartbeat younger than this = active
+export const SESSION_IDLE_MIN = 60; // heartbeat younger than this = idle; older = presumed dead
+export const DEPLOY_LOCK_STALE_MIN = 45; // deploy lock older than this = presumed stale (never auto-broken)
+
 interface HooksConfig {
   hooks: {
     PreToolUse?: HookEntry[];
@@ -91,6 +102,16 @@ export async function installHooks(
       ],
     },
     {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildDeployDisciplineScript(),
+          timeout: 10000,
+        },
+      ],
+    },
+    {
       matcher: "Edit|Write|MultiEdit|NotebookEdit",
       hooks: [
         {
@@ -115,6 +136,7 @@ export async function installHooks(
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
+  results.push("PreToolUse: deploy-discipline gate (blocks production deploys from worktrees, non-default branches, dirty trees, or past another session's fresh deploy lock)");
   results.push("PreToolUse: billing/credit/rerun-window confirmation gate (blocks edits until data-model semantics confirmed)");
   results.push("PreToolUse: recurrence gate (blocks a 2nd patch of a failure class already in .ai/learnings.jsonl)");
 
@@ -162,6 +184,20 @@ export async function installHooks(
   });
   results.push("PostToolUse: recurrence audit (records + surfaces script-issued commits that bypass the gate)");
 
+  // Session heartbeat: touch this session's presence file after every tool
+  // call so other sessions can tell live sessions from dead ones.
+  postToolUseHooks.push({
+    matcher: "",
+    hooks: [
+      {
+        type: "command",
+        command: buildSessionHeartbeatScript(),
+        timeout: 5000,
+      },
+    ],
+  });
+  results.push("PostToolUse: session heartbeat (keeps this session's presence file fresh for other sessions)");
+
   if (postToolUseHooks.length > 0) {
     hooks.PostToolUse = postToolUseHooks;
   }
@@ -203,9 +239,20 @@ export async function installHooks(
         },
       ],
     },
+    {
+      matcher: "",
+      hooks: [
+        {
+          type: "command",
+          command: buildSessionRegisterScript(),
+          timeout: 10000,
+        },
+      ],
+    },
   ];
   results.push("SessionStart: checkpoint commit before agent session");
   results.push("SessionStart: daily check for Soloship updates on npm");
+  results.push("SessionStart: session presence (register this session, announce other live sessions in this repo)");
 
   // Merge hooks into settings (don't overwrite other settings)
   settings.hooks = hooks;
@@ -932,6 +979,211 @@ done < "$L"
 
 [ -z "$HITS" ] && exit 0
 echo "{\\"systemMessage\\": \\"recurrence-gate: a commit that just landed ($SHA) matches a recorded failure class and was recorded to .ai/.recurrence-log:$HITS . It could not be blocked (not a Bash commit call), but the next commit will escalate. Consider a mechanical fix now.\\"}"
+exit 0
+'`;
+}
+
+function buildDeployDisciplineScript(): string {
+  // Deploy-discipline gate (PreToolUse/Bash). Restores the invariant that
+  // makes multi-session deploys safe: production only ever runs a commit on
+  // the default branch, deployed from the main checkout. Deploying from a
+  // worktree makes "what is live" diverge from main, so the next deploy from
+  // main silently rolls back the worktree fix — the worst failure mode of
+  // parallel sessions. Command detection mirrors buildDeployFreshnessScript.
+  // BLOCKS (exit 2) a PRODUCTION deploy run:
+  //   (a) from a worktree (git-dir != git-common-dir),
+  //   (b) from a non-default branch,
+  //   (c) with a dirty working tree,
+  //   (d) while another session holds a fresh deploy.lock.
+  // Preview/channel deploys stay allowed from anywhere — the browser-QA gate
+  // depends on worktree sessions deploying previews to test against.
+  // The manifest + go/no-go conversation lives in the skills (a hook cannot
+  // converse); this is only the mechanical floor.
+  return `bash -c '
+COMMAND="$HOOK_TOOL_INPUT"
+
+# Only engage on deploy commands (same detection as the deploy-freshness gate)
+if ! echo "$COMMAND" | grep -qE "(firebase[[:space:]]+deploy|wrangler[[:space:]]+(pages[[:space:]]+deploy|deploy)|netlify[[:space:]]+deploy|fly[[:space:]]+deploy|vercel([[:space:]]|$)|(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+deploy)"; then
+  exit 0
+fi
+
+# Preview/channel deploys are exempt — worktree sessions must keep deploying
+# previews for browser QA.
+if echo "$COMMAND" | grep -qE "wrangler[[:space:]]+pages[[:space:]]+deploy" && echo "$COMMAND" | grep -qE -- "--branch"; then
+  exit 0
+fi
+if echo "$COMMAND" | grep -qE "firebase[[:space:]]+hosting:channel:deploy"; then
+  exit 0
+fi
+if echo "$COMMAND" | grep -qE "vercel([[:space:]]|$)" && ! echo "$COMMAND" | grep -qE -- "--prod"; then
+  exit 0
+fi
+if echo "$COMMAND" | grep -qE "netlify[[:space:]]+deploy" && ! echo "$COMMAND" | grep -qE -- "--prod"; then
+  exit 0
+fi
+
+# Outside a git repo: nothing to enforce.
+GD=$(git rev-parse --git-dir 2>/dev/null)
+[ -z "$GD" ] && exit 0
+GD=$(cd "$GD" 2>/dev/null && pwd -P)
+GCD=$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)
+[ -z "$GCD" ] && exit 0
+
+# (a) Worktree check: linked worktrees have a private git-dir under the
+# common dir. Production deploys only run from the main checkout.
+if [ "$GD" != "$GCD" ]; then
+  echo "BLOCKED by deploy-from-main-only: this is a PRODUCTION deploy from a git worktree. Production must be deployed from the main checkout on the default branch, after merging — otherwise what is live diverges from main and the next deploy from main silently rolls this work back. Merge to the default branch first (see /soloship:finish), then deploy from the main checkout. Preview deploys (wrangler pages deploy --branch, vercel without --prod, firebase hosting:channel:deploy) remain allowed from worktrees." >&2
+  exit 2
+fi
+
+# (b) Default-branch check.
+BR=$(git branch --show-current 2>/dev/null)
+DEF=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed "s@^origin/@@")
+if [ -z "$DEF" ]; then
+  if git rev-parse --verify -q origin/main >/dev/null 2>&1; then DEF=main
+  elif git rev-parse --verify -q origin/master >/dev/null 2>&1; then DEF=master
+  elif git rev-parse --verify -q main >/dev/null 2>&1; then DEF=main
+  elif git rev-parse --verify -q master >/dev/null 2>&1; then DEF=master
+  fi
+fi
+if [ -n "$DEF" ] && [ -n "$BR" ] && [ "$BR" != "$DEF" ]; then
+  echo "BLOCKED by deploy-from-main-only: this is a PRODUCTION deploy from branch $BR, not the default branch ($DEF). Merge to $DEF first, then deploy from a clean, synced $DEF checkout. Preview deploys remain allowed from feature branches." >&2
+  exit 2
+fi
+
+# (c) Dirty-tree check: uncommitted changes mean what deploys is not what git
+# records as deployed.
+if [ -n "$(git status --porcelain 2>/dev/null | head -1)" ]; then
+  echo "BLOCKED by deploy-from-main-only: the working tree has uncommitted changes. A production deploy must ship exactly a commit on the default branch — commit (or stash) everything first, so the prod tag can truthfully mark what is live." >&2
+  exit 2
+fi
+
+# (d) Foreign fresh deploy lock: another session is mid-deploy.
+LOCK="$GCD/soloship/deploy.lock"
+if [ -f "$LOCK" ]; then
+  INPUT=$(cat 2>/dev/null || true)
+  SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+  [ -z "$SID" ] && SID="pid-$PPID"
+  LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 | sed -E "s/\\"session_id\\":\\"//; s/\\"$//")
+  if [ -n "$LSID" ] && [ "$LSID" != "$SID" ]; then
+    MT=$(stat -f %m "$LOCK" 2>/dev/null || stat -c %Y "$LOCK" 2>/dev/null || echo 0)
+    AGE_MIN=$(( ($(date +%s) - MT) / 60 ))
+    if [ "$AGE_MIN" -lt ${DEPLOY_LOCK_STALE_MIN} ]; then
+      echo "BLOCKED by deploy-from-main-only: another session (id $LSID) holds the deploy lock (refreshed $AGE_MIN min ago) — a deploy is already in progress. Wait for it to finish, or ask the user how to proceed. A lock is presumed stale only after ${DEPLOY_LOCK_STALE_MIN} min, and even then only the user may clear it: rm \\"$LOCK\\"" >&2
+      exit 2
+    fi
+  fi
+fi
+
+exit 0
+'`;
+}
+
+function buildSessionRegisterScript(): string {
+  // Session presence (SessionStart). The break-room whiteboard: every worktree
+  // of a repo shares exactly one git common dir, so live cross-session state
+  // lives at <git-common-dir>/soloship/ — machine-local, structurally
+  // impossible to commit, gone when the repo is deleted. This hook:
+  //   1. rewrites config.json with the current thresholds (so skills read the
+  //      same numbers the hooks enforce — one definition site),
+  //   2. prunes session files older than SESSION_PRUNE_HOURS,
+  //   3. announces other live sessions (heartbeat < SESSION_IDLE_MIN) so
+  //      parallel sessions stop being blind to each other,
+  //   4. registers this session (sessions/<session_id>.json, atomic write).
+  // Guard-first: outside a git repo, or on any git error, exit 0 silently.
+  // session_id arrives in the hook stdin JSON (common input field on all hook
+  // events); fallback is the host process pid.
+  return `bash -c '
+INPUT=$(cat 2>/dev/null || true)
+
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+[ -z "$COMMON" ] && exit 0
+
+COORD="$COMMON/soloship"
+mkdir -p "$COORD/sessions" "$COORD/claims" 2>/dev/null || exit 0
+
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+# Rewrite thresholds every session start so upgrades propagate (atomic write).
+CFG_TMP="$COORD/config.json.tmp.$$"
+printf "{\\"session_prune_hours\\":${SESSION_PRUNE_HOURS},\\"session_active_min\\":${SESSION_ACTIVE_MIN},\\"session_idle_min\\":${SESSION_IDLE_MIN},\\"deploy_lock_stale_min\\":${DEPLOY_LOCK_STALE_MIN}}\\n" > "$CFG_TMP" 2>/dev/null && mv "$CFG_TMP" "$COORD/config.json" 2>/dev/null
+
+# Prune session files old enough to be certainly dead.
+find "$COORD/sessions" -name "*.json" -mmin +${SESSION_PRUNE_HOURS * 60} -delete 2>/dev/null
+
+# Announce other live sessions (heartbeat younger than the idle threshold).
+NOW=$(date +%s)
+MAIN_ROOT=$(cd "$COMMON/.." 2>/dev/null && pwd -P)
+OTHERS=""
+COUNT=0
+for f in "$COORD/sessions"/*.json; do
+  [ -f "$f" ] || continue
+  BASE=$(basename "$f" .json)
+  [ "$BASE" = "$SID" ] && continue
+  MT=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+  AGE_MIN=$(( (NOW - MT) / 60 ))
+  [ "$AGE_MIN" -ge ${SESSION_IDLE_MIN} ] && continue
+  SDIR=$(grep -oE "\\"dir\\":\\"[^\\"]*\\"" "$f" 2>/dev/null | head -1 | sed -E "s/\\"dir\\":\\"//; s/\\"$//")
+  SBR=$(grep -oE "\\"branch\\":\\"[^\\"]*\\"" "$f" 2>/dev/null | head -1 | sed -E "s/\\"branch\\":\\"//; s/\\"$//")
+  if [ -n "$SDIR" ] && [ "$SDIR" != "$MAIN_ROOT" ]; then
+    LABEL="worktree $(basename "$SDIR")"
+  else
+    LABEL="main checkout"
+  fi
+  [ -n "$SBR" ] && LABEL="$LABEL on $SBR"
+  OTHERS="$OTHERS[$LABEL, $AGE_MIN min ago] "
+  COUNT=$((COUNT + 1))
+done
+
+# Register this session (atomic: temp file + rename, so readers never see a
+# half-written file).
+DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+BR=$(git branch --show-current 2>/dev/null)
+STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+SF="$COORD/sessions/$SID.json"
+SF_TMP="$SF.tmp.$$"
+printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
+
+if [ "$COUNT" -gt 0 ]; then
+  echo "{\\"systemMessage\\": \\"$COUNT other active session(s) in this repo: \${OTHERS}- shared git index/stash caution applies. Run /soloship:status for the full picture.\\"}"
+fi
+exit 0
+'`;
+}
+
+function buildSessionHeartbeatScript(): string {
+  // Session heartbeat (PostToolUse, empty matcher = all tools). Rewrites this
+  // session file after every tool call: the fresh mtime is the heartbeat
+  // (freshness semantics live in the SESSION_* constants above and in
+  // config.json), and rewriting — rather than touching — keeps dir/branch
+  // truthful when a session moves into a worktree mid-session. pid is the
+  // host process pid ($PPID is the same process for hooks and for skill Bash
+  // commands), which is how a skill can find its own session file. Guard-first
+  // and fast: outside a git repo, or before the register hook has created the
+  // coordination dir, exit 0 instantly. Note a long tool call (a 20-minute
+  // deploy) shows no heartbeats while it runs — the liveness thresholds
+  // absorb this; the deploy lock does not depend on session heartbeats.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+SESS_DIR="$COMMON/soloship/sessions"
+[ -d "$SESS_DIR" ] || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+SF="$SESS_DIR/$SID.json"
+DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+BR=$(git branch --show-current 2>/dev/null)
+STARTED=$(grep -oE "\\"started\\":\\"[^\\"]*\\"" "$SF" 2>/dev/null | head -1 | sed -E "s/\\"started\\":\\"//; s/\\"$//")
+[ -z "$STARTED" ] && STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+SF_TMP="$SF.tmp.$$"
+printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
 exit 0
 '`;
 }

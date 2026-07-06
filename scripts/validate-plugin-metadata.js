@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const SEMVER_RE =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const REQUIRED_RULE_COUNT = 10;
-const REQUIRED_SKILL_COUNT = 43;
+const REQUIRED_RULE_COUNT = 11;
+const REQUIRED_SKILL_COUNT = 44;
 const REQUIRED_AGENT_PROMPT_COUNT = 5;
 
 const errors = [];

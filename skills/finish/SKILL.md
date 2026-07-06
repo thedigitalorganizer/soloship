@@ -126,6 +126,16 @@ Then: Cleanup worktree (Step 6), then delete branch:
 git branch -d <feature-branch>
 ```
 
+**Plan status (Soloship):** if a plan file in `docs/plans/` drove this work,
+update its frontmatter — `status: done`, `progress: "<total>/<total>"`,
+`updated: <today>`, note the merged commit hash, remove `claimed_by` — and
+clear its claim file:
+
+```bash
+COORD="$(cd "$(git rev-parse --git-common-dir)" && pwd -P)/soloship"
+rm -f "$COORD/claims/<plan-filename>.json"
+```
+
 #### Option 2: Push and Create PR
 
 The user explicitly chose the PR path. Push the branch, then create the PR:
@@ -177,6 +187,12 @@ Then: Cleanup worktree (Step 6), then force-delete branch:
 ```bash
 git branch -D <feature-branch>
 ```
+
+**Plan status (Soloship):** if a plan file drove this work, update its
+frontmatter — `status: abandoned`, `updated: <today>`, remove `claimed_by` —
+and clear its claim file (same `rm -f "$COORD/claims/<plan-filename>.json"`
+as Option 1). An abandoned plan stays on the board as a record of the
+decision, exempt from freshness nagging.
 
 ### Step 6: Cleanup Workspace
 

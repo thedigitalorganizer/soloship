@@ -64,8 +64,20 @@ If not, add a one-line entry to the [Unreleased] section.
 git push
 ```
 
-### 6. Deploy
-Detect the deployment platform and deploy:
+### 6. Deploy (via the shared production deploy sequence)
+
+This is a **production** deploy, so it runs the shared sequence in
+`references/deploy-sequence.md` (the deploy-from-main-only rule): verify
+clean, synced default branch in the main checkout → acquire the deploy lock →
+`git fetch --tags origin` → show the manifest (`git log prod..HEAD --oneline`,
+which includes other sessions' merged work) → **one go/no-go question** →
+deploy → move + push the `prod` tag → release the lock (on failure paths too).
+
+Even in emergency mode the manifest is shown and one confirmation asked — that
+single keystroke is what prevents unknowingly shipping (or rolling back)
+another session's work. Speed cost ≈ 5 seconds.
+
+Platform detection for the deploy command itself:
 - `firebase.json` exists → `firebase deploy`
 - `vercel.json` exists → `vercel --prod`
 - `netlify.toml` exists → `netlify deploy --prod`
@@ -116,5 +128,6 @@ Ship fast is not complete until ALL of these are true:
 - [ ] Changes committed with appropriate prefix (fix:/feat:/refactor:)
 - [ ] Pushed to remote
 - [ ] Deployed to detected platform (or user-specified target)
+- [ ] Shared deploy sequence followed (`references/deploy-sequence.md`): manifest shown + go/no-go answered, deploy lock acquired and released, `prod` tag moved + pushed after success
 - [ ] Live URL fetched and the specific change confirmed visible on it (not just a 2xx)
 - [ ] "Shipped." summary presented with commit hash and deploy target
