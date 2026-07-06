@@ -209,7 +209,15 @@ npm test 2>&1
 npm run build 2>&1
 ```
 
-### Step 12: Deploy
+### Step 12: Deploy (via the shared production deploy sequence)
+
+This is a **production** deploy, so it runs the shared sequence in
+`references/deploy-sequence.md` (the deploy-from-main-only rule): verify
+clean, synced default branch in the main checkout → acquire the deploy lock →
+`git fetch --tags origin` → show the manifest (`git log prod..HEAD --oneline`,
+which includes other sessions' merged work) → explicit go/no-go → deploy →
+move + push the `prod` tag → release the lock (on failure paths too).
+
 Same deployment detection as `/shipfast`:
 - `firebase.json` → `firebase deploy`
 - `vercel.json` → `vercel --prod`
@@ -271,5 +279,6 @@ Ship thorough is not complete until ALL of these are true:
 - [ ] CHANGELOG updated for all feat:/fix:/refactor: changes
 - [ ] Feature branch merged into base branch locally; base branch pushed; feature branch deleted (default), OR PR created with Summary/Coverage/Review/Test Plan sections (only if user explicitly requested PR)
 - [ ] Verification gate passed after merge or PR creation (tests + build re-run)
+- [ ] Shared deploy sequence followed (`references/deploy-sequence.md`): manifest shown + go/no-go answered, deploy lock acquired and released, `prod` tag moved + pushed after success
 - [ ] Live URL fetched post-deploy and the specific change confirmed visible (and any migration confirmed applied to prod) — not just a 2xx
 - [ ] Plan file archived or deleted per lifecycle rules

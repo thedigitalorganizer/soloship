@@ -102,6 +102,16 @@ export async function installHooks(
       ],
     },
     {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildDeployDisciplineScript(),
+          timeout: 10000,
+        },
+      ],
+    },
+    {
       matcher: "Edit|Write|MultiEdit|NotebookEdit",
       hooks: [
         {
@@ -126,6 +136,7 @@ export async function installHooks(
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
+  results.push("PreToolUse: deploy-discipline gate (blocks production deploys from worktrees, non-default branches, dirty trees, or past another session's fresh deploy lock)");
   results.push("PreToolUse: billing/credit/rerun-window confirmation gate (blocks edits until data-model semantics confirmed)");
   results.push("PreToolUse: recurrence gate (blocks a 2nd patch of a failure class already in .ai/learnings.jsonl)");
 
@@ -972,6 +983,102 @@ exit 0
 '`;
 }
 
+function buildDeployDisciplineScript(): string {
+  // Deploy-discipline gate (PreToolUse/Bash). Restores the invariant that
+  // makes multi-session deploys safe: production only ever runs a commit on
+  // the default branch, deployed from the main checkout. Deploying from a
+  // worktree makes "what is live" diverge from main, so the next deploy from
+  // main silently rolls back the worktree fix — the worst failure mode of
+  // parallel sessions. Command detection mirrors buildDeployFreshnessScript.
+  // BLOCKS (exit 2) a PRODUCTION deploy run:
+  //   (a) from a worktree (git-dir != git-common-dir),
+  //   (b) from a non-default branch,
+  //   (c) with a dirty working tree,
+  //   (d) while another session holds a fresh deploy.lock.
+  // Preview/channel deploys stay allowed from anywhere — the browser-QA gate
+  // depends on worktree sessions deploying previews to test against.
+  // The manifest + go/no-go conversation lives in the skills (a hook cannot
+  // converse); this is only the mechanical floor.
+  return `bash -c '
+COMMAND="$HOOK_TOOL_INPUT"
+
+# Only engage on deploy commands (same detection as the deploy-freshness gate)
+if ! echo "$COMMAND" | grep -qE "(firebase[[:space:]]+deploy|wrangler[[:space:]]+(pages[[:space:]]+deploy|deploy)|netlify[[:space:]]+deploy|fly[[:space:]]+deploy|vercel([[:space:]]|$)|(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+deploy)"; then
+  exit 0
+fi
+
+# Preview/channel deploys are exempt — worktree sessions must keep deploying
+# previews for browser QA.
+if echo "$COMMAND" | grep -qE "wrangler[[:space:]]+pages[[:space:]]+deploy" && echo "$COMMAND" | grep -qE -- "--branch"; then
+  exit 0
+fi
+if echo "$COMMAND" | grep -qE "firebase[[:space:]]+hosting:channel:deploy"; then
+  exit 0
+fi
+if echo "$COMMAND" | grep -qE "vercel([[:space:]]|$)" && ! echo "$COMMAND" | grep -qE -- "--prod"; then
+  exit 0
+fi
+if echo "$COMMAND" | grep -qE "netlify[[:space:]]+deploy" && ! echo "$COMMAND" | grep -qE -- "--prod"; then
+  exit 0
+fi
+
+# Outside a git repo: nothing to enforce.
+GD=$(git rev-parse --git-dir 2>/dev/null)
+[ -z "$GD" ] && exit 0
+GD=$(cd "$GD" 2>/dev/null && pwd -P)
+GCD=$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)
+[ -z "$GCD" ] && exit 0
+
+# (a) Worktree check: linked worktrees have a private git-dir under the
+# common dir. Production deploys only run from the main checkout.
+if [ "$GD" != "$GCD" ]; then
+  echo "BLOCKED by deploy-from-main-only: this is a PRODUCTION deploy from a git worktree. Production must be deployed from the main checkout on the default branch, after merging — otherwise what is live diverges from main and the next deploy from main silently rolls this work back. Merge to the default branch first (see /soloship:finish), then deploy from the main checkout. Preview deploys (wrangler pages deploy --branch, vercel without --prod, firebase hosting:channel:deploy) remain allowed from worktrees." >&2
+  exit 2
+fi
+
+# (b) Default-branch check.
+BR=$(git branch --show-current 2>/dev/null)
+DEF=$(git symbolic-ref --short refs/remotes/origin/HEAD 2>/dev/null | sed "s@^origin/@@")
+if [ -z "$DEF" ]; then
+  if git rev-parse --verify -q origin/main >/dev/null 2>&1; then DEF=main
+  elif git rev-parse --verify -q origin/master >/dev/null 2>&1; then DEF=master
+  elif git rev-parse --verify -q main >/dev/null 2>&1; then DEF=main
+  elif git rev-parse --verify -q master >/dev/null 2>&1; then DEF=master
+  fi
+fi
+if [ -n "$DEF" ] && [ -n "$BR" ] && [ "$BR" != "$DEF" ]; then
+  echo "BLOCKED by deploy-from-main-only: this is a PRODUCTION deploy from branch $BR, not the default branch ($DEF). Merge to $DEF first, then deploy from a clean, synced $DEF checkout. Preview deploys remain allowed from feature branches." >&2
+  exit 2
+fi
+
+# (c) Dirty-tree check: uncommitted changes mean what deploys is not what git
+# records as deployed.
+if [ -n "$(git status --porcelain 2>/dev/null | head -1)" ]; then
+  echo "BLOCKED by deploy-from-main-only: the working tree has uncommitted changes. A production deploy must ship exactly a commit on the default branch — commit (or stash) everything first, so the prod tag can truthfully mark what is live." >&2
+  exit 2
+fi
+
+# (d) Foreign fresh deploy lock: another session is mid-deploy.
+LOCK="$GCD/soloship/deploy.lock"
+if [ -f "$LOCK" ]; then
+  INPUT=$(cat 2>/dev/null || true)
+  SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+  [ -z "$SID" ] && SID="pid-$PPID"
+  LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 | sed -E "s/\\"session_id\\":\\"//; s/\\"$//")
+  if [ -n "$LSID" ] && [ "$LSID" != "$SID" ]; then
+    MT=$(stat -f %m "$LOCK" 2>/dev/null || stat -c %Y "$LOCK" 2>/dev/null || echo 0)
+    AGE_MIN=$(( ($(date +%s) - MT) / 60 ))
+    if [ "$AGE_MIN" -lt ${DEPLOY_LOCK_STALE_MIN} ]; then
+      echo "BLOCKED by deploy-from-main-only: another session (id $LSID) holds the deploy lock (refreshed $AGE_MIN min ago) — a deploy is already in progress. Wait for it to finish, or ask the user how to proceed. A lock is presumed stale only after ${DEPLOY_LOCK_STALE_MIN} min, and even then only the user may clear it: rm \\"$LOCK\\"" >&2
+      exit 2
+    fi
+  fi
+fi
+
+exit 0
+'`;
+}
+
 function buildSessionRegisterScript(): string {
   // Session presence (SessionStart). The break-room whiteboard: every worktree
   // of a repo shares exactly one git common dir, so live cross-session state
@@ -1048,15 +1155,17 @@ exit 0
 }
 
 function buildSessionHeartbeatScript(): string {
-  // Session heartbeat (PostToolUse, empty matcher = all tools). Touches this
-  // session mtime so other sessions can tell live from dead. Freshness
-  // semantics live in the SESSION_* constants above (and config.json).
-  // Guard-first and fast: outside a git repo, or before the register hook has
-  // created the coordination dir, exit 0 instantly. Recreates the session
-  // file if the prune (or a manual wipe) removed it mid-session. Note a long
-  // tool call (a 20-minute deploy) shows no heartbeats while it runs — the
-  // liveness thresholds absorb this; the deploy lock does not depend on
-  // session heartbeats.
+  // Session heartbeat (PostToolUse, empty matcher = all tools). Rewrites this
+  // session file after every tool call: the fresh mtime is the heartbeat
+  // (freshness semantics live in the SESSION_* constants above and in
+  // config.json), and rewriting — rather than touching — keeps dir/branch
+  // truthful when a session moves into a worktree mid-session. pid is the
+  // host process pid ($PPID is the same process for hooks and for skill Bash
+  // commands), which is how a skill can find its own session file. Guard-first
+  // and fast: outside a git repo, or before the register hook has created the
+  // coordination dir, exit 0 instantly. Note a long tool call (a 20-minute
+  // deploy) shows no heartbeats while it runs — the liveness thresholds
+  // absorb this; the deploy lock does not depend on session heartbeats.
   return `bash -c '
 COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
 [ -z "$COMMON" ] && exit 0
@@ -1069,15 +1178,12 @@ SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*
 [ -z "$SID" ] && SID="pid-$PPID"
 
 SF="$SESS_DIR/$SID.json"
-if [ -f "$SF" ]; then
-  touch "$SF" 2>/dev/null
-else
-  DIR=$(git rev-parse --show-toplevel 2>/dev/null)
-  BR=$(git branch --show-current 2>/dev/null)
-  STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-  SF_TMP="$SF.tmp.$$"
-  printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
-fi
+DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+BR=$(git branch --show-current 2>/dev/null)
+STARTED=$(grep -oE "\\"started\\":\\"[^\\"]*\\"" "$SF" 2>/dev/null | head -1 | sed -E "s/\\"started\\":\\"//; s/\\"$//")
+[ -z "$STARTED" ] && STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+SF_TMP="$SF.tmp.$$"
+printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
 exit 0
 '`;
 }
