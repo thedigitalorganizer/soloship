@@ -2,11 +2,12 @@
 
 ## The Rule
 
-Every Soloship release must bump **three** version files to the same value, in the same commit:
+Every Soloship release must bump **four** version files to the same value, in the same commit:
 
 1. `package.json` — npm package version
 2. `.claude-plugin/plugin.json` — Claude Code plugin manifest (installed plugin metadata)
 3. `.claude-plugin/marketplace.json` — Claude Code marketplace listing (what the marketplace UI shows users; what triggers "update available" prompts)
+4. `.codex-plugin/plugin.json` — Codex plugin manifest (added 2026-07-06; `scripts/validate-plugin-metadata.js` fails the release if it drifts)
 
 They all describe the same software (the npm CLI and the plugin marketplace ship from the same repo and tag together). If any disagrees:
 - `package.json` drift → npm install gets wrong version
