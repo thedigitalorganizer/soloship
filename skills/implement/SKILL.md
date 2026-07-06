@@ -169,10 +169,21 @@ Report the merge target, the commit hash that's now on the base branch, and conf
 
 If the user later wants a PR for an already-merged change, they can run it manually from the base branch, or use `/soloship:finish` Option 2 on a new branch.
 
-## Step 2.6: Browser QA Gate (Soloship — MANDATORY before "done")
+## Step 2.6: QA Gate (Soloship — MANDATORY before "done")
 
-> This step implements the auto-loaded `browser-qa-gate` rule. The rule is the
-> always-on source of truth; this step is where `/implement` enforces it.
+> This step implements the auto-loaded `browser-qa-gate` and `qa-plan-in-plans`
+> rules. The rules are the always-on source of truth; this step is where
+> `/implement` enforces them.
+
+**Execute the plan's QA Plan first.** Plans produced by `/soloship:plan` carry a
+`## QA Plan` section — a table of every touched surface and the verification
+method matched to its work type (browser QA for UI, real requests for APIs, real
+command runs for CLIs, pre/post data checks for migrations, dry-runs for
+skill/prompt changes, …). Execute **every row** of that table and capture the
+evidence it names. If the plan predates this contract and has no QA Plan section,
+derive one now from the diff (one row per touched surface, method per the QA
+method table in `/soloship:plan`) and execute it. Browser QA remains mandatory
+for any browser-reachable surface regardless of what the plan says.
 
 **No plan is finished until the change has been exercised in a real browser and any issues found have been fixed and re-verified.** This gate runs AFTER implementation and the quality checks, and BEFORE the finishing/merge step (Step 2.5 / CE Phase 4). "Tests pass" and "build succeeds" are necessary but not sufficient — they do not prove the actual user-facing behavior works. Only driving the real UI does.
 
@@ -203,7 +214,7 @@ Only when every affected flow has been observed working — with the fixes re-ve
 
 ### The only valid exemption
 
-If the change genuinely has **no browser-reachable surface** — a pure CLI change, an internal script, a config/infra-only change, a data migration with no UI effect — state that explicitly with the reason ("No browser QA: this change only touches the build script; nothing user-facing renders differently"), and instead verify the actual observable outcome by the right means (run the CLI and show the output, hit the endpoint and show the response, query the data and show the row). The exemption is "there is nothing in a browser to test," never "browser testing is inconvenient" or "I'm confident." When in doubt, test it in the browser.
+If the change genuinely has **no browser-reachable surface** — a pure CLI change, an internal script, a config/infra-only change, a data migration with no UI effect — state that explicitly with the reason ("No browser QA: this change only touches the build script; nothing user-facing renders differently"), and instead execute the plan's QA Plan rows for those surfaces (run the CLI and show the output, hit the endpoint and show the response, query the data and show the row). The exemption is "there is nothing in a browser to test," never "browser testing is inconvenient" or "I'm confident" — and it exempts only the *browser* method, never the QA Plan itself. When in doubt, test it in the browser.
 
 ## Step 3: After Implementation
 
@@ -222,7 +233,7 @@ Implementation is not complete until ALL of these are true:
 - [ ] Tests pass (`npm test` or equivalent — show the output)
 - [ ] Build succeeds (`npm run build` or equivalent — show the output)
 - [ ] No unrelated changes introduced (diff stays within plan scope)
-- [ ] **Browser QA Gate passed (Step 2.6)** — every affected user-facing flow was exercised in a real browser via `/soloship:browse` (with a test account where auth/state was needed), issues found were fixed AND re-verified by re-running the flow, and evidence (screenshots/observed results) was captured. OR an explicit "no browser-reachable surface" exemption was stated with its reason and the outcome verified another way. Never satisfied by "tests pass" or "should work."
+- [ ] **QA Gate passed (Step 2.6)** — every row of the plan's QA Plan was executed with its evidence captured, AND every affected user-facing flow was exercised in a real browser via `/soloship:browse` (with a test account where auth/state was needed), issues found were fixed AND re-verified by re-running the flow, with evidence (screenshots/observed results) captured. OR an explicit "no browser-reachable surface" exemption was stated with its reason and the QA Plan rows for those surfaces executed instead. Never satisfied by "tests pass" or "should work."
 
 ---
 
@@ -426,7 +437,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Code follows existing patterns
    - Figma designs match (if applicable)
    - No console errors or warnings
-   - **Browser QA Gate passed (Step 2.6) — MANDATORY.** Every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed and re-verified by re-running the flow, evidence captured. Or an explicit "no browser surface" exemption with the outcome verified another way. **Do not enter Phase 4 (Ship It) until this passes** — a green build is not browser QA.
+   - **QA Gate passed (Step 2.6) — MANDATORY.** Every row of the plan's QA Plan executed with evidence, and every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed and re-verified by re-running the flow, evidence captured. Or an explicit "no browser surface" exemption with the QA Plan rows for those surfaces executed instead. **Do not enter Phase 4 (Ship It) until this passes** — a green build is not QA.
 
 4. **Prepare Operational Validation Plan** (REQUIRED)
    - Add a `## Post-Deploy Monitoring & Validation` section to the PR description for every change.
@@ -657,7 +668,7 @@ Before finishing (merge/ship), verify:
 - [ ] Linting passes (use linting-agent)
 - [ ] Code follows existing patterns
 - [ ] Figma designs match implementation (if applicable)
-- [ ] **Browser QA Gate passed (Step 2.6) — every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed AND re-verified, evidence captured — or an explicit "no browser surface" exemption verified another way. This is mandatory; a green build is not browser QA.**
+- [ ] **QA Gate passed (Step 2.6) — every row of the plan's QA Plan executed with evidence, and every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed AND re-verified, evidence captured — or an explicit "no browser surface" exemption with the QA Plan rows for those surfaces executed instead. This is mandatory; a green build is not QA.**
 - [ ] Before/after screenshots captured (for UI changes) — kept local for the maintainer to eyeball
 - [ ] Commit messages follow conventional format
 

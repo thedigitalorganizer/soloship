@@ -1,0 +1,64 @@
+# QA Plan In Every Plan — Method Matched To Work Type (Auto-Loaded)
+
+## The Rule
+
+**Every implementation plan must contain a `## QA Plan` section** — a table of
+every surface the work touches, the verification method **matched to the type of
+work**, and the evidence that will be captured. How the work will be verified is
+a planning decision, not an afterthought at ship time.
+
+Automated tests are **necessary but never sufficient** — a green suite proves the
+units pass, not that the real surface behaves. Every plan names at least one
+*observed, end-to-end* verification of the real surface. "Run the test suite"
+alone never passes as a QA Plan.
+
+## Format
+
+```markdown
+## QA Plan
+
+| Surface touched | How it will be verified | Evidence |
+|---|---|---|
+| /settings page (UI) | browser QA: change a setting, reload, verify persistence; exercise the validation-error state | screenshots |
+| POST /api/settings | real requests: happy path + 401 + invalid payload | response bodies |
+```
+
+One row per touched surface — a UI + API + migration change needs three rows.
+
+## Choosing the method — match it to the work type
+
+| Work type / surface | Primary verification (in addition to automated tests) |
+|---|---|
+| Web UI / user-facing flow | **Browser QA** (headless browser / browser MCP) — drive each affected flow end-to-end, including empty/error/loading/validation states; capture screenshots. The default whenever *anything* renders in a browser. |
+| API endpoint / webhook / server route | Real requests against the running service — happy path + auth failure + validation error; capture actual responses. |
+| CLI / installer / script | Run the real commands end-to-end in a clean scratch directory; capture output and exit codes; verify produced artifacts. |
+| Data migration / backfill | Pre/post row counts, spot-check queries, idempotency check (safe to run twice), rollback path stated. |
+| Cron / background job / queue consumer | Trigger the job once manually; observe logs and the produced side effect. |
+| Config / infra / deploy pipeline | Deploy to preview/staging; verify the behavior the config controls actually changed. |
+| Pure logic / library / refactor | Unit/property tests PLUS one consumer-level smoke through a real caller. Tests alone only when no runtime surface exists. |
+| Skill / prompt / agent-governance change | Dry-run the skill or hook in a real session on a sample task; confirm the new behavior appears. |
+| Docs-only | Read the rendered output; verify referenced paths/links exist. |
+
+Browser QA is the default whenever any browser-reachable surface exists — it most
+often makes the most sense. But a change with no browser surface must pick the
+matching row, never skip QA.
+
+## Why This Exists
+
+Verification used to be enforced only at execution time (the browser-qa-gate
+rule). Plans could pass review with a generic "testing requirements" bullet, and
+the QA method got improvised at the end — defaulting to whatever was easiest,
+not whatever matched the work. Naming the method per surface at plan time makes
+thorough QA the planned path instead of a rescue.
+
+## When This Triggers
+
+- Writing any implementation plan (any producer, not just `/soloship:plan`).
+- Reviewing a plan: a plan without a QA Plan section, or whose rows don't match
+  the work type, does not pass review.
+- Executing a plan: the QA gate executes every row of the plan's QA Plan before
+  the work may be called done. If an older plan has no QA Plan section, derive
+  one from the diff and execute it.
+
+This rule is the plan-time complement to `browser-qa-gate` (the execution-time
+floor). Both apply.
