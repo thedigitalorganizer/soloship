@@ -1,8 +1,17 @@
 # Changelog
 
-## [Unreleased]
+## [0.13.0] — 2026-07-06
 
-### Added — Deploy discipline + cross-session coordination & canonical work tracking
+### Added — Automation registry + one watchdog + /soloship:cron
+
+- **New skill `/soloship:cron` (45th)**: the management console for every automation a project owns. Status mode reads `docs/automations/registry.json`, queries the project's watchdog status endpoint, live-discovers automations (launchd, crontab, wrangler/vercel/CI cron triggers, webhook routes), and flags drift both directions (unregistered live jobs, ghost entries). Troubleshoot mode walks the scheduler→job→check-in chain (diagnose-only). Add mode is the build-time contract: register → deploy → wire → **observe the first check-in**. Remove mode de-registers retired jobs.
+- **New installed rule `automation-registry.md` (12th)**: no automation ships without a registry entry and an observed first check-in; one watchdog per system, never per-job watchdogs; retiring an automation removes its entry.
+- **`npx soloship init`** now scaffolds `docs/automations/registry.json` + `README.md`; generated CLAUDE.md/AGENTS.md reference the registry as the automation source of truth.
+- **`soloship doctor`** warns when cron triggers exist (wrangler/vercel/GH Actions schedule) but no automation registry does — silent-failure-by-construction detector.
+- **`/soloship:audit`** gained Agent 11 (Automation Surface Inventory): every cron trigger, webhook receiver, and local scheduled job + its monitoring state; unmonitored automations become findings. **`/soloship:bootstrap`** gained Step 5: seed the registry from the audit inventory so live automations are never invisible.
+- Reference implementation (dead-man's-switch watchdog: sync-log + heartbeat check-ins, silence OR persistent-error darkness, consolidated alerts with 24h cooldown, unconditional weekly digest, external healthchecks.io meta-ping) ships in Command Center; the standard's registry format and contracts are project-agnostic.
+
+### Added — Deploy discipline + cross-session coordination & canonical work tracking (merged same release)
 
 - **Session presence layer** (new SessionStart + PostToolUse hooks): every session registers on the shared whiteboard at `<git-common-dir>/soloship/` — the one directory all worktrees of a repo share — and heartbeats after every tool call. Starting a session in a repo with other live sessions announces them ("2 other active sessions… shared git index/stash caution applies"). Thresholds live in exported constants and are rewritten to `config.json` every session start so hooks and skills can never drift. `soloship doctor` reports the coordination dir state.
 - **New installed rule `deploy-from-main-only.md` (11th workflow rule)**: production only ever runs the default branch; deploy = merge first, then deploy from a clean, synced main checkout. Preview/channel deploys stay free for worktree browser QA. Documents the deploy-train concept, the moving `prod` tag, the manifest + go/no-go, and the deploy lock.
