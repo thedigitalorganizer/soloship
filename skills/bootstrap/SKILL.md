@@ -125,7 +125,36 @@ Check what rules already exist in `.claude/rules/`. Don't duplicate.
 
 ---
 
-## Step 5: Hooks + CI (via `npx soloship init`)
+## Step 5: Automation Registry
+
+Scaffold `docs/automations/registry.json` + `docs/automations/README.md`
+(`npx soloship init` creates both; if init already ran, they exist).
+
+**Seed it from what actually exists** — an empty registry in a project with
+live automations is a false "all clear":
+
+- If an audit ran and its Automation Surface Inventory (Agent 11) found
+  automations, register each one: name, kind, where it runs, check-in
+  mechanism, `maxSilenceMinutes` (~3× cadence, floor 60), troubleshoot
+  pointer.
+- No audit? Do the quick discovery pass yourself: cron triggers in
+  wrangler/vercel/CI configs, webhook receiver routes, and (when the project
+  depends on the local machine) `ls ~/Library/LaunchAgents` / `crontab -l`.
+- For each automation found, note its monitoring state. Unmonitored
+  automations are findings — tell the user: *"N of your automations would
+  fail silently today. `/soloship:cron` add mode wires them to a watchdog."*
+
+The `automation-registry.md` rule (installed in Step 6 via init) makes the
+contract stick: no new automation ships without a registry entry and an
+observed first check-in; one watchdog, never per-job watchdogs.
+
+Don't build watchdog infrastructure during bootstrap — registering what
+exists is Step 5's whole job. Wiring check-ins and standing up a watchdog is
+real feature work that goes through `/soloship:plan`.
+
+---
+
+## Step 6: Hooks + CI (via `npx soloship init`)
 
 Check `.claude/settings.local.json` for existing hooks.
 
@@ -182,7 +211,7 @@ If yes, manually re-run `npx soloship init --skip-prompts` (it should pick up mi
 
 ---
 
-## Step 6: Post-Bootstrap Nudge
+## Step 7: Post-Bootstrap Nudge
 
 Based on context, present the appropriate next step:
 

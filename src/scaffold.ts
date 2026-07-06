@@ -6,6 +6,8 @@ import {
   generateClaudeMd,
   generateAgentsMd,
   generateSolutionGuide,
+  generateAutomationRegistry,
+  generateAutomationsReadme,
   generateChangelog,
 } from "./templates.js";
 
@@ -31,6 +33,7 @@ export async function scaffoldDocs(
     "docs/architecture",
     "docs/architecture/decisions",
     "docs/audit",
+    "docs/automations",
   ];
 
   for (const dir of dirs) {
@@ -81,6 +84,25 @@ export async function scaffoldDocs(
     results.push({ path: "docs/SOLUTION_GUIDE.md", action: "created" });
   } else {
     results.push({ path: "docs/SOLUTION_GUIDE.md", action: "exists" });
+  }
+
+  // Automation registry — the single source of truth for every cron/webhook/
+  // scheduled job this project owns (automation-registry rule; /soloship:cron
+  // is the console). Scaffolded empty; audit/bootstrap and /soloship:cron
+  // populate it as automations are found or built.
+  const automationRegistryPath = join(root, "docs", "automations", "registry.json");
+  if (!existsSync(automationRegistryPath)) {
+    writeFileSync(automationRegistryPath, generateAutomationRegistry());
+    results.push({ path: "docs/automations/registry.json", action: "created" });
+  } else {
+    results.push({ path: "docs/automations/registry.json", action: "exists" });
+  }
+  const automationsReadmePath = join(root, "docs", "automations", "README.md");
+  if (!existsSync(automationsReadmePath)) {
+    writeFileSync(automationsReadmePath, generateAutomationsReadme());
+    results.push({ path: "docs/automations/README.md", action: "created" });
+  } else {
+    results.push({ path: "docs/automations/README.md", action: "exists" });
   }
 
   // Semgrep config for automated security scanning

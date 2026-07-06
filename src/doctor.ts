@@ -115,6 +115,7 @@ export async function runDoctor(): Promise<void> {
           install: "npx soloship init",
         }),
         checkCoordinationDir(root),
+        checkAutomationRegistry(root),
       ],
     },
   ];
@@ -221,6 +222,52 @@ function checkCoordinationDir(root: string): CheckResult {
     install:
       "Created automatically by the SessionStart presence hook (npx soloship init installs the hook, then start a Claude session).",
     notes,
+  };
+}
+
+/** Warn when the project visibly defines scheduled automations (cron
+ *  triggers) but has no automation registry — those jobs fail silently by
+ *  construction until they're registered and watched (/soloship:cron). */
+function checkAutomationRegistry(root: string): CheckResult {
+  const registryPath = join(root, "docs", "automations", "registry.json");
+  const hasRegistry = existsSync(registryPath);
+
+  const cronSignals: string[] = [];
+  for (const file of ["wrangler.jsonc", "wrangler.toml", "vercel.json"]) {
+    const p = join(root, file);
+    if (existsSync(p) && /"?crons"?\s*[:=]/.test(readFileSync(p, "utf-8"))) {
+      cronSignals.push(file);
+    }
+  }
+  const workflowsDir = join(root, ".github", "workflows");
+  if (existsSync(workflowsDir)) {
+    for (const f of readdirSync(workflowsDir)) {
+      if (!f.endsWith(".yml") && !f.endsWith(".yaml")) continue;
+      if (/^\s*schedule:/m.test(readFileSync(join(workflowsDir, f), "utf-8"))) {
+        cronSignals.push(`.github/workflows/${f}`);
+        break;
+      }
+    }
+  }
+
+  if (hasRegistry || cronSignals.length === 0) {
+    return {
+      name: "docs/automations/registry.json",
+      present: true,
+      severity: "recommended",
+      purpose: "Automation registry — every cron/webhook/scheduled job + watchdog thresholds.",
+      install: "npx soloship init",
+      notes: hasRegistry
+        ? undefined
+        : "no cron triggers detected — registry optional until the first automation",
+    };
+  }
+  return {
+    name: "docs/automations/registry.json",
+    present: false,
+    severity: "recommended",
+    purpose: `Cron triggers found (${cronSignals.join(", ")}) but no automation registry — these jobs fail silently by construction. Run /soloship:cron to register them.`,
+    install: "npx soloship init",
   };
 }
 
