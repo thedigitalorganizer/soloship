@@ -7,6 +7,7 @@
 - `/soloship:plan` now requires a mandatory `## QA Plan` section in every plan: one row per touched surface, verification method matched to the work type (browser QA via `/soloship:browse` as the default for anything user-facing; real requests for APIs; real command runs for CLIs; pre/post data checks for migrations; dry-runs for skill/prompt changes; consumer-level smoke for pure logic). "Run the test suite" alone never passes — automated tests are necessary but not sufficient.
 - Enforcement gate and final verification checklist in `/soloship:plan` reject plans missing the section or using a mismatched method; all three issue templates (MINIMAL/MORE/A LOT) include the section.
 - `/soloship:implement` Step 2.6 renamed to **QA Gate**: it now executes every row of the plan's QA Plan (deriving one from the diff for older plans), with browser QA remaining mandatory for any browser-reachable surface.
+- QA Gate fix-and-re-verify loop generalized to **every QA Plan row**: any failing row → fix → re-execute that row (and adjacent rows the fix could touch) → repeat until every row passes clean. Only two exits: all rows pass with evidence, or the failure is genuinely unfixable now and the work is reported to the user as NOT done. Never "done with known QA failures."
 - New installed rule `qa-plan-in-plans.md` (10th workflow rule) — installed into both `.claude/rules/` and `.codex/rules/` by `npx soloship init`, so the plan-time QA requirement cascades to user projects and plans written outside `/soloship:plan`.
 
 ## [0.12.0] - 2026-07-02
