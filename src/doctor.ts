@@ -9,7 +9,7 @@ import chalk from "chalk";
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 type Severity = "required" | "recommended";
 
@@ -114,6 +114,7 @@ export async function runDoctor(): Promise<void> {
           purpose: "Solution memory searched before planning/debugging.",
           install: "npx soloship init",
         }),
+        checkCoordinationDir(root),
       ],
     },
   ];
@@ -185,6 +186,41 @@ function checkCodexMarketplace(root: string, home: string): CheckResult {
     severity: "recommended",
     purpose: "Marketplace source that lets Codex install or update Soloship.",
     install: "codex plugin marketplace add thedigitalorganizer/soloship",
+  };
+}
+
+function checkCoordinationDir(root: string): CheckResult {
+  // Cross-session live state (session presence, plan claims, deploy lock)
+  // lives in the git common dir — the one directory every worktree of a repo
+  // shares. Created by the SessionStart presence hook on first session.
+  const commonDirRaw = runCommandText("git", ["rev-parse", "--git-common-dir"]);
+  const commonDir = commonDirRaw?.trim();
+  const coordDir = commonDir
+    ? join(isAbsolute(commonDir) ? commonDir : join(root, commonDir), "soloship")
+    : null;
+  const present = coordDir ? existsSync(coordDir) : false;
+
+  let notes: string | undefined;
+  if (!commonDir) {
+    notes = "not a git repository";
+  } else if (present && coordDir) {
+    const sessionsDir = join(coordDir, "sessions");
+    const sessionCount = existsSync(sessionsDir)
+      ? readdirSync(sessionsDir).filter((f) => f.endsWith(".json")).length
+      : 0;
+    const lockHeld = existsSync(join(coordDir, "deploy.lock"));
+    notes = `${sessionCount} session file(s); deploy lock ${lockHeld ? "HELD" : "not held"}`;
+  }
+
+  return {
+    name: "session coordination dir",
+    present,
+    severity: "recommended",
+    purpose:
+      "Cross-session live state (session presence, plan claims, deploy lock) in the git common dir.",
+    install:
+      "Created automatically by the SessionStart presence hook (npx soloship init installs the hook, then start a Claude session).",
+    notes,
   };
 }
 

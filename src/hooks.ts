@@ -2,6 +2,17 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import type { ProjectInfo } from "./detect.js";
 
+// Session-coordination thresholds. Single definition site: these values are
+// interpolated into the generated hook scripts below AND rewritten to
+// <git-common-dir>/soloship/config.json on every SessionStart, which the
+// skills (status dashboard, deploy sequence) read instead of hardcoding
+// copies. Regenerating the file each session means upgraded thresholds
+// propagate; a write-once file would freeze stale values.
+export const SESSION_PRUNE_HOURS = 24; // session files older than this are deleted
+export const SESSION_ACTIVE_MIN = 15; // heartbeat younger than this = active
+export const SESSION_IDLE_MIN = 60; // heartbeat younger than this = idle; older = presumed dead
+export const DEPLOY_LOCK_STALE_MIN = 45; // deploy lock older than this = presumed stale (never auto-broken)
+
 interface HooksConfig {
   hooks: {
     PreToolUse?: HookEntry[];
@@ -162,6 +173,20 @@ export async function installHooks(
   });
   results.push("PostToolUse: recurrence audit (records + surfaces script-issued commits that bypass the gate)");
 
+  // Session heartbeat: touch this session's presence file after every tool
+  // call so other sessions can tell live sessions from dead ones.
+  postToolUseHooks.push({
+    matcher: "",
+    hooks: [
+      {
+        type: "command",
+        command: buildSessionHeartbeatScript(),
+        timeout: 5000,
+      },
+    ],
+  });
+  results.push("PostToolUse: session heartbeat (keeps this session's presence file fresh for other sessions)");
+
   if (postToolUseHooks.length > 0) {
     hooks.PostToolUse = postToolUseHooks;
   }
@@ -203,9 +228,20 @@ export async function installHooks(
         },
       ],
     },
+    {
+      matcher: "",
+      hooks: [
+        {
+          type: "command",
+          command: buildSessionRegisterScript(),
+          timeout: 10000,
+        },
+      ],
+    },
   ];
   results.push("SessionStart: checkpoint commit before agent session");
   results.push("SessionStart: daily check for Soloship updates on npm");
+  results.push("SessionStart: session presence (register this session, announce other live sessions in this repo)");
 
   // Merge hooks into settings (don't overwrite other settings)
   settings.hooks = hooks;
@@ -932,6 +968,116 @@ done < "$L"
 
 [ -z "$HITS" ] && exit 0
 echo "{\\"systemMessage\\": \\"recurrence-gate: a commit that just landed ($SHA) matches a recorded failure class and was recorded to .ai/.recurrence-log:$HITS . It could not be blocked (not a Bash commit call), but the next commit will escalate. Consider a mechanical fix now.\\"}"
+exit 0
+'`;
+}
+
+function buildSessionRegisterScript(): string {
+  // Session presence (SessionStart). The break-room whiteboard: every worktree
+  // of a repo shares exactly one git common dir, so live cross-session state
+  // lives at <git-common-dir>/soloship/ — machine-local, structurally
+  // impossible to commit, gone when the repo is deleted. This hook:
+  //   1. rewrites config.json with the current thresholds (so skills read the
+  //      same numbers the hooks enforce — one definition site),
+  //   2. prunes session files older than SESSION_PRUNE_HOURS,
+  //   3. announces other live sessions (heartbeat < SESSION_IDLE_MIN) so
+  //      parallel sessions stop being blind to each other,
+  //   4. registers this session (sessions/<session_id>.json, atomic write).
+  // Guard-first: outside a git repo, or on any git error, exit 0 silently.
+  // session_id arrives in the hook stdin JSON (common input field on all hook
+  // events); fallback is the host process pid.
+  return `bash -c '
+INPUT=$(cat 2>/dev/null || true)
+
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+[ -z "$COMMON" ] && exit 0
+
+COORD="$COMMON/soloship"
+mkdir -p "$COORD/sessions" "$COORD/claims" 2>/dev/null || exit 0
+
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+# Rewrite thresholds every session start so upgrades propagate (atomic write).
+CFG_TMP="$COORD/config.json.tmp.$$"
+printf "{\\"session_prune_hours\\":${SESSION_PRUNE_HOURS},\\"session_active_min\\":${SESSION_ACTIVE_MIN},\\"session_idle_min\\":${SESSION_IDLE_MIN},\\"deploy_lock_stale_min\\":${DEPLOY_LOCK_STALE_MIN}}\\n" > "$CFG_TMP" 2>/dev/null && mv "$CFG_TMP" "$COORD/config.json" 2>/dev/null
+
+# Prune session files old enough to be certainly dead.
+find "$COORD/sessions" -name "*.json" -mmin +${SESSION_PRUNE_HOURS * 60} -delete 2>/dev/null
+
+# Announce other live sessions (heartbeat younger than the idle threshold).
+NOW=$(date +%s)
+MAIN_ROOT=$(cd "$COMMON/.." 2>/dev/null && pwd -P)
+OTHERS=""
+COUNT=0
+for f in "$COORD/sessions"/*.json; do
+  [ -f "$f" ] || continue
+  BASE=$(basename "$f" .json)
+  [ "$BASE" = "$SID" ] && continue
+  MT=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+  AGE_MIN=$(( (NOW - MT) / 60 ))
+  [ "$AGE_MIN" -ge ${SESSION_IDLE_MIN} ] && continue
+  SDIR=$(grep -oE "\\"dir\\":\\"[^\\"]*\\"" "$f" 2>/dev/null | head -1 | sed -E "s/\\"dir\\":\\"//; s/\\"$//")
+  SBR=$(grep -oE "\\"branch\\":\\"[^\\"]*\\"" "$f" 2>/dev/null | head -1 | sed -E "s/\\"branch\\":\\"//; s/\\"$//")
+  if [ -n "$SDIR" ] && [ "$SDIR" != "$MAIN_ROOT" ]; then
+    LABEL="worktree $(basename "$SDIR")"
+  else
+    LABEL="main checkout"
+  fi
+  [ -n "$SBR" ] && LABEL="$LABEL on $SBR"
+  OTHERS="$OTHERS[$LABEL, $AGE_MIN min ago] "
+  COUNT=$((COUNT + 1))
+done
+
+# Register this session (atomic: temp file + rename, so readers never see a
+# half-written file).
+DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+BR=$(git branch --show-current 2>/dev/null)
+STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+SF="$COORD/sessions/$SID.json"
+SF_TMP="$SF.tmp.$$"
+printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
+
+if [ "$COUNT" -gt 0 ]; then
+  echo "{\\"systemMessage\\": \\"$COUNT other active session(s) in this repo: \${OTHERS}- shared git index/stash caution applies. Run /soloship:status for the full picture.\\"}"
+fi
+exit 0
+'`;
+}
+
+function buildSessionHeartbeatScript(): string {
+  // Session heartbeat (PostToolUse, empty matcher = all tools). Touches this
+  // session mtime so other sessions can tell live from dead. Freshness
+  // semantics live in the SESSION_* constants above (and config.json).
+  // Guard-first and fast: outside a git repo, or before the register hook has
+  // created the coordination dir, exit 0 instantly. Recreates the session
+  // file if the prune (or a manual wipe) removed it mid-session. Note a long
+  // tool call (a 20-minute deploy) shows no heartbeats while it runs — the
+  // liveness thresholds absorb this; the deploy lock does not depend on
+  // session heartbeats.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+SESS_DIR="$COMMON/soloship/sessions"
+[ -d "$SESS_DIR" ] || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+SF="$SESS_DIR/$SID.json"
+if [ -f "$SF" ]; then
+  touch "$SF" 2>/dev/null
+else
+  DIR=$(git rev-parse --show-toplevel 2>/dev/null)
+  BR=$(git branch --show-current 2>/dev/null)
+  STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  SF_TMP="$SF.tmp.$$"
+  printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
+fi
 exit 0
 '`;
 }
