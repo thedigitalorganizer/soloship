@@ -136,7 +136,10 @@ Rules for the section:
 - "Run the test suite" alone never passes as a QA Plan.
 - Each phase's success criteria should reference the QA Plan rows they satisfy.
 - `/soloship:implement` executes every row of this section at its QA gate
-  (Step 2.6) before the work may be called done.
+  (Step 2.6) before the work may be called done — and loops fix → re-execute
+  on any failing row until **every row passes clean**. The only alternative
+  exit is reporting the work as NOT done to the user; work is never "done
+  with known QA failures."
 
 ## Step 4: Enforcement Gate
 

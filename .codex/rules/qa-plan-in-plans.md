@@ -43,6 +43,26 @@ Browser QA is the default whenever any browser-reachable surface exists — it m
 often makes the most sense. But a change with no browser surface must pick the
 matching row, never skip QA.
 
+## The fix-and-re-verify loop (every row, until perfect)
+
+Executing the QA Plan is a loop, not a checklist pass. If ANY row surfaces ANY
+issue — wrong behavior, failing request, wrong CLI output, bad migration result,
+regression on an adjacent surface:
+
+1. Fix it.
+2. **Re-execute that row** and observe the fix actually working (re-drive the
+   flow / re-send the request / re-run the command / re-check the data). A fix
+   is done when the re-run shows correct behavior, not when the code changed.
+3. **Re-check adjacent rows the fix could have touched.**
+4. Repeat until **every row passes clean**. Never stop at "mostly passing,"
+   never downgrade a failing row to a known issue or a follow-up task.
+
+The loop has exactly two exits: every row passes with evidence, or a failure is
+genuinely unfixable right now (external blocker, needs the user's product
+decision) — then STOP, report the work as **NOT done** with the failing row and
+why, and ask the user. Never silently proceed. If the same fix keeps failing,
+debug the root cause instead of re-patching, then resume the loop.
+
 ## Why This Exists
 
 Verification used to be enforced only at execution time (the browser-qa-gate

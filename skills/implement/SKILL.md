@@ -202,15 +202,20 @@ Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows
      - **If no:** the authenticated flow is untested — say so plainly and do not call the work done. "Couldn't test because it needs login" is an unmet gate, not an exemption.
 4. **Capture evidence.** Screenshots (before/after where relevant) and the observed result of each flow. The evidence is what proves the gate was met.
 
-### The fix-and-re-verify loop
+### The fix-and-re-verify loop (applies to EVERY QA Plan row, not just browser QA)
 
-If browser QA surfaces ANY issue (visual break, broken interaction, console error, wrong behavior, regression on an adjacent flow):
+If executing ANY QA Plan row surfaces ANY issue — a visual break, broken interaction, console error, wrong behavior, a failing request, wrong CLI output, a bad migration result, a regression on an adjacent flow:
 
 1. Fix it.
-2. **Re-run the browser QA for that flow** — observe the fix actually working. A fix is not "done" because the code changed; it's done when the re-run shows the correct behavior.
-3. Repeat until every affected flow passes clean.
+2. **Re-execute that QA row** — observe the fix actually working. A fix is not "done" because the code changed; it's done when the re-run shows the correct behavior. For browser rows that means re-driving the flow; for an API row, re-sending the requests; for a CLI row, re-running the command; for a migration row, re-checking the data.
+3. **Re-check adjacent rows the fix could have touched** — a fix that breaks a neighboring surface has not fixed anything.
+4. Repeat until **every row of the QA Plan passes clean**. Do not stop at "mostly passing," do not downgrade a failing row to a known issue, do not defer a failure to a follow-up task.
 
-Only when every affected flow has been observed working — with the fixes re-verified — may the work proceed to the finishing/merge step.
+**The loop has exactly two exits:**
+- **Every QA Plan row passes** with evidence — proceed to the finishing/merge step.
+- **A failure is genuinely unfixable right now** (external service down, needs the user's product decision, blocked on credentials). Then STOP, report the work as **NOT done** with the failing row and why, and ask the user. Never silently proceed, never call it done with a failing row.
+
+"Ran out of loop iterations" is not an exit. If you notice the same fix failing repeatedly, that's the signal to run `/soloship:debug` (find the root cause) rather than re-patching — then resume the loop.
 
 ### The only valid exemption
 
