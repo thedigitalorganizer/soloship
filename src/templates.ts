@@ -31,6 +31,7 @@ ${stackLine ? `**Stack:** ${stackLine}\n` : ""}
 |----------|----------|---------|
 | Changelog | [CHANGELOG.md](CHANGELOG.md) | Version history and release notes |
 | Solution Guide | [docs/SOLUTION_GUIDE.md](docs/SOLUTION_GUIDE.md) | Solution doc schema and template |
+| Automation Registry | [docs/automations/registry.json](docs/automations/registry.json) | Every cron/webhook/scheduled job this project owns + its watchdog thresholds |
 
 ## Project Structure
 
@@ -70,7 +71,7 @@ This project follows: **THINK → PLAN → WORK → LEARN → SHIP**
 
 ## Rules
 
-Coding conventions and workflow rules auto-load from \`.claude/rules/\` — including **parameterize-constants** (no magic literals; refactor un-parameterized values when you encounter them, then list other affected sites and ask).
+Coding conventions and workflow rules auto-load from \`.claude/rules/\` — including **parameterize-constants** (no magic literals; refactor un-parameterized values when you encounter them, then list other affected sites and ask). **automation-registry** applies to any cron/webhook/scheduled-job work: register in \`docs/automations/registry.json\`, wire a check-in, observe it land — one watchdog, never per-job watchdogs (\`/soloship:cron\` is the console).
 
 ## Agent Surfaces
 
@@ -96,6 +97,7 @@ The maintainer may not be a traditional coder. Explain technical work with a pla
 - AGENTS.md — project configuration for Codex
 - CHANGELOG.md — version history
 - docs/ — plans, solutions, architecture, audit reports
+- docs/automations/ — the automation registry (every cron/webhook/scheduled job + watchdog thresholds)
 - Project configuration files (package.json, tsconfig.json, etc.)
 
 ## Contracts
@@ -103,6 +105,7 @@ The maintainer may not be a traditional coder. Explain technical work with a pla
 - All subdirectories should have their own AGENTS.md describing scope and contracts
 - Changes to shared types or interfaces must be noted in CHANGELOG.md
 - Plans go in docs/plans/, solutions go in docs/solutions/
+- Every automation (cron, webhook, scheduled job) is registered in docs/automations/registry.json and checks in to the watchdog; new automations follow /soloship:cron add mode (register -> deploy -> wire -> observe)
 
 ## Key Files
 
@@ -210,5 +213,41 @@ Links to PRs, issues, or other solution docs.
 - After any feature that required non-obvious architectural decisions
 - After any refactoring that changed how components interact
 - When you discover a gotcha that would bite future developers
+`;
+}
+
+export function generateAutomationRegistry(): string {
+  return `{
+  "$comment": "Soloship automation registry — the single source of truth for every automation this project owns (cron jobs, scheduled workers, local launchd/crontab jobs, webhook receivers). Manage with /soloship:cron. Each entry: name, kind (cloud-cron|local-launchd|local-crontab|webhook|ci-schedule), runsOn, checkin (sync_log|heartbeat), maxSilenceMinutes (~3x expected cadence, floor 60; ~1800 for daily jobs on a machine that sleeps; long activity windows for webhooks), troubleshoot (file paths / docs). statusEndpoint: the watchdog status API, when one exists.",
+  "statusEndpoint": null,
+  "automations": []
+}
+`;
+}
+
+export function generateAutomationsReadme(): string {
+  return `# Automations — Registry + Watchdog
+
+\`registry.json\` in this directory is the single source of truth for every
+automation this project owns — cloud cron jobs, scheduled workers, local
+launchd/crontab jobs, and webhook receivers. Manage it with \`/soloship:cron\`.
+
+## The contract (enforced by the automation-registry rule)
+
+- **No automation ships without a registry entry and an observed first
+  check-in.** Register -> deploy -> wire -> observe, in that order
+  (\`/soloship:cron\` add mode walks it).
+- **Retiring an automation removes its entry** — a registered-but-deleted
+  job alerts forever.
+- **One watchdog.** Never build a per-job watchdog; add the job to this
+  registry instead. Every automation checks in on SUCCESS (dead-man's
+  switch); the watchdog alerts on the absence of good news, because dead
+  jobs throw no errors.
+
+## Threshold rule of thumb
+
+\`maxSilenceMinutes = 3x expected cadence\`, floor 60. Daily jobs on a
+machine that sleeps get ~1800 (30h). Webhooks have no cadence — they get
+expected-activity windows and a baseline check-in seeded at wiring time.
 `;
 }

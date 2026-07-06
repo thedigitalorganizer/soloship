@@ -253,7 +253,7 @@ issues in the entire audit.
 
 ## Phase 2: Assess the System
 
-After the user confirms (or you incorporate their corrections), launch these 6 agents
+After the user confirms (or you incorporate their corrections), launch these 7 agents
 **in parallel**.
 
 ### Agent 5: Code Quality
@@ -427,6 +427,8 @@ Check for:
 5. Documentation gaps: which directories lack AGENTS.md?
 6. Missing env documentation: are all required env vars documented in .env.example?
 7. Missing validation: are user inputs validated at system boundaries?
+8. Unmonitored automations: cross-reference Agent 11's Automation Surface
+   Inventory — any automation with no liveness monitoring is a gap.
 
 Return as:
 
@@ -485,6 +487,63 @@ Return exactly 5 recommendations, ranked by impact:
 ```
 
 ---
+
+### Agent 11: Automation Surface Inventory
+
+```
+Prompt: You are inventorying every AUTOMATION this project owns — anything that
+runs on a schedule or fires on an event without a human driving it. Silent
+automation failure (a cron that stops, a webhook whose auth drifted) is one of
+the most expensive defect classes because it looks identical to "nothing
+happened." Your job: find every automation and whether anything would notice
+if it died.
+
+Find ALL of these:
+1. Cloud cron/schedule triggers: wrangler.jsonc/wrangler.toml "crons",
+   vercel.json "crons", .github/workflows/*.yml "schedule:", cloud function
+   schedulers, queue consumers, durable-object alarms.
+2. In-code job registries: scheduled() handlers, job runner setup, worker
+   slot lists — the schedule config often fans out to many logical jobs.
+3. Webhook receivers: routes matching webhook/hook/callback; note each one's
+   auth mechanism (HMAC, token, none).
+4. Local machine schedulers, if this project depends on any:
+   ls ~/Library/LaunchAgents/ (ignore com.google.*/keystone/apple),
+   crontab -l. Only attribute jobs that point at THIS project's files.
+5. Email/report senders, data syncs, backups triggered by any of the above.
+
+For EACH automation found, record: name, kind (cloud-cron / local-launchd /
+local-crontab / webhook / ci-schedule / queue-consumer), where it runs, its
+schedule or expected activity pattern, and — the key question — its
+MONITORING STATE:
+  - Does it write a check-in anywhere (sync log, heartbeat, healthchecks.io)?
+  - Would anything ALERT a human if it silently stopped? (A dashboard nobody
+    watches is not an alert. Error logging is not liveness monitoring — a
+    dead job logs nothing.)
+6. Check for a Soloship automation registry: docs/automations/registry.json.
+   If it exists, diff it against reality — automations missing from it, and
+   registry entries whose automation no longer exists.
+
+Return as:
+
+## Automation Surface Inventory
+
+### Automations Found
+| name | kind | runs on | schedule/pattern | checks in? | alerts on death? |
+[One row per automation]
+
+### Unmonitored Automations (findings — these fail silently)
+[Each automation with no liveness monitoring, severity High if it moves
+data/money/email, Medium otherwise. These become audit findings.]
+
+### Registry Drift
+[Present only if docs/automations/registry.json exists: unregistered
+automations + ghost entries]
+
+### Recommendation
+[If no registry/watchdog exists: recommend the Soloship automation standard —
+one registry file + one dead-man's-switch watchdog + /soloship:cron. Never
+per-job watchdogs.]
+```
 
 ## Synthesis: Write the Report
 
