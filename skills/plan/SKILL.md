@@ -92,6 +92,52 @@ If CE wrote the plan elsewhere, move/rename it into `docs/plans/` and add the
 frontmatter above so the rest of the Soloship workflow (implement, shipthorough,
 cleanup) can find it.
 
+## QA Plan (MANDATORY section in every plan)
+
+How the work will be verified is a **planning decision, not an afterthought at
+ship time**. Every plan must contain a `## QA Plan` section that names, for each
+surface the work touches, the verification method **matched to the type of work**
+and the evidence that will be captured:
+
+```markdown
+## QA Plan
+
+| Surface touched | How it will be verified | Evidence |
+|---|---|---|
+| /settings page (UI) | /soloship:browse: change a setting, reload, verify persistence; exercise the validation-error state | screenshots |
+| POST /api/settings | real requests: happy path + 401 + invalid payload | response bodies |
+```
+
+### Choosing the QA method — match it to the work type
+
+Automated tests are **necessary but never sufficient** — a green suite proves the
+units pass, not that the real surface behaves. Every plan names at least one
+*observed, end-to-end* verification of the real surface. Pick per row:
+
+| Work type / surface | Primary verification (in addition to automated tests) |
+|---|---|
+| Web UI / user-facing flow | **Browser QA via `/soloship:browse`** — drive each affected flow end-to-end, including empty/error/loading/validation states; capture screenshots. This is the default whenever *anything* renders in a browser. |
+| API endpoint / webhook / server route | Real requests against the running service — happy path + auth failure + validation error; capture the actual responses. A unit test of the handler is not a real request. |
+| CLI / installer / script | Run the real commands end-to-end in a clean scratch directory; capture output and exit codes; verify the artifacts it produces. |
+| Data migration / backfill | Pre/post row counts, spot-check queries on real (staging) data, idempotency check (safe to run twice), rollback path stated. Billing/credit data → the billing confirmation gate applies first. |
+| Cron / background job / queue consumer | Trigger the job once manually; observe the logs and the produced side effect. |
+| Config / infra / deploy pipeline | Deploy to preview/staging; verify the behavior the config controls actually changed (not just that the deploy succeeded). |
+| Pure logic / library / refactor | Unit/property tests PLUS one consumer-level smoke: exercise the code through a real caller (the app screen, CLI, or endpoint that uses it). Tests alone are acceptable only when no runtime surface exists at all. |
+| Skill / prompt / agent-governance change | Dry-run: invoke the skill (or trigger the hook) in a real session on a sample task; confirm the new behavior actually appears. |
+| Docs-only | Read the rendered output; verify referenced paths/links exist. |
+
+Rules for the section:
+
+- **Browser QA is the default** whenever any browser-reachable surface exists —
+  it most often makes the most sense. But a change with no browser surface must
+  pick the matching row above, never skip QA.
+- Multi-surface changes get **one row per surface** — a UI + API + migration
+  change needs three rows, not one.
+- "Run the test suite" alone never passes as a QA Plan.
+- Each phase's success criteria should reference the QA Plan rows they satisfy.
+- `/soloship:implement` executes every row of this section at its QA gate
+  (Step 2.6) before the work may be called done.
+
 ## Step 4: Enforcement Gate
 
 After the plan is written to `docs/plans/YYYY-MM-DD-<slug>.md`, validate:
@@ -103,6 +149,7 @@ After the plan is written to `docs/plans/YYYY-MM-DD-<slug>.md`, validate:
 - [ ] Handoff section exists with next step and context for next agent
 - [ ] No prior pitfalls from solution search left unaddressed
 - [ ] All dependencies/contracts for touched files are accounted for
+- [ ] **QA Plan section exists, covers every surface the plan touches, and each row's method matches the work type (per the QA method table above) — not just "run tests"**
 - [ ] **Claim Verification passed (see below) — every factual assertion grepped against the live repo**
 
 **If any check fails:** Fix it before declaring the plan complete. Do not
@@ -156,6 +203,8 @@ claim does not pass the gate.
 | "CE's workflow already produced a plan, so I'm done" | CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done. |
 | "The plan says X is already done, so I'll trust it" | The plan is an assertion, not evidence. `git grep` it. "Already done" claims that were false are the most expensive plan defect — they send the next agent to build on nothing. |
 | "Grepping every claim is tedious" | One false load-bearing claim = a full implementation built on a wrong premise, then reverted. The grep is seconds; the rework is hours. |
+| "The test suite covers this — that's the QA plan" | Tests prove units pass, not that the surface behaves. Every plan names at least one observed end-to-end verification of the real surface (browser QA for anything user-facing). |
+| "I'll figure out how to QA it during implementation" | Improvised QA defaults to whatever is easiest, not whatever matches the work. The QA method is a planning decision — pick the row from the QA method table now. |
 
 ---
 
@@ -179,6 +228,7 @@ The plan is not complete until ALL of these are true:
 - [ ] Every phase/step has a "Why:" line
 - [ ] Key Decisions section present with alternatives considered
 - [ ] Execution Strategy section present (Direct / Subagent / Agent Teams)
+- [ ] QA Plan section present — one row per touched surface, method matched to work type
 - [ ] Handoff section present with next step for fresh agent
 - [ ] All enforcement gate checks pass (Step 4 checklist — zero unchecked boxes)
 
@@ -374,6 +424,12 @@ date: YYYY-MM-DD
 - [ ] Core requirement 1
 - [ ] Core requirement 2
 
+## QA Plan
+
+| Surface touched | How it will be verified | Evidence |
+|---|---|---|
+| [surface] | [method matched to work type — browser QA via /soloship:browse if user-facing] | [what gets captured] |
+
 ## Context
 
 [Any critical information]
@@ -441,6 +497,13 @@ date: YYYY-MM-DD
 - [ ] Detailed requirement 1
 - [ ] Detailed requirement 2
 - [ ] Testing requirements
+
+## QA Plan
+
+| Surface touched | How it will be verified | Evidence |
+|---|---|---|
+| [surface 1] | [method matched to work type — browser QA via /soloship:browse if user-facing] | [what gets captured] |
+| [surface 2] | [one row per touched surface] | |
 
 ## Success Metrics
 
@@ -540,6 +603,14 @@ date: YYYY-MM-DD
 - [ ] Test coverage requirements
 - [ ] Documentation completeness
 - [ ] Code review approval
+- [ ] Every QA Plan row executed with evidence
+
+## QA Plan
+
+| Surface touched | How it will be verified | Evidence |
+|---|---|---|
+| [surface 1] | [method matched to work type — browser QA via /soloship:browse if user-facing] | [what gets captured] |
+| [surface 2] | [one row per touched surface] | |
 
 ## Success Metrics
 
