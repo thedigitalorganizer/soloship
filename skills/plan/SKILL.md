@@ -81,7 +81,9 @@ with YAML frontmatter:
 date: YYYY-MM-DD
 producer: soloship-plan
 version: 1
-status: Not started
+status: planned
+progress: ""
+updated: YYYY-MM-DD
 ttl_days: 14
 ---
 ```
@@ -90,7 +92,35 @@ After writing, compute and insert content_hash (first 12 chars of SHA-256 of the
 
 If CE wrote the plan elsewhere, move/rename it into `docs/plans/` and add the
 frontmatter above so the rest of the Soloship workflow (implement, shipthorough,
-cleanup) can find it.
+cleanup) can find it. Replace any status the methodology's templates wrote
+(e.g. `active`) with the unified vocabulary below.
+
+### Unified status vocabulary (the canonical work record)
+
+Plan frontmatter is the durable record of work state — the skills WRITE to it
+at milestones, so "has work begun on this plan?" never needs git archaeology:
+
+| status | meaning | written by |
+|--------|---------|------------|
+| `backlog` | stub plan capturing "we want this" before real planning | anyone parking an idea |
+| `planned` | plan written, work not started | `/soloship:plan` (this skill) |
+| `in-progress` | a session has claimed it and is executing | `/soloship:implement` on start |
+| `blocked` | work stopped on an external blocker or user decision | whoever hits the blocker |
+| `done` | implemented and merged | `/soloship:implement` at completion, `/soloship:finish` on merge |
+| `abandoned` | deliberately dropped | `/soloship:finish` on discard |
+
+Companion fields, updated whenever status changes: `progress:
+"<phases done>/<phases total>"` (empty for un-phased plans), `updated:
+YYYY-MM-DD`, and — while in-progress — `claimed_by: <session label>` and
+`branch: <branch>`.
+
+**Freshness/TTL warnings apply only to `planned` and `in-progress`.**
+`backlog`, `done`, and `abandoned` are exempt — backlog items are supposed to
+sit; nagging about them trains everyone to ignore the warnings.
+
+**Legacy mapping** (older plans in the wild): `Not started → planned`,
+`active → in-progress`, `completed → done`. Read old values as their mapped
+equivalents; write only the new vocabulary.
 
 ## QA Plan (MANDATORY section in every plan)
 
@@ -415,7 +445,7 @@ Select how comprehensive you want the issue to be, simpler is mostly better.
 ````markdown
 title: [Issue Title]
 type: [feat|fix|refactor]
-status: active
+status: planned
 date: YYYY-MM-DD
 
 # [Issue Title]
@@ -472,7 +502,7 @@ end
 ```markdown
 title: [Issue Title]
 type: [feat|fix|refactor]
-status: active
+status: planned
 date: YYYY-MM-DD
 
 # [Issue Title]
@@ -542,7 +572,7 @@ date: YYYY-MM-DD
 ```markdown
 title: [Issue Title]
 type: [feat|fix|refactor]
-status: active
+status: planned
 date: YYYY-MM-DD
 
 # [Issue Title]

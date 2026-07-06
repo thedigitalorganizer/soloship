@@ -25,7 +25,9 @@ strategy.
 **Freshness check:** If the plan has frontmatter with `date` and `ttl_days`,
 check whether today exceeds date + ttl_days. If stale, warn:
 "This plan is N days old (expires after M days). Verify it still reflects current
-intent before executing." Do not block — warn and proceed.
+intent before executing." Do not block — warn and proceed. Freshness applies
+only to `planned` / `in-progress` plans (legacy: `Not started` / `active`) —
+`backlog`, `done`, and `abandoned` are exempt.
 
 ## Step 1.5: Pre-Execution State Verification
 
@@ -91,6 +93,57 @@ cd ".worktrees/<branch-name>"
 ```
 
 …and verify the new directory got added to `.gitignore` before proceeding.
+
+## Step 1.8: Claim the Plan (Soloship — cross-session coordination)
+
+Before executing, claim the plan so no other session implements it at the same
+time. Claims live on the shared whiteboard every worktree of the repo sees —
+`<git-common-dir>/soloship/claims/` — one file per plan, created **atomically**
+(noclobber: first writer wins, two racing sessions can never overwrite each
+other).
+
+```bash
+COORD="$(cd "$(git rev-parse --git-common-dir)" && pwd -P)/soloship"
+mkdir -p "$COORD/claims" "$COORD/sessions"
+# Own session id: session file whose pid matches this shell's parent process;
+# fallbacks: freshest session file, then a pid label.
+SID=$(grep -l "\"pid\":$PPID," "$COORD/sessions/"*.json 2>/dev/null | head -1 | xargs -I{} basename {} .json)
+[ -z "$SID" ] && SID=$(ls -t "$COORD/sessions/"*.json 2>/dev/null | head -1 | xargs -I{} basename {} .json)
+[ -z "$SID" ] && SID="pid-$PPID"
+
+PLAN_FILE="<the plan filename, e.g. 2026-01-01-my-feature.md>"   # filename only, normalized to filesystem-safe
+CLAIM="$COORD/claims/$PLAN_FILE.json"
+if ( set -o noclobber; printf '{"session_id":"%s","branch":"%s","claimed_at":"%s"}\n' \
+     "$SID" "$(git branch --show-current)" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$CLAIM" ) 2>/dev/null; then
+  echo "claim acquired"
+else
+  HOLDER=$(grep -oE '"session_id":"[^"]*"' "$CLAIM" | head -1 | cut -d'"' -f4)
+  # Freshness = the HOLDER SESSION's heartbeat (sessions/<holder>.json mtime),
+  # not the claim file's age; session_idle_min from $COORD/config.json (default 60)
+  IDLE_MIN=$(grep -oE '"session_idle_min":[0-9]+' "$COORD/config.json" 2>/dev/null | grep -oE '[0-9]+$'); [ -z "$IDLE_MIN" ] && IDLE_MIN=60
+  HB="$COORD/sessions/$HOLDER.json"
+  AGE_MIN=99999
+  [ -f "$HB" ] && AGE_MIN=$(( ( $(date +%s) - $(stat -f %m "$HB" 2>/dev/null || stat -c %Y "$HB") ) / 60 ))
+  echo "claim held by $HOLDER, heartbeat ${AGE_MIN} min ago (idle threshold: ${IDLE_MIN})"
+fi
+```
+
+- **Claim held by a session with a fresh heartbeat (< idle threshold): STOP.**
+  Another session is implementing this plan right now. Tell the user which
+  session (its worktree/branch) and ask how to proceed. Do not start
+  implementing.
+- **Claim held but the holder's heartbeat is stale (or its session file is
+  gone):** the claiming session likely crashed. Claims are advisory, never
+  deadlocks — take it over: replace the claim file with your own, note the
+  takeover to the user, and continue.
+- **Claim acquired:** update the plan's frontmatter to
+  `status: in-progress`, `claimed_by: <short session label — e.g. "worktree
+  feat-x session">`, `branch: <branch>`, `updated: <today>`. (Vocabulary:
+  see the plan skill's Artifact Contract.)
+
+**After completing each phase**, update the plan frontmatter `progress:
+"<done>/<total>"` and `updated:` — this is what makes the status board
+trustworthy without git archaeology.
 
 ## Step 2: Route to Execution
 
@@ -343,6 +396,11 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    **IMPORTANT**: Always update the original plan document by checking off completed items. Use the Edit tool to change `- [ ]` to `- [x]` for each task you finish. This keeps the plan as a living document showing progress and ensures no checkboxes are left unchecked.
 
+   **Phase milestones (Soloship):** whenever a whole phase of the plan
+   completes, also update the plan frontmatter: `progress: "<done>/<total>"`
+   and `updated: <today>`. The status board reads these instead of digging
+   through git logs.
+
 2. **Incremental Commits**
 
    After completing each task, evaluate whether to create an incremental commit:
@@ -547,11 +605,20 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-4. **Update Plan Status**
+4. **Update Plan Status (Soloship unified vocabulary)**
 
-   If the input document has YAML frontmatter with a `status` field, update it to `completed`:
+   Update the plan's YAML frontmatter to the completed state and release the
+   claim taken in Step 1.8:
    ```
-   status: active  →  status: completed
+   status: done          (legacy plans may say active/completed — write done)
+   progress: "<total>/<total>"
+   updated: <today>
+   ```
+   Remove the `claimed_by` line (the work is no longer in flight), then clear
+   the claim file:
+   ```bash
+   COORD="$(cd "$(git rev-parse --git-common-dir)" && pwd -P)/soloship"
+   rm -f "$COORD/claims/<plan-filename>.json"
    ```
 
 5. **Notify User**

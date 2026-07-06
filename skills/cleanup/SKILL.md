@@ -108,26 +108,44 @@ Return your findings as JSON:
 }
 ```
 
-### Agent 3: Plan Lifecycle Scanner
+### Agent 3: Plan Lifecycle Scanner + Status Reconciler
 
 ```
-Prompt: You are auditing plan files against plan-lifecycle rules. Read-only.
+Prompt: You are auditing plan files against plan-lifecycle rules AND reconciling
+their frontmatter status against git evidence. Read-only — report proposed
+fixes; the main session applies them.
 
-The rules:
+The lifecycle rules:
 - Small plans (single phase, <3 tasks, <5 files, no key decisions) → delete after commit
 - Large plans (multiple phases, 3+ tasks, 5+ files, key decisions, multi-session) → archive
 - When in doubt, archive
 
+The status vocabulary (see the plan skill's Artifact Contract):
+backlog | planned | in-progress | blocked | done | abandoned.
+Legacy mapping: "Not started" → planned, "active" → in-progress,
+"completed" → done.
+
 Do the following:
 1. List all files in docs/plans/ (excluding docs/plans/archive/)
 2. For each plan file:
-   a. Read the plan and count: phases, tasks, files referenced, Key Decisions section
-   b. Check git log for commits that reference this plan's filename or its tasks
-   c. Classify status: completed (all tasks have matching commits), partially completed,
-      not started (no matching commits), stale (has ttl_days and it has expired)
-   d. Size it: small or large per the rules above
-   e. Assign action: delete (small + completed), archive (large + completed),
-      keep (not completed), flag (stale)
+   a. Read the frontmatter: status, progress, updated, claimed_by, branch
+   b. Read the plan and count: phases, tasks, files referenced, Key Decisions section
+   c. Check git log for commits that reference this plan's filename or its tasks
+   d. Derive evidence-status: completed (all tasks have matching commits),
+      partial, not_started (no matching commits), stale (ttl_days expired —
+      only meaningful for planned/in-progress; backlog/done/abandoned are
+      exempt from freshness)
+   e. RECONCILE: compare frontmatter status to the evidence.
+      - Frontmatter disagrees with UNAMBIGUOUS evidence (e.g. says planned but
+        every phase's commits are merged on the default branch; says
+        in-progress but the branch is merged and deleted) → propose the exact
+        frontmatter fix (new status/progress/updated values).
+      - Evidence is AMBIGUOUS (squash merges, renamed plans, partial branches,
+        work possibly living in an unmerged worktree) → flag it with the
+        conflicting signals. NEVER guess.
+   f. Size it: small or large per the rules above
+   g. Assign action: delete (small + done), archive (large + done),
+      keep (not done), flag (stale or ambiguous)
 3. If no docs/plans/ directory exists, report "no plans directory"
 
 Return your findings as JSON:
@@ -135,7 +153,10 @@ Return your findings as JSON:
   "plans": [
     {
       "path": "...",
-      "status": "completed|partial|not_started|stale",
+      "frontmatterStatus": "...",
+      "evidenceStatus": "completed|partial|not_started|stale",
+      "reconcile": null | { "fix": {"status": "...", "progress": "...", "updated": "..."}, "evidence": "..." }
+                        | { "flag": "why the evidence is ambiguous" },
       "size": "small|large",
       "action": "delete|archive|keep|flag",
       "evidence": "commit hashes or reason",
@@ -147,6 +168,14 @@ Return your findings as JSON:
   ]
 }
 ```
+
+**Applying reconciler results (main session, after the agents return):** apply
+each proposed `fix` to the plan's frontmatter and report what changed; present
+each `flag` to the user — never guess on ambiguous evidence. Also clear dead
+claims: for each file in `<git-common-dir>/soloship/claims/`, if the claiming
+session's heartbeat (`sessions/<session_id>.json` mtime) is older than the
+`session_idle_min` threshold in `<git-common-dir>/soloship/config.json` (or
+the session file is gone), delete the claim file and note it.
 
 ### Agent 4: AGENTS.md Auditor
 
