@@ -34,15 +34,24 @@ export async function installCi(
     project.stack.language === "typescript" ||
     project.stack.language === "javascript"
   ) {
-    const archTest = generateArchitectureTest(project);
     const testDir = join(root, "__arch__");
-    if (!existsSync(testDir)) {
-      mkdirSync(testDir, { recursive: true });
+    const fitnessPath = join(testDir, "fitness.test.ts");
+    // Write-once: the fitness test is a customize-me template (projects add
+    // and drop assertions deliberately) — never overwrite an existing one.
+    if (existsSync(fitnessPath)) {
+      results.push(
+        "CI: __arch__/fitness.test.ts already exists (customizable), skipping"
+      );
+    } else {
+      const archTest = generateArchitectureTest(project);
+      if (!existsSync(testDir)) {
+        mkdirSync(testDir, { recursive: true });
+      }
+      writeFileSync(fitnessPath, archTest);
+      results.push(
+        "CI: __arch__/fitness.test.ts (architecture fitness functions)"
+      );
     }
-    writeFileSync(join(testDir, "fitness.test.ts"), archTest);
-    results.push(
-      "CI: __arch__/fitness.test.ts (architecture fitness functions)"
-    );
   }
 
   return results;

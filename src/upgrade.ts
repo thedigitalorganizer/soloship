@@ -8,7 +8,6 @@ import {
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { installHooks } from "./hooks.js";
 import { installClaudeRules, installCodexRules } from "./rules.js";
-import { installCi } from "./ci.js";
 import { writeVersionStamp } from "./scaffold.js";
 import { getVersion } from "./pkg.js";
 
@@ -16,7 +15,8 @@ import { getVersion } from "./pkg.js";
  * `soloship upgrade` — refresh the project's Soloship infrastructure to the
  * version of Soloship currently being executed via npx.
  *
- * Refreshes: hooks, rules, CI workflow, version stamp.
+ * Refreshes: hooks, rules, version stamp. CI scaffolding (ci.yml, fitness
+ * test) is install-once and never touched by upgrade — projects customize it.
  * Preserves: CLAUDE.md, AGENTS.md, CHANGELOG.md, docs/, and any user content.
  *
  * The hooks installer already overwrites `.claude/settings.local.json`'s hooks
@@ -78,12 +78,15 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     }
   }
 
+  // CI files (.github/workflows/ci.yml, __arch__/fitness.test.ts) are
+  // install-once scaffolding the project is expected to customize — upgrade
+  // must never rewrite or resurrect them. A force-refresh here overwrote a
+  // project's customized fitness test on 2026-07-06 (see
+  // docs/solutions/integration-issues/upgrade-overwrote-customized-fitness-test-20260707.md).
   console.log("");
-  console.log(chalk.blue("Refreshing CI..."));
-  const ciResults = await installCi(root, projectInfo);
-  for (const result of ciResults) {
-    console.log(`  ${chalk.green("+")} ${result}`);
-  }
+  console.log(
+    chalk.dim("CI scaffolding left untouched (install-once; customize freely).")
+  );
 
   console.log("");
   console.log(chalk.blue("Updating version stamp..."));

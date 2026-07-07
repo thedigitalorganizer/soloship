@@ -58,7 +58,7 @@ program
 program
   .command("upgrade")
   .description(
-    "Refresh hooks, rules, and CI to the version of Soloship being run via npx"
+    "Refresh hooks and rules to the version of Soloship being run via npx (CI scaffolding is install-once, never touched)"
   )
   .option(
     "--agent <agent>",
@@ -69,7 +69,7 @@ program
     console.log(chalk.bold("Soloship Upgrade"));
     console.log(
       chalk.dim(
-        "Refreshing project hooks, rules, and CI. Project docs are preserved."
+        "Refreshing project hooks and rules. Project docs and CI scaffolding are preserved."
       )
     );
     console.log("");

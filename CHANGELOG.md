@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed — upgrade no longer clobbers customizable CI scaffolding
+
+- `npx soloship upgrade` no longer touches `.github/workflows/ci.yml` or `__arch__/fitness.test.ts`. Both are install-once, customize-me scaffolding — a force refresh overwrote a project's customized fitness test (deliberately-removed generic assertions came back and failed). `installCi` now also treats the fitness test as write-once, so re-running `init` can't clobber it either.
+
 ## [0.13.0] — 2026-07-06
 
 ### Added — Automation registry + one watchdog + /soloship:cron
