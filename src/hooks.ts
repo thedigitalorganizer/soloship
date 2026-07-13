@@ -13,6 +13,10 @@ export const SESSION_ACTIVE_MIN = 15; // heartbeat younger than this = active
 export const SESSION_IDLE_MIN = 60; // heartbeat younger than this = idle; older = presumed dead
 export const DEPLOY_LOCK_STALE_MIN = 45; // deploy lock older than this = presumed stale (never auto-broken)
 
+// strftime format for the reply-timestamp Stop hook. Uses the machine's local
+// timezone (no TZ pin) since installed projects belong to users anywhere.
+export const REPLY_TIMESTAMP_FORMAT = "%-m/%-d/%Y %-I:%M:%S %p %Z";
+
 interface HooksConfig {
   hooks: {
     PreToolUse?: HookEntry[];
@@ -214,8 +218,19 @@ export async function installHooks(
         },
       ],
     },
+    {
+      matcher: "",
+      hooks: [
+        {
+          type: "command",
+          command: buildReplyTimestampScript(),
+          timeout: 5000,
+        },
+      ],
+    },
   ];
   results.push("Stop: plan validation + workflow navigator + handoff reminder");
+  results.push("Stop: reply timestamp (stamps each reply with local date/time so session logs can reconstruct when work actually happened)");
 
   // SessionStart: Checkpoint commit + Soloship update check
   hooks.SessionStart = [
@@ -330,6 +345,14 @@ if echo "$COMMAND" | grep -qE "git\\s+commit"; then
 fi
 exit 0
 '`;
+}
+
+function buildReplyTimestampScript(): string {
+  // Emits {"systemMessage": "<local date/time>"} after every assistant reply.
+  // Session-log tooling reads these stamps to reconstruct when work actually
+  // happened — a session resumed days later would otherwise be dated by when
+  // it was logged, not when it was done.
+  return `date "+{\\"systemMessage\\": \\"${REPLY_TIMESTAMP_FORMAT}\\"}"`;
 }
 
 function buildStopScript(project: ProjectInfo): string {

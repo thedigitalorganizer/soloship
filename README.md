@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (15 hook protections, 12 always-on rules, and CI checks, no judgment calls required), **45 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (16 hook protections, 12 always-on rules, and CI checks, no judgment calls required), **45 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -178,7 +178,7 @@ That became Soloship.
 
 Three layers, from most mechanical to most guided:
 
-**Hooks** fire automatically in Claude Code sessions. They can't be rationalized away. Dangerous command blocking, security scanning on commits, auto-lint, CHANGELOG enforcement, plan validation, deploy discipline, the billing and recurrence gates, session presence for parallel agents, and checkpoint commits. If the agent forgets, the hook remembers. Codex hook parity is intentionally deferred until Codex hook payloads are verified.
+**Hooks** fire automatically in Claude Code sessions. They can't be rationalized away. Dangerous command blocking, security scanning on commits, auto-lint, CHANGELOG enforcement, plan validation, deploy discipline, the billing and recurrence gates, session presence for parallel agents, checkpoint commits, and a reply timestamp on every response so session logs can reconstruct when work actually happened. If the agent forgets, the hook remembers. Codex hook parity is intentionally deferred until Codex hook payloads are verified.
 
 **Rules** are injected into every agent session as always-on context. Solution search before planning, plan materialization after plan mode, plan rationale and claim-verification requirements, plan lifecycle enforcement, a QA plan in every plan, the billing-confirmation and recurrence gates, parameterize-constants, deploy-from-main-only, the automation registry, and a **browser-QA gate that blocks "done" until the change has been exercised in a real browser** (with a test account where a flow needs login). The agent can't not see them, even if a skill doesn't reference them.
 
@@ -205,7 +205,7 @@ All 45 are invoked the same way: `/soloship:<name>`. Source attribution lives in
 When you run `/soloship:bootstrap` (or `/soloship:audit` then `/soloship:bootstrap` on an existing project), it detects your language, framework, and package manager, then installs:
 
 - **Folder scaffolding**: `docs/plans/`, `docs/solutions/`, `docs/audit/`, `docs/automations/` (the automation registry), `AGENTS.md` stubs
-- **15 Claude Code hook protections** across four events. PreToolUse: dangerous command blocking, phone-a-friend warnings, Semgrep security scan on commits, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate. PostToolUse: auto-lint, CHANGELOG check, recurrence audit, session heartbeat. Stop: plan validation, workflow navigator, and handoff reminder. SessionStart: checkpoint commit, update check, session presence.
+- **16 Claude Code hook protections** across four events. PreToolUse: dangerous command blocking, phone-a-friend warnings, Semgrep security scan on commits, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate. PostToolUse: auto-lint, CHANGELOG check, recurrence audit, session heartbeat. Stop: plan validation, workflow navigator, handoff reminder, and a reply timestamp (so session logs can reconstruct when work actually happened). SessionStart: checkpoint commit, update check, session presence.
 - **12 workflow rules**: solution search, plan materialization, plan rationale, plan lifecycle, claim verification, QA plan in plans, billing confirmation, recurrence, parameterized constants, browser QA gate, deploy-from-main-only, automation registry
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs**: `CLAUDE.md`, `AGENTS.md`, `CHANGELOG`, `SOLUTION_GUIDE`, sized to your stack

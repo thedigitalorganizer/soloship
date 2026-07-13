@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Added — reply-timestamp Stop hook (16th hook protection)
+
+- New Stop hook stamps every assistant reply with the local date and time (`{"systemMessage": "7/12/2026 9:52:50 PM CDT"}` style). Session-log tooling can read these stamps to reconstruct when work actually happened — a session resumed days later would otherwise be dated by when it was logged, not when it was done. Uses the machine's local timezone; format lives in the exported `REPLY_TIMESTAMP_FORMAT` constant.
+
 ### Fixed — upgrade no longer clobbers customizable CI scaffolding
 
 - `npx soloship upgrade` no longer touches `.github/workflows/ci.yml` or `__arch__/fitness.test.ts`. Both are install-once, customize-me scaffolding — a force refresh overwrote a project's customized fitness test (deliberately-removed generic assertions came back and failed). `installCi` now also treats the fitness test as write-once, so re-running `init` can't clobber it either.
