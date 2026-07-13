@@ -41,6 +41,7 @@ Registry entry shape (the Soloship standard):
     {
       "name": "nightly-sync",
       "kind": "cloud-cron | local-launchd | local-crontab | webhook | ci-schedule",
+      "description": "one plain-English sentence: what it does and why it matters",
       "runsOn": "where it executes",
       "checkin": "sync_log | heartbeat",
       "maxSilenceMinutes": 360,
@@ -49,6 +50,9 @@ Registry entry shape (the Soloship standard):
   ]
 }
 ```
+
+`description` is optional but recommended — it's what humans see wherever
+automations are listed (status endpoints, alert emails, dashboards).
 
 Threshold rule of thumb: `maxSilenceMinutes ≈ 3× expected cadence`, floor 60;
 ~30h for daily jobs on a machine that sleeps; webhooks get expected-activity
@@ -105,6 +109,9 @@ git grep -ln "webhook" -- "src/**" 2>/dev/null | head
 | automation | kind | where | last check-in | state | threshold |
 ```
 
+When entries carry a `description`, include it as a column (or as a short
+line under each row) — it's the plain-English answer to "what is this job?".
+
 Then the **drift section** — the part that actually protects the user:
 - **Unregistered:** found live but not in the registry → name each one and
   offer to register it (this is how the audit gap gets closed incrementally).
@@ -144,7 +151,9 @@ mandatory — it's what makes silent-failure-by-construction impossible:
 
 1. **Register first.** Add the entry to `docs/automations/registry.json`
    (name, kind, runsOn, checkin, maxSilenceMinutes via the 3× rule,
-   troubleshoot pointer).
+   troubleshoot pointer, and a `description` — one plain-English sentence
+   saying what it does and why it matters; writing it is part of
+   registering, not a follow-up).
 2. **Deploy the registry** (if the watchdog imports it at build time, the
    check-in endpoint rejects unregistered names until this ships — that
    rejection is the contract enforcing itself).

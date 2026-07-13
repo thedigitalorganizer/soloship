@@ -598,7 +598,9 @@ The registry is \`docs/automations/registry.json\` — the single source of
 truth for every automation this project owns (human view:
 \`docs/automations/README.md\`). Each entry: name, kind, where it runs,
 check-in mechanism, \`maxSilenceMinutes\` (~3x expected cadence, floor 60),
-and a troubleshoot pointer.
+a troubleshoot pointer, and a \`description\` (optional but recommended —
+one plain-English sentence: what it does and why it matters, surfaced
+wherever humans look: status endpoints, alert emails, dashboards).
 
 ## Why
 

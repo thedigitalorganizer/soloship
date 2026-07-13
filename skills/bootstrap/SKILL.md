@@ -136,7 +136,8 @@ live automations is a false "all clear":
 - If an audit ran and its Automation Surface Inventory (Agent 11) found
   automations, register each one: name, kind, where it runs, check-in
   mechanism, `maxSilenceMinutes` (~3× cadence, floor 60), troubleshoot
-  pointer.
+  pointer, and a `description` (optional but recommended — one plain-English
+  sentence: what it does and why it matters).
 - No audit? Do the quick discovery pass yourself: cron triggers in
   wrangler/vercel/CI configs, webhook receiver routes, and (when the project
   depends on the local machine) `ls ~/Library/LaunchAgents` / `crontab -l`.
