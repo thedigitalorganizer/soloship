@@ -218,7 +218,7 @@ Links to PRs, issues, or other solution docs.
 
 export function generateAutomationRegistry(): string {
   return `{
-  "$comment": "Soloship automation registry — the single source of truth for every automation this project owns (cron jobs, scheduled workers, local launchd/crontab jobs, webhook receivers). Manage with /soloship:cron. Each entry: name, kind (cloud-cron|local-launchd|local-crontab|webhook|ci-schedule), runsOn, checkin (sync_log|heartbeat), maxSilenceMinutes (~3x expected cadence, floor 60; ~1800 for daily jobs on a machine that sleeps; long activity windows for webhooks), troubleshoot (file paths / docs). statusEndpoint: the watchdog status API, when one exists.",
+  "$comment": "Soloship automation registry — the single source of truth for every automation this project owns (cron jobs, scheduled workers, local launchd/crontab jobs, webhook receivers). Manage with /soloship:cron. Each entry: name, kind (cloud-cron|local-launchd|local-crontab|webhook|ci-schedule), description (optional but recommended — one plain-English sentence: what it does and why it matters; surfaced wherever humans look at automations, e.g. status endpoints, alert emails, dashboards), runsOn, checkin (sync_log|heartbeat), maxSilenceMinutes (~3x expected cadence, floor 60; ~1800 for daily jobs on a machine that sleeps; long activity windows for webhooks), troubleshoot (file paths / docs). statusEndpoint: the watchdog status API, when one exists.",
   "statusEndpoint": null,
   "automations": []
 }
@@ -243,6 +243,9 @@ launchd/crontab jobs, and webhook receivers. Manage it with \`/soloship:cron\`.
   registry instead. Every automation checks in on SUCCESS (dead-man's
   switch); the watchdog alerts on the absence of good news, because dead
   jobs throw no errors.
+- **Give each entry a \`description\`** (optional but recommended): one
+  plain-English sentence — what it does and why it matters. It's what
+  humans see on status endpoints, alert emails, and dashboards.
 
 ## Threshold rule of thumb
 
