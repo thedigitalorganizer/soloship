@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const SEMVER_RE =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const REQUIRED_RULE_COUNT = 12;
+const REQUIRED_RULE_COUNT = 13;
 const REQUIRED_SKILL_COUNT = 45;
 const REQUIRED_AGENT_PROMPT_COUNT = 5;
 
@@ -64,6 +64,18 @@ function countAgentPrompts() {
   return readdirSync(promptsRoot, { withFileTypes: true }).filter(
     (entry) => entry.isFile() && entry.name.endsWith(".md")
   ).length;
+}
+
+// Count the rules registered in src/rules.ts — the entries of the RULES map,
+// which is what installRules() actually writes into a project's .claude/rules/.
+// Reading the source (rather than a compiled import) keeps this runnable
+// pre-build, the same as every other check here.
+function countRegisteredRules() {
+  const rulesSource = join(repoRoot, "src", "rules.ts");
+  if (!existsSync(rulesSource)) return 0;
+  const source = readFileSync(rulesSource, "utf-8");
+  const matches = source.match(/^\s+"[a-z0-9-]+\.md":\s*RULE_/gm);
+  return matches ? matches.length : 0;
 }
 
 function validateCodexManifest(codexPlugin, packageVersion) {
@@ -197,6 +209,17 @@ const agentPromptCount = countAgentPrompts();
 if (agentPromptCount !== REQUIRED_AGENT_PROMPT_COUNT) {
   errors.push(
     `expected ${REQUIRED_AGENT_PROMPT_COUNT} skills/references/agents prompts, found ${agentPromptCount}`
+  );
+}
+
+// REQUIRED_RULE_COUNT used to be declared and printed but never asserted — the
+// validator reported "12 rules expected" while src/rules.ts registered 13, and
+// passed. A count that is displayed but not checked is worse than no check: it
+// reads as verification. Count the rules actually registered in the RULES map.
+const ruleCount = countRegisteredRules();
+if (ruleCount !== REQUIRED_RULE_COUNT) {
+  errors.push(
+    `expected ${REQUIRED_RULE_COUNT} rules registered in src/rules.ts, found ${ruleCount}`
   );
 }
 
