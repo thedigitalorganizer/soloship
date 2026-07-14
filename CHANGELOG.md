@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.15.0] — 2026-07-14
+
 ### Added — plan truth gates + document artifact lifecycle (3 new hooks, 1 new rule)
 
 Plan status was the only Soloship invariant with **no mechanical floor**. `/plan`
