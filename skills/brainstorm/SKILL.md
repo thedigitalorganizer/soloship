@@ -39,7 +39,7 @@ of the feature is in question.
 Apply the feature-exploration methodology below. It runs a full
 collaborative dialogue that covers requirements clarity, repository research,
 approach exploration, and YAGNI trade-offs, and writes the output to
-`docs/brainstorms/`.
+`docs/drafts/`.
 
 **If unclear:** Default to feature brainstorming. `office-hours` is reserved for
 genuine "should this exist" moments; most sessions are about shaping a feature
@@ -81,9 +81,9 @@ non-trivial:
 The user can always run `/grill-me` themselves; the nudge just makes it
 discoverable at the right moment.
 
-The CE brainstorm workflow writes its own artifact to `docs/brainstorms/`. If
+The CE brainstorm workflow writes its own artifact to `docs/drafts/`. If
 you ran `office-hours` instead and no file was produced, write the brainstorm
-output to `docs/plans/YYYY-MM-DD-<topic>-design.md` with this frontmatter:
+output to `docs/drafts/YYYY-MM-DD-<topic>-design.md` with this frontmatter:
 ```
 ---
 date: YYYY-MM-DD
@@ -98,8 +98,8 @@ ttl_days: 14
 The brainstorm is not complete until ALL of these are true:
 
 - [ ] Question type identified (demand vs feature) and routed correctly
-- [ ] Brainstorm output exists on disk (CE writes to `docs/brainstorms/`;
-      office-hours runs write to `docs/plans/YYYY-MM-DD-<topic>-design.md`)
+- [ ] Brainstorm output exists on disk (CE writes to `docs/drafts/`;
+      office-hours runs write to `docs/drafts/YYYY-MM-DD-<topic>-design.md`)
 - [ ] Design-first nudge presented (not skipped, not buried)
 
 ---
@@ -177,11 +177,11 @@ Use **AskUserQuestion tool** to ask which approach the user prefers.
 
 ### Phase 3: Capture the Design
 
-Write a brainstorm document to `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`.
+Write a brainstorm document to `docs/drafts/YYYY-MM-DD-<topic>-brainstorm.md`.
 
 **Document structure:** See the `brainstorming` skill for the template format. Key sections: What We're Building, Why This Approach, Key Decisions, Open Questions.
 
-Ensure `docs/brainstorms/` directory exists before writing.
+Ensure `docs/drafts/` directory exists before writing.
 
 **IMPORTANT:** Before proceeding to Phase 4, check if there are any Open Questions listed in the brainstorm document. If there are open questions, YOU MUST ask the user about each one using AskUserQuestion before offering to proceed to planning. Move resolved questions to a "Resolved Questions" section.
 
@@ -215,7 +215,7 @@ When complete, display:
 ```
 Brainstorm complete!
 
-Document: docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md
+Document: docs/drafts/YYYY-MM-DD-<topic>-brainstorm.md
 
 Key decisions:
 - [Decision 1]
@@ -369,7 +369,7 @@ topic: <kebab-case-topic>
 → `/soloship:plan` for implementation details
 ```
 
-**Output Location:** `docs/brainstorms/YYYY-MM-DD-<topic>-brainstorm.md`
+**Output Location:** `docs/drafts/YYYY-MM-DD-<topic>-brainstorm.md`
 
 ### Phase 4: Handoff
 
@@ -463,7 +463,7 @@ Start by understanding the current project context, then ask questions one at a 
 ## After the Design
 
 **Documentation:**
-- Write the validated design to `docs/plans/YYYY-MM-DD-<topic>-design.md`
+- Write the validated design to `docs/drafts/YYYY-MM-DD-<topic>-design.md`
 - Use elements-of-style:writing-clearly-and-concisely skill if available
 - Commit the design document to git
 

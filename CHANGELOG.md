@@ -2,6 +2,66 @@
 
 ## [Unreleased]
 
+### Added — plan truth gates + document artifact lifecycle (3 new hooks, 1 new rule)
+
+Plan status was the only Soloship invariant with **no mechanical floor**. `/plan`
+wrote `status: planned`, `/implement` and `/finish` were *told* to flip it to
+`in-progress` and `done` — and nothing verified that they did. In the wild this
+produced plans that claimed `Not started` for work that was live in production.
+That is not cosmetic: agents read plans and act on them, and a plan that lies
+about itself can send the next agent to rebuild a shipped feature.
+
+The fix checks the plan's claim against **git evidence** at the two moments
+evidence exists — the first code commit and the merge — instead of trusting a
+self-report at the tail of a long skill, where context runs out and the write
+silently never happens.
+
+- **plan-truth gate** (PreToolUse/Bash) — blocks a **code** commit on a branch
+  whose plan still says `planned`. Docs-only commits pass: writing the plan is
+  the moment `planned` is honest.
+- **plan-merge gate** (PreToolUse/Bash) — blocks merging a branch whose plan is
+  still `planned`/`in-progress`. After the merge there is no natural moment left
+  that would prompt the flip.
+- **plan-namespace gate** (PreToolUse/Edit|Write) — `docs/plans/` holds live
+  plans only. A file without valid status frontmatter is blocked, and the message
+  names the folder it actually belongs in.
+- **Stop-hook backstop** — surfaces any plan whose open status contradicts an
+  already-merged branch, plus any statusless file sitting in `docs/plans/`.
+  Catches work done conversationally, with no branch, outside any skill.
+- Escape hatch `.ai/.plan-status-ack`, mirroring the billing and recurrence
+  gates. The anti-gaming clause applies: silence the gate only with a real,
+  written reason. The default correct response is to fix the status.
+
+**New document taxonomy**, each folder with one artifact type and one lifecycle.
+The exploration skills (`grill-me`, `brainstorm`, `spec`) were writing their
+outputs *into* `docs/plans/` — they were the source of the pollution, and now
+write to `docs/drafts/`:
+
+- `docs/drafts/` — drafts, design notes, grill/brainstorm output. **Deleted when
+  promoted into a plan** (the plan records `promoted_from:`).
+- `docs/handoffs/` — session handoffs. **Deleted when consumed** (the plan records
+  `handoff:`). A handoff that outlives its execution describes a world that no
+  longer exists.
+- `docs/reports/` — point-in-time snapshots. Historical, never actionable, never
+  swept.
+- Decision logs go to the existing `docs/architecture/decisions/`.
+
+Each folder ships a `README.md` stating its contract, so an agent that lands there
+learns the rule without reading a skill. `/cleanup` now sweeps misfiled and
+orphaned artifacts; `/implement` and `/finish` perform the self-cleaning deletes.
+New auto-loaded rule: `plan-artifact-lifecycle.md`.
+
+### Fixed — Stop and phone-a-friend hooks were silently swallowing every message
+
+Both hooks JSON-escaped their output with a hand-rolled
+`sed "s/\"/\\\\\"/g"` that, after template-literal and shell-quote expansion,
+rendered as `s//\\/g` — an **empty regex**. sed exited with `first RE may not be
+empty` and the hook emitted nothing at all. Every message these two hooks ever
+tried to surface was lost. Both now delegate to a real JSON encoder
+(`emitSystemMessage`) instead of hand-escaping in shell. Found while testing the
+new plan-truth backstop, which was the first message reliably non-empty enough to
+notice the failure.
+
 ### Added — reply-timestamp Stop hook (16th hook protection)
 
 - New Stop hook stamps every assistant reply with the local date and time (`{"systemMessage": "7/12/2026 9:52:50 PM CDT"}` style). Session-log tooling can read these stamps to reconstruct when work actually happened — a session resumed days later would otherwise be dated by when it was logged, not when it was done. Uses the machine's local timezone; format lives in the exported `REPLY_TIMESTAMP_FORMAT` constant.

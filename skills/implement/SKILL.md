@@ -145,6 +145,20 @@ fi
 "<done>/<total>"` and `updated:` — this is what makes the status board
 trustworthy without git archaeology.
 
+**The status flip is not optional and it is not deferred.** Write
+`status: in-progress` NOW, at claim time — before any code is written. The
+`plan-truth` gate blocks your first code commit until you do, because a plan that
+says `planned` while its code is being committed is a plan that is actively
+lying. Flip it to `done` at the merge, not "at the end": the end of a long
+session is exactly where context runs out and the write silently never happens.
+That is how four Command Center plans came to claim "Not started" for features
+that were live in production.
+
+**If a handoff drove this work** (`docs/handoffs/<file>`), record
+`handoff: docs/handoffs/<file>` in the plan frontmatter now. You will delete the
+handoff when the work completes — a handoff is consumed exactly once, and one
+that outlives its execution describes a world that no longer exists.
+
 ## Step 2: Route to Execution
 
 Apply the execution methodology below with the plan file path as input.
@@ -605,7 +619,14 @@ This command takes a work document (plan, specification, or todo file) and execu
    )"
    ```
 
-4. **Update Plan Status (Soloship unified vocabulary)**
+4. **Update Plan Status — DO THIS BEFORE THE MERGE, NOT AFTER**
+
+   > This step used to live at the very end of this skill, and that position is
+   > precisely why it did not happen. By the time a long implementation reaches
+   > its final step, context is exhausted and the write gets dropped — leaving a
+   > plan that claims the work was never done. **Write the status as part of the
+   > merge, not as a postscript to it.** The `plan-merge` gate will block the
+   > merge until you do.
 
    Update the plan's YAML frontmatter to the completed state and release the
    claim taken in Step 1.8:
@@ -620,6 +641,17 @@ This command takes a work document (plan, specification, or todo file) and execu
    COORD="$(cd "$(git rev-parse --git-common-dir)" && pwd -P)/soloship"
    rm -f "$COORD/claims/<plan-filename>.json"
    ```
+
+   **Then clean up the artifacts this work consumed** (the self-cleaning
+   contracts from the `plan-artifact-lifecycle` rule):
+   ```bash
+   # A handoff is consumed exactly once — delete the one that drove this work.
+   git rm -q docs/handoffs/<file>   # if the plan's frontmatter names a `handoff:`
+   # A promoted draft is superseded by its plan — delete it.
+   git rm -q docs/drafts/<file>     # if the plan's frontmatter names a `promoted_from:`
+   ```
+   Stage these in the same commit as the status flip. Leaving them behind means
+   the next agent has to guess which document is current.
 
 5. **Notify User**
    - Summarize what was completed

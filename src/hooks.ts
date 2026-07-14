@@ -17,6 +17,54 @@ export const DEPLOY_LOCK_STALE_MIN = 45; // deploy lock older than this = presum
 // timezone (no TZ pin) since installed projects belong to users anywhere.
 export const REPLY_TIMESTAMP_FORMAT = "%-m/%-d/%Y %-I:%M:%S %p %Z";
 
+// --- Plan truth + artifact lifecycle -------------------------------------
+//
+// Plan status was the only Soloship invariant with no mechanical floor. /plan
+// writes `status: planned`; /implement is told to flip it to `in-progress` and
+// then `done`; /finish also writes `done`. Nothing verified any of it — so a
+// plan whose work shipped could sit at "planned" forever. That is not a
+// cosmetic defect: agents READ plans and act on them, and a plan that claims
+// "not started" for live work invites an agent to build it a second time.
+//
+// The fix is to check the plan's claim against GIT EVIDENCE at the two moments
+// evidence exists — the first code commit, and the merge — instead of trusting
+// the agent's self-report at the tail of a long skill (the collapse zone, where
+// context runs out and the write silently never happens).
+export const PLANS_DIR = "docs/plans";
+export const DRAFTS_DIR = "docs/drafts";
+export const HANDOFFS_DIR = "docs/handoffs";
+export const REPORTS_DIR = "docs/reports";
+export const DECISIONS_DIR = "docs/architecture/decisions";
+
+// Canonical plan status vocabulary (see the plan skill's Artifact Contract).
+// Legacy values still in the wild: "Not started" → planned, "active" →
+// in-progress, "completed" → done.
+// Must stay in sync with the Unified Status Vocabulary in skills/plan/SKILL.md.
+// `backlog` is easy to forget and its omission is a live bug: the namespace gate
+// would reject a legitimate backlog stub for having an "invalid" status.
+export const PLAN_STATUSES = [
+  "backlog",
+  "planned",
+  "in-progress",
+  "blocked",
+  "done",
+  "abandoned",
+  "superseded",
+] as const;
+
+// Statuses that mean "this work has not landed yet". A plan in one of these
+// states that has merged code behind it is, by definition, lying.
+export const PLAN_STATUSES_OPEN = ["planned", "in-progress"] as const;
+
+// Escape hatch, mirroring .ai/.billing-ack and .ai/.recurrence-ack. A gate with
+// no hatch gets disabled wholesale the first time it is wrong; a gate with a
+// loud, logged hatch survives. The anti-gaming clause of the recurrence-gate
+// rule applies — creating this without a real reason defeats the instrument.
+export const PLAN_STATUS_ACK = ".ai/.plan-status-ack";
+
+const PLAN_STATUS_RE = PLAN_STATUSES.join("|");
+const PLAN_STATUS_OPEN_RE = PLAN_STATUSES_OPEN.join("|");
+
 interface HooksConfig {
   hooks: {
     PreToolUse?: HookEntry[];
@@ -135,8 +183,45 @@ export async function installHooks(
         },
       ],
     },
+    // Plan-truth gate: block a CODE commit whose plan still says "planned".
+    {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildPlanTruthGateScript(),
+          timeout: 5000,
+        },
+      ],
+    },
+    // Plan-merge gate: block merging a branch whose plan is still open.
+    {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildPlanMergeGateScript(),
+          timeout: 5000,
+        },
+      ],
+    },
+    // Plan-namespace gate: docs/plans/ holds plans only.
+    {
+      matcher: "Edit|Write|MultiEdit",
+      hooks: [
+        {
+          type: "command",
+          command: buildPlanNamespaceGateScript(),
+          timeout: 5000,
+        },
+      ],
+    },
   ];
+
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
+  results.push("PreToolUse: plan-truth gate (blocks code commits whose plan still says 'planned')");
+  results.push("PreToolUse: plan-merge gate (blocks merging a branch whose plan is still open)");
+  results.push("PreToolUse: plan-namespace gate (docs/plans/ holds plans only; routes drafts/handoffs/reports)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
@@ -347,6 +432,216 @@ exit 0
 '`;
 }
 
+// Emit {"systemMessage": "<contents of $shellVar>"} as valid JSON.
+//
+// This replaces a hand-rolled `sed "s/\"/\\\\\"/g"` that appeared at two sites
+// and was BROKEN at both: after template-literal and shell-quote expansion it
+// rendered as `s//\\/g` — an empty regex — so sed exited with "first RE may not
+// be empty" and the hook emitted nothing at all. Both hooks (Stop, phone-a-
+// friend) have therefore been silently swallowing every message they ever had
+// to say, and it only surfaced now because the plan-truth backstop is the first
+// message reliably non-empty enough to notice. Found 2026-07-14.
+//
+// Hand-escaping JSON in shell is the bug. Delegate to a real JSON encoder:
+// node is definitionally present (Soloship installs via npx). The tr fallback
+// only strips what would break the JSON, so a degraded message still lands.
+function emitSystemMessage(shellVar: string, expandEscapes = false): string {
+  const producer = expandEscapes
+    ? `printf "%b" "$${shellVar}"`
+    : `printf "%s" "$${shellVar}"`;
+  return `MSG_JSON=$(${producer})
+  if command -v node >/dev/null 2>&1; then
+    node -e "process.stdout.write(JSON.stringify({systemMessage: process.argv[1]}))" "$MSG_JSON"
+  else
+    SAFE=$(printf "%s" "$MSG_JSON" | tr -d "\\\\\\\\\\"" | tr "\\n" " ")
+    echo "{\\"systemMessage\\": \\"$SAFE\\"}"
+  fi`;
+}
+
+function buildPlanTruthGateScript(): string {
+  // Gate A — plan-truth gate (PreToolUse/Bash). BLOCK a code commit on a branch
+  // whose plan still says `planned`. That combination is a lie in progress: the
+  // work has started, the plan says it hasn't.
+  //
+  // Discriminator that avoids the obvious false positive: a commit that stages
+  // ONLY docs/ is the commit that WRITES the plan — at that moment `planned` is
+  // true and correct. We block only when the commit stages code, i.e. when the
+  // plan's claim and the repo's reality have actually diverged.
+  //
+  // Plan resolution is deliberately conservative: claim file first (exact), then
+  // branch-slug match. No plan resolved => exit 0. This gate's job is to stop
+  // plans from lying, not to force every commit to have a plan.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+echo "$TI" | grep -qE "git[[:space:]]+commit" || exit 0
+[ -f ${PLAN_STATUS_ACK} ] && exit 0
+[ -d ${PLANS_DIR} ] || exit 0
+
+# Only code commits can contradict a plan. A docs-only commit IS the plan being
+# written or updated — "planned" is honest there.
+STAGED=$(git diff --cached --name-only 2>/dev/null)
+[ -z "$STAGED" ] && exit 0
+echo "$STAGED" | grep -qv "^docs/" || exit 0
+
+BRANCH=$(git branch --show-current 2>/dev/null)
+[ -z "$BRANCH" ] && exit 0
+
+# Resolve the plan: claim file for this branch first (exact), else branch-slug
+# appearing in a plan filename.
+PLAN=""
+COORD="$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)/soloship"
+if [ -d "$COORD/claims" ]; then
+  for c in "$COORD/claims/"*.json; do
+    [ -f "$c" ] || continue
+    if grep -q "\\"branch\\":\\"$BRANCH\\"" "$c" 2>/dev/null; then
+      CAND="${PLANS_DIR}/$(basename "$c" .json)"
+      [ -f "$CAND" ] && PLAN="$CAND" && break
+    fi
+  done
+fi
+if [ -z "$PLAN" ]; then
+  SLUG=$(echo "$BRANCH" | sed -E "s#^(feat|fix|chore|refactor)/##")
+  for p in ${PLANS_DIR}/*.md; do
+    [ -f "$p" ] || continue
+    case "$(basename "$p")" in README.md) continue;; esac
+    case "$(basename "$p")" in *"$SLUG"*) PLAN="$p"; break;; esac
+  done
+fi
+[ -z "$PLAN" ] && exit 0
+
+STATUS=$(grep -m1 -E "^status:" "$PLAN" 2>/dev/null | sed -E "s/^status:[[:space:]]*//" | tr -d "\\"" | tr "A-Z" "a-z")
+
+# Legacy vocabulary maps onto the canonical one.
+case "$STATUS" in
+  "not started"|"not-started") STATUS="planned" ;;
+esac
+
+if [ "$STATUS" = "planned" ]; then
+  echo "BLOCKED by plan-truth-gate: you are committing CODE on branch \\"$BRANCH\\", but its plan ($PLAN) still says \\"status: planned\\" — i.e. the plan claims this work has not started. That is exactly how plans come to lie about themselves: the work ships, the status never moves, and the next agent reads \\"not started\\" and builds it a second time.
+
+FIX (5 seconds): set the plan frontmatter to
+  status: in-progress
+  claimed_by: <this session>
+  branch: $BRANCH
+  updated: $(date +%Y-%m-%d)
+then re-run the commit. Flip it to \\"done\\" when the work merges.
+
+Escape hatch (requires a real reason): mkdir -p .ai && echo \\"why a lying plan is correct here\\" > ${PLAN_STATUS_ACK}" >&2
+  exit 2
+fi
+exit 0
+'`;
+}
+
+function buildPlanNamespaceGateScript(): string {
+  // Gate B — namespace gate (PreToolUse/Edit|Write). ${PLANS_DIR}/ holds plans
+  // and nothing else. Before this gate it was an open directory: in one real
+  // project, 9 of 17 files in it were drafts, grill outputs, handoffs, decision
+  // logs, and a morning report — none carrying status frontmatter, all
+  // indistinguishable from live plans at a glance.
+  //
+  // Blocking without routing would be hostile, so the block message names the
+  // folder the file actually belongs in.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+[ -f ${PLAN_STATUS_ACK} ] && exit 0
+
+FP=$(echo "$TI" | grep -oE "\\"file_path\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$FP" ] && exit 0
+
+# Only .md directly under the plans dir. Archive and the folder README are exempt.
+case "$FP" in
+  *${PLANS_DIR}/*.md) ;;
+  *) exit 0 ;;
+esac
+case "$FP" in
+  *${PLANS_DIR}/archive/*) exit 0 ;;
+  */README.md) exit 0 ;;
+esac
+
+# A canonical status anywhere in the payload counts as the file declaring one.
+TI_HAS_STATUS=0
+echo "$TI" | grep -qE "status:[[:space:]]*\\"?(${PLAN_STATUS_RE})" && TI_HAS_STATUS=1
+
+DISK_HAS_STATUS=0
+[ -f "$FP" ] && grep -qE "^status:[[:space:]]*\\"?(${PLAN_STATUS_RE})" "$FP" 2>/dev/null && DISK_HAS_STATUS=1
+
+# Editing a plan that already declares a valid status: fine.
+[ "$DISK_HAS_STATUS" = "1" ] && exit 0
+# Writing/adding a valid status (including the edit that FIXES a statusless plan): fine.
+[ "$TI_HAS_STATUS" = "1" ] && exit 0
+
+echo "BLOCKED by plan-namespace-gate: \\"$FP\\" has no plan status frontmatter, and ${PLANS_DIR}/ holds live plans ONLY.
+
+If this IS a plan, give it frontmatter:
+  ---
+  status: planned          # or: ${PLAN_STATUS_RE}
+  date: $(date +%Y-%m-%d)
+  ---
+
+If it is NOT a plan, it belongs somewhere else:
+  draft / design note / grill / brainstorm  ->  ${DRAFTS_DIR}/     (deleted when promoted to a plan)
+  session handoff                           ->  ${HANDOFFS_DIR}/   (deleted when consumed)
+  point-in-time report or snapshot          ->  ${REPORTS_DIR}/    (historical, never actionable)
+  decision log / ADR                        ->  ${DECISIONS_DIR}/
+
+Why: agents read ${PLANS_DIR}/ to decide what work is outstanding. Anything in there without a status is invisible to the plan-truth gate and indistinguishable from a live plan.
+
+Escape hatch (requires a real reason): mkdir -p .ai && echo \\"reason\\" > ${PLAN_STATUS_ACK}" >&2
+exit 2
+'`;
+}
+
+function buildPlanMergeGateScript(): string {
+  // Gate C — merge gate (PreToolUse/Bash). The merge is the moment the work
+  // becomes real. A plan still marked in-progress (or planned) whose branch is
+  // being merged is about to become a permanently lying plan — after the merge
+  // there is no natural moment left that would prompt the flip to `done`.
+  //
+  // Rather than parse the merge command's branch argument (fragile: flags, -m
+  // messages, heredocs), match in the other direction: for each open plan that
+  // records a `branch:`, check whether the command mentions that branch.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+echo "$TI" | grep -qE "git[[:space:]]+merge" || exit 0
+[ -f ${PLAN_STATUS_ACK} ] && exit 0
+[ -d ${PLANS_DIR} ] || exit 0
+
+for p in ${PLANS_DIR}/*.md; do
+  [ -f "$p" ] || continue
+  case "$(basename "$p")" in README.md) continue;; esac
+
+  STATUS=$(grep -m1 -E "^status:" "$p" 2>/dev/null | sed -E "s/^status:[[:space:]]*//" | tr -d "\\"" | tr "A-Z" "a-z")
+  case "$STATUS" in
+    "not started"|"not-started") STATUS="planned" ;;
+    active) STATUS="in-progress" ;;
+  esac
+  echo "$STATUS" | grep -qE "^(${PLAN_STATUS_OPEN_RE})$" || continue
+
+  PBRANCH=$(grep -m1 -E "^branch:" "$p" 2>/dev/null | sed -E "s/^branch:[[:space:]]*//" | tr -d "\\"" | tr -d "[:space:]")
+  [ -z "$PBRANCH" ] && continue
+  echo "$TI" | grep -qF "$PBRANCH" || continue
+
+  echo "BLOCKED by plan-merge-gate: you are merging branch \\"$PBRANCH\\", but its plan ($p) still says \\"status: $STATUS\\". After this merge the work is live — and if the status never moves, the plan will claim forever that this work was never finished. That is the exact defect this gate exists to prevent.
+
+FIX: set the plan frontmatter to
+  status: done
+  progress: \\"<total>/<total>\\"
+  updated: $(date +%Y-%m-%d)
+remove the claimed_by line, then re-run the merge.
+
+If the work is genuinely NOT complete and you are merging partial work on purpose, set an honest status instead (blocked / superseded) and say so in the plan.
+
+Escape hatch (requires a real reason): mkdir -p .ai && echo \\"reason\\" > ${PLAN_STATUS_ACK}" >&2
+  exit 2
+done
+exit 0
+'`;
+}
+
 function buildReplyTimestampScript(): string {
   // Emits {"systemMessage": "<local date/time>"} after every assistant reply.
   // Session-log tooling reads these stamps to reconstruct when work actually
@@ -360,7 +655,7 @@ function buildStopScript(project: ProjectInfo): string {
 MESSAGES=""
 
 # Plan validation: check for Key Decisions and Why lines
-for plan in docs/plans/$(date +%Y)*.md; do
+for plan in ${PLANS_DIR}/$(date +%Y)*.md; do
   if [ -f "$plan" ]; then
     if ! grep -q "Key Decisions" "$plan" 2>/dev/null; then
       MESSAGES="$MESSAGES Plan file $plan is missing a Key Decisions section."
@@ -368,6 +663,47 @@ for plan in docs/plans/$(date +%Y)*.md; do
     fi
   fi
 done
+
+# Gate D — plan-truth backstop. Gates A and C catch commits and merges; this
+# catches everything that never went through either (work done conversationally,
+# on the default branch, or outside any skill). It is the evidence-based check
+# /soloship:cleanup already performs — promoted from manual-and-weeks-late to
+# automatic-and-now: a plan claiming open status whose branch is already merged
+# into the default branch is, provably, lying.
+DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed "s@^refs/remotes/origin/@@")
+[ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=main
+if [ -d ${PLANS_DIR} ] && [ ! -f ${PLAN_STATUS_ACK} ]; then
+  LIARS=""
+  ORPHANS=""
+  for plan in ${PLANS_DIR}/*.md; do
+    [ -f "$plan" ] || continue
+    case "$(basename "$plan")" in README.md) continue;; esac
+
+    PSTATUS=$(grep -m1 -E "^status:" "$plan" 2>/dev/null | sed -E "s/^status:[[:space:]]*//" | tr -d "\\"" | tr "A-Z" "a-z")
+    if [ -z "$PSTATUS" ]; then
+      ORPHANS="$ORPHANS $plan"
+      continue
+    fi
+    case "$PSTATUS" in
+      "not started"|"not-started") PSTATUS="planned" ;;
+      active) PSTATUS="in-progress" ;;
+    esac
+    echo "$PSTATUS" | grep -qE "^(${PLAN_STATUS_OPEN_RE})$" || continue
+
+    PBRANCH=$(grep -m1 -E "^branch:" "$plan" 2>/dev/null | sed -E "s/^branch:[[:space:]]*//" | tr -d "\\"" | tr -d "[:space:]")
+    [ -z "$PBRANCH" ] && continue
+    git rev-parse --verify "$PBRANCH" >/dev/null 2>&1 || continue
+    if git merge-base --is-ancestor "$PBRANCH" "$DEFAULT_BRANCH" 2>/dev/null; then
+      LIARS="$LIARS $plan(says:$PSTATUS)"
+    fi
+  done
+  if [ -n "$LIARS" ]; then
+    MESSAGES="$MESSAGES PLAN STATUS CONTRADICTION —$LIARS: the branch is already merged into $DEFAULT_BRANCH, so this work is LIVE, but the plan still claims it is not done. Fix the status now (status: done) — a lying plan can send the next agent to rebuild shipped work."
+  fi
+  if [ -n "$ORPHANS" ]; then
+    MESSAGES="$MESSAGES NOT A PLAN? —$ORPHANS: no status frontmatter. ${PLANS_DIR}/ holds live plans only. Give it a status, or move it (draft -> ${DRAFTS_DIR}/, handoff -> ${HANDOFFS_DIR}/, report -> ${REPORTS_DIR}/, decision log -> ${DECISIONS_DIR}/)."
+  fi
+fi
 
 # Dependency graph generation removed.
 
@@ -416,9 +752,7 @@ fi
 
 # Output combined message if any
 if [ -n "$MESSAGES" ]; then
-  # Escape for JSON
-  ESCAPED=$(echo "$MESSAGES" | sed "s/\"/\\\\\\\\\"/g")
-  echo "{\\"systemMessage\\": \\"$ESCAPED\\"}"
+  ${emitSystemMessage("MESSAGES")}
 fi
 '`;
 }
@@ -623,8 +957,7 @@ fi
 # --- Output warnings ---
 if [ -n "$WARNINGS" ]; then
   MSG="PHONE A FRIEND — Get a second opinion on these changes before shipping:\\n\\n$WARNINGS\\nAsk a developer you trust, post in a coding community (Reddit, Discord, forum), or use a code review service. Non-obvious changes are where bugs hide."
-  ESCAPED=$(printf "%b" "$MSG" | sed "s/\"/\\\\\\\\\"/g" | tr "\\n" " ")
-  echo "{\\"systemMessage\\": \\"$ESCAPED\\"}"
+  ${emitSystemMessage("MSG", true)}
 fi
 
 exit 0

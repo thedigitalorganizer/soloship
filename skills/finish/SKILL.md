@@ -136,6 +136,19 @@ COORD="$(cd "$(git rev-parse --git-common-dir)" && pwd -P)/soloship"
 rm -f "$COORD/claims/<plan-filename>.json"
 ```
 
+**Do this BEFORE the merge, not after** — the `plan-merge` gate blocks a merge
+whose plan is still open, and once the merge lands there is no natural moment
+left that would prompt the flip. A plan left at `in-progress` after its work
+went live is a plan that lies to the next agent forever.
+
+**Artifact sweep (the self-cleaning contracts):** in the same commit, delete the
+artifacts this work consumed —
+
+```bash
+git rm -q docs/handoffs/<file>   # if the plan's frontmatter names a `handoff:`
+git rm -q docs/drafts/<file>     # if the plan's frontmatter names a `promoted_from:`
+```
+
 #### Option 2: Push and Create PR
 
 The user explicitly chose the PR path. Push the branch, then create the PR:

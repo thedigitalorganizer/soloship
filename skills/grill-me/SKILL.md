@@ -180,7 +180,7 @@ so a future agent knows what was glossed over.
 
 When alignment is reached, save the interview transcript to:
 
-`docs/plans/YYYY-MM-DD-<slug>-grill.md`
+`docs/drafts/YYYY-MM-DD-<slug>-grill.md`
 
 Format:
 
@@ -228,7 +228,7 @@ was made. The grill transcript IS that reasoning.
 
 Once the rationale doc is written:
 
-> Alignment reached. Rationale saved to `docs/plans/YYYY-MM-DD-<slug>-grill.md`.
+> Alignment reached. Rationale saved to `docs/drafts/YYYY-MM-DD-<slug>-grill.md`.
 >
 > Run `/plan` next. The plan file will reference this rationale doc, and
 > `/autoplan` (or `/review`) will read both. Most of the auto-decisions you'd
@@ -253,7 +253,7 @@ The grill is complete when ALL of these are true:
 - [ ] Codebase context read before any user question
 - [ ] All 6 phases walked OR explicit user override on phases skipped
 - [ ] Each phase ended with an alignment gate that the user accepted
-- [ ] Rationale doc written to `docs/plans/YYYY-MM-DD-<slug>-grill.md`
+- [ ] Rationale doc written to `docs/drafts/YYYY-MM-DD-<slug>-grill.md`
 - [ ] Handoff to `/plan` offered (not auto-invoked)
 
 ## Voice
