@@ -23,7 +23,7 @@ than a brainstorm doc but less overhead than a full planning process.
 
 ## What to Produce
 
-Write a spec to `docs/plans/YYYY-MM-DD-<feature>-spec.md`.
+Write a spec to `docs/drafts/YYYY-MM-DD-<feature>-spec.md`.
 Start with YAML frontmatter:
 ```
 ---
@@ -83,7 +83,7 @@ Suggest:
 
 The spec is not complete until ALL of these are true:
 
-- [ ] Spec file exists at `docs/plans/YYYY-MM-DD-<feature>-spec.md`
+- [ ] Spec file exists at `docs/drafts/YYYY-MM-DD-<feature>-spec.md`
 - [ ] Problem Statement is one paragraph (not a feature list)
 - [ ] Success Criteria are numbered and each is independently testable
 - [ ] Data Model section present (or explicitly marked N/A with reason)

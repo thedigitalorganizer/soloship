@@ -16,6 +16,96 @@ interface ScaffoldResult {
   action: "created" | "exists" | "updated" | "skipped";
 }
 
+// The document taxonomy. Each folder has exactly one kind of artifact and one
+// lifecycle — that separation is what keeps docs/plans/ trustworthy. Before
+// this split, docs/plans/ was an open namespace: drafts, grill outputs,
+// handoffs, decision logs, and status reports all landed there alongside real
+// plans, and a reader (human or agent) could not tell a live plan from an
+// abandoned draft. Worse, only real /plan output carries status frontmatter, so
+// half the directory was invisible to the plan-truth gate by construction.
+//
+// The README in each folder is not decoration: an agent that lands in the
+// folder learns the contract without having to read a skill first.
+export const SCAFFOLD_DIRS = [
+  "docs/plans", // live plans ONLY — status frontmatter required (enforced)
+  "docs/plans/archive", // completed / abandoned plans
+  "docs/drafts", // pre-plan exploration — self-deletes on promotion to a plan
+  "docs/handoffs", // session handoffs — self-deletes when consumed
+  "docs/reports", // point-in-time snapshots — inherently historical
+  "docs/solutions",
+  "docs/architecture",
+  "docs/architecture/decisions", // decision logs live here (the ADR home)
+  "docs/audit",
+  "docs/automations",
+] as const;
+
+// Folder-level contracts, written as README.md into each new folder.
+const FOLDER_READMES: Record<string, string> = {
+  "docs/plans": `# docs/plans/
+
+**Live plans only.** Every file here must carry YAML frontmatter with a
+\`status:\` field in the canonical vocabulary: \`planned\`, \`in-progress\`,
+\`blocked\`, \`done\`, \`abandoned\`, \`superseded\`.
+
+This is enforced — the plan-namespace gate blocks any write to this folder of a
+file without valid status frontmatter.
+
+**Anything else belongs elsewhere:**
+
+| If it is… | It goes in… |
+|---|---|
+| Pre-plan exploration, a draft, a design note, a grill output | \`docs/drafts/\` |
+| A session handoff | \`docs/handoffs/\` |
+| A point-in-time report or snapshot | \`docs/reports/\` |
+| A decision log / ADR | \`docs/architecture/decisions/\` |
+
+**Why:** agents read plans and act on them. A plan whose status lies — saying
+"planned" for work that is already live — can send an agent to build the same
+thing a second time. The status field is only trustworthy if nothing else can
+masquerade as a plan.
+
+Completed plans are archived to \`archive/\` (large) or deleted (small), per the
+plan-lifecycle rule.
+`,
+  "docs/drafts": `# docs/drafts/
+
+Pre-plan exploration: drafts, design notes, brainstorm and grill outputs,
+half-formed ideas. Nothing here is a commitment, and nothing here should be
+executed.
+
+**Lifecycle — these self-clean.** When a draft is promoted into a real plan, the
+plan records \`promoted_from: docs/drafts/<file>\` in its frontmatter and the
+draft is **deleted in the same commit**. The plan supersedes it; keeping both
+means the next agent has to guess which one is current.
+
+\`/soloship:cleanup\` sweeps orphans (a draft whose plan already exists).
+`,
+  "docs/handoffs": `# docs/handoffs/
+
+Session-boundary handoff documents — what the next session needs to know to pick
+up work in flight.
+
+**Lifecycle — these self-clean.** A handoff is consumed exactly once. When the
+work it describes is executed, the handoff is **deleted** by the skill that
+consumed it. A handoff that outlives its execution is worse than no handoff: it
+describes a world that no longer exists, and the next agent cannot tell.
+
+\`/soloship:cleanup\` sweeps orphans (a handoff whose plan is already \`done\`).
+`,
+  "docs/reports": `# docs/reports/
+
+Point-in-time snapshots: morning reports, status reports, one-off analyses.
+
+These are **historical records, never actionable work.** A report describes what
+was true at a moment; it does not describe what should happen next. Nothing here
+should ever be executed, and nothing here needs cleaning up — a stale report is
+still a true record of its moment.
+
+If a report produces work that should happen, that work becomes a plan in
+\`docs/plans/\`.
+`,
+};
+
 export async function scaffoldDocs(
   root: string,
   project: ProjectInfo,
@@ -26,23 +116,23 @@ export async function scaffoldDocs(
   const createAgentsMd = options.createAgentsMd ?? true;
 
   // Create directory structure
-  const dirs = [
-    "docs/plans",
-    "docs/plans/archive",
-    "docs/solutions",
-    "docs/architecture",
-    "docs/architecture/decisions",
-    "docs/audit",
-    "docs/automations",
-  ];
-
-  for (const dir of dirs) {
+  for (const dir of SCAFFOLD_DIRS) {
     const fullPath = join(root, dir);
     if (!existsSync(fullPath)) {
       mkdirSync(fullPath, { recursive: true });
       results.push({ path: dir + "/", action: "created" });
     } else {
       results.push({ path: dir + "/", action: "exists" });
+    }
+
+    // Folder contract. Never overwrite — a project may have customized it.
+    const readme = FOLDER_READMES[dir];
+    if (readme) {
+      const readmePath = join(fullPath, "README.md");
+      if (!existsSync(readmePath)) {
+        writeFileSync(readmePath, readme);
+        results.push({ path: dir + "/README.md", action: "created" });
+      }
     }
   }
 

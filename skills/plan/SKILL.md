@@ -19,7 +19,7 @@ zero context can execute correctly.
 
 ## Step 0: Check for Grill-Me Rationale (and offer if missing)
 
-Look for a sibling rationale doc at `docs/plans/YYYY-MM-DD-<slug>-grill.md` or
+Look for a sibling rationale doc at `docs/drafts/YYYY-MM-DD-<slug>-grill.md` or
 any recent `*-grill.md` file matching the topic.
 
 **If a grill-me rationale exists:** Read it. It contains the premise, scope,
@@ -73,7 +73,7 @@ Apply the Compound-Engineering-derived plan-writing methodology below. It handle
 ## Artifact Contract (Plan Files)
 
 CE's workflow writes to its own location (often `docs/plans/` or
-`docs/brainstorms/` depending on phase). Regardless of which tool produced it,
+`docs/drafts/` depending on phase). Regardless of which tool produced it,
 the final plan file must live at `docs/plans/YYYY-MM-DD-<slug>.md` and start
 with YAML frontmatter:
 ```
@@ -121,6 +121,31 @@ sit; nagging about them trains everyone to ignore the warnings.
 **Legacy mapping** (older plans in the wild): `Not started → planned`,
 `active → in-progress`, `completed → done`. Read old values as their mapped
 equivalents; write only the new vocabulary.
+
+**The status must never lie.** Agents read plans and act on them — a plan that
+says `planned` for work that is already live invites an agent to build it a
+second time. Four Command Center plans did exactly this in 2026-07. The status is
+enforced mechanically now: the `plan-truth` gate blocks a code commit whose plan
+still says `planned`, and the `plan-merge` gate blocks a merge whose plan is
+still open. If a gate fires, fix the status — do not reach for the ack file.
+
+### `docs/plans/` holds plans ONLY
+
+Every file in `docs/plans/` must carry a valid status. This is enforced by the
+`plan-namespace` gate. Anything else goes elsewhere:
+
+| If it is… | Write it to… | Lifecycle |
+|---|---|---|
+| A draft, design note, brainstorm, or grill output | `docs/drafts/` | **Deleted when promoted into a plan** |
+| A session handoff | `docs/handoffs/` | **Deleted when consumed** |
+| A point-in-time report or snapshot | `docs/reports/` | Historical; never actionable |
+| A decision log / ADR | `docs/architecture/decisions/` | Durable |
+
+**Promoting a draft into a plan (mandatory):** when this skill turns a draft into
+a real plan, record `promoted_from: docs/drafts/<file>` in the plan's frontmatter
+and **`git rm` the draft in the same commit**. Two live copies of the same intent
+means the next agent has to guess which one is current — and it will guess wrong
+eventually.
 
 ## QA Plan (MANDATORY section in every plan)
 
@@ -292,10 +317,10 @@ Do not proceed until you have a clear feature description from the user.
 
 **Check for brainstorm output first:**
 
-Before asking questions, look for recent brainstorm documents in `docs/brainstorms/` that match this feature:
+Before asking questions, look for recent brainstorm documents in `docs/drafts/` that match this feature:
 
 ```bash
-ls -la docs/brainstorms/*.md 2>/dev/null | head -10
+ls -la docs/drafts/*.md 2>/dev/null | head -10
 ```
 
 **Relevance criteria:** A brainstorm is relevant if:

@@ -147,6 +147,24 @@ Do the following:
    g. Assign action: delete (small + done), archive (large + done),
       keep (not done), flag (stale or ambiguous)
 3. If no docs/plans/ directory exists, report "no plans directory"
+4. MISFILED ARTIFACTS — any file in docs/plans/ with NO status frontmatter is,
+   by definition, not a plan (the plan-namespace gate blocks these now, but
+   older files predate it). Classify each by what it actually is and propose the
+   move:
+   - draft / design note / brainstorm / grill output → `docs/drafts/`
+   - session handoff → `docs/handoffs/`
+   - point-in-time report or snapshot → `docs/reports/`
+   - decision log / ADR → `docs/architecture/decisions/`
+   Do NOT invent a status for these to make them "valid" — they are not plans,
+   and giving a morning report a `status:` field makes it worse, not better.
+5. ORPHANED ARTIFACTS — the self-cleaning contracts failed if either of these
+   is true. Propose deletion:
+   - a draft in `docs/drafts/` whose plan already exists (check for a plan whose
+     `promoted_from:` names it, or whose slug matches) — the plan superseded it
+   - a handoff in `docs/handoffs/` whose plan is already `done` — a consumed
+     handoff describes a world that no longer exists
+   `docs/reports/` is never swept: a stale report is still a true record of its
+   moment.
 
 Return your findings as JSON:
 {
