@@ -273,6 +273,20 @@ export async function installHooks(
   });
   results.push("PostToolUse: recurrence audit (records + surfaces script-issued commits that bypass the gate)");
 
+  // Live-data evidence gate (warn-only): when a durable artifact that records
+  // data conclusions asserts a prod-data claim without a Claims Table, warn.
+  postToolUseHooks.push({
+    matcher: "Edit|Write",
+    hooks: [
+      {
+        type: "command",
+        command: buildLiveDataEvidenceScript(),
+        timeout: 5000,
+      },
+    ],
+  });
+  results.push("PostToolUse: live-data evidence gate (warns when a solution/report/plan asserts a data claim with no Claims Table)");
+
   // Session heartbeat: touch this session's presence file after every tool
   // call so other sessions can tell live sessions from dead ones.
   postToolUseHooks.push({
@@ -1158,6 +1172,37 @@ WHY="$PATH_HIT"
 [ -z "$WHY" ] && WHY="$CONTENT_HIT"
 
 echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation violates the rule." >&2
+exit 2
+'`;
+}
+
+function buildLiveDataEvidenceScript(): string {
+  // Live-data evidence gate (PostToolUse/Edit|Write). Mechanical floor for the
+  // live-data-evidence-gate rule at the durable-write boundary. WARN-ONLY (the
+  // write already happened; this is PostToolUse): if a doc that records data
+  // conclusions (docs/solutions, docs/reports, a plan file) asserts a
+  // production-data claim but carries no Claims Table, surface a warning so the
+  // agent adds provenance or labels it inferred. Narrow scope + high-precision
+  // phrase list keeps false-positives low — a noisy hook gets disabled, and a
+  // hard block on a heuristic trains ignore-the-warning behavior. It cannot
+  // judge truth; it only checks a Claims Table is present when a data claim is.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+
+# Only artifacts that record data conclusions. Not every docs/ write.
+echo "$TI" | grep -qiE "\\"(file_)?path\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*(docs/solutions/|docs/reports/|docs/plans/)[^\\"]*\\.md\\"" || exit 0
+
+# High-precision data-claim phrases (precision-first to keep noise low).
+CLAIM=$(echo "$TI" | grep -oiE "(matched exactly|reconciles? to|reconciled to|already linked|no[nt]?[- ]?existent|does not exist|doesn.t exist|is free|free to link|numbers? match)" | head -1)
+[ -z "$CLAIM" ] && exit 0
+
+# Provenance present? A Claims Table shows a verdict column / confirmed|inferred.
+if echo "$TI" | grep -qiE "(claims? table|\\| *verdict|confirmed|inferred|provenance)"; then
+  exit 0
+fi
+
+echo "WARN (live-data-evidence-gate): this artifact asserts a live-data claim (matched: \\"$CLAIM\\") but carries no Claims Table. Per the live-data-evidence-gate rule, back the claim with a provenance-complete row (claim | exact query | environment | timestamp | result+rowcount | verdict) or label it inferred. Run the evidence loop (references/evidence-loop.md)." >&2
 exit 2
 '`;
 }
