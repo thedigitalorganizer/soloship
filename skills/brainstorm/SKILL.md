@@ -226,6 +226,13 @@ Next: Run `/soloship:plan` when ready to implement.
 
 ## Important Guidelines
 
+- **Scope lock (session start)** — name the one question this session is
+  exploring before you begin, and open a **tangents parking lot**. Brainstorming
+  sprawls: every good idea suggests three adjacent ones. When an adjacent idea
+  surfaces, drop it in the parking lot and return to the question at hand; raise
+  the list at the end as "worth a separate session?". This is the lighter mirror
+  of `/soloship:implement`'s run-start scope lock — same instinct (declare the
+  boundary up front, park what's outside it), lower stakes.
 - **Stay focused on WHAT, not HOW** - Implementation details belong in the plan
 - **Ask one question at a time** - Don't overwhelm
 - **Apply YAGNI** - Prefer simpler approaches

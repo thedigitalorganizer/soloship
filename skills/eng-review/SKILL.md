@@ -300,6 +300,8 @@ Before reviewing anything, answer these questions:
    - How will users download or install it (GitHub Releases, package manager, container registry)?
    If the plan defers distribution, flag it explicitly in the "NOT in scope" section — don't let it silently drop.
 
+7. **Termination-condition check:** Does the plan have a `## Goal` and a `## Done-When (observable)` section, and are the Done-When items genuinely *observable* (a behavior you can watch, a file that exists, a test that passes) rather than restatements of "the code is written"? A plan whose Done-When isn't observable has no mechanical definition of done — flag it as a blocking finding and rewrite the criteria into observable form before the plan proceeds. (The `plan-completeness-gate` hook enforces that the sections exist; this check enforces that they're *meaningful*.)
+
 If the complexity check triggers (8+ files or 2+ new classes/services), proactively recommend scope reduction via AskUserQuestion — explain what's overbuilt, propose a minimal version that achieves the core goal, and ask whether to reduce or proceed as-is. If the complexity check does not trigger, present your Step 0 findings and proceed directly to Section 1.
 
 Always work through the full interactive review: one section at a time (Architecture → Code Quality → Tests → Performance) with at most 8 top issues per section.

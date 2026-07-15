@@ -32,6 +32,13 @@ are uncommitted changes / recent commits to review.
 
 ## Plan Review
 
+**Termination-condition precheck (all plan reviews):** Confirm the plan has a
+`## Goal` and a `## Done-When (observable)` section and that the Done-When items
+are genuinely observable, not "the code is written." The `plan-completeness-gate`
+hook enforces that the sections *exist*; a review is where their *quality* is
+judged. A plan whose done condition isn't observable has no mechanical stop — flag
+it before running the deeper reviews below.
+
 **Freshness check:** If the plan file has frontmatter with `date` and `ttl_days`,
 check whether today exceeds date + ttl_days. If stale, warn:
 "This plan is N days old (expires after M days). The codebase may have changed

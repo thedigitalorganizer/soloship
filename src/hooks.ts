@@ -216,12 +216,24 @@ export async function installHooks(
         },
       ],
     },
+    // Plan-completeness gate: a plan must declare ## Goal + ## Done-When.
+    {
+      matcher: "Edit|Write|MultiEdit",
+      hooks: [
+        {
+          type: "command",
+          command: buildPlanGoalGateScript(),
+          timeout: 5000,
+        },
+      ],
+    },
   ];
 
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
   results.push("PreToolUse: plan-truth gate (blocks code commits whose plan still says 'planned')");
   results.push("PreToolUse: plan-merge gate (blocks merging a branch whose plan is still open)");
   results.push("PreToolUse: plan-namespace gate (docs/plans/ holds plans only; routes drafts/handoffs/reports)");
+  results.push("PreToolUse: plan-completeness gate (a plan must declare ## Goal + ## Done-When)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
@@ -604,6 +616,63 @@ If it is NOT a plan, it belongs somewhere else:
 Why: agents read ${PLANS_DIR}/ to decide what work is outstanding. Anything in there without a status is invisible to the plan-truth gate and indistinguishable from a live plan.
 
 Escape hatch (requires a real reason): mkdir -p .ai && echo \\"reason\\" > ${PLAN_STATUS_ACK}" >&2
+exit 2
+'`;
+}
+
+function buildPlanGoalGateScript(): string {
+  // Gate B2 — plan-completeness gate (PreToolUse/Edit|Write). A plan's success
+  // criterion is the loop's termination condition: without an observable
+  // "Done-When", an agent executing the plan has no mechanical way to know it is
+  // finished, and "review rejects a plan missing them" is advisory markdown that
+  // only fires if a human remembers to look. This makes it a real check.
+  //
+  // Same trigger and exemptions as the namespace gate. A plan must carry a
+  // \`## Goal\` section (why the work exists) AND a \`## Done-When\` section (the
+  // observable stop condition). Either present in the write payload OR already on
+  // disk counts, so incremental edits to a complete plan are never blocked.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+[ -f ${PLAN_STATUS_ACK} ] && exit 0
+
+FP=$(echo "$TI" | grep -oE "\\"file_path\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$FP" ] && exit 0
+
+# Only .md directly under the plans dir. Archive and the folder README are exempt.
+case "$FP" in
+  *${PLANS_DIR}/*.md) ;;
+  *) exit 0 ;;
+esac
+case "$FP" in
+  *${PLANS_DIR}/archive/*) exit 0 ;;
+  */README.md) exit 0 ;;
+esac
+
+# A section counts if it appears in the write payload OR already on disk.
+has_section() {
+  echo "$TI" | grep -qE "##[[:space:]]+$1" && return 0
+  [ -f "$FP" ] && grep -qE "^##[[:space:]]+$1" "$FP" 2>/dev/null && return 0
+  return 1
+}
+
+MISSING=""
+has_section "Goal" || MISSING="$MISSING ## Goal"
+has_section "Done-When" || MISSING="$MISSING ## Done-When"
+[ -z "$MISSING" ] && exit 0
+
+echo "BLOCKED by plan-completeness-gate: \\"$FP\\" is missing:$MISSING
+
+Every plan needs a success criterion the work terminates against:
+  ## Goal        — what this work is for, in one short paragraph.
+  ## Done-When   — a numbered list of OBSERVABLE conditions that mean done
+                   (a behavior you can watch, a file that exists, a test that
+                   passes) — not \\"the code is written\\".
+
+Without a Done-When, an agent executing this plan has no mechanical way to know
+when to stop — which is the exact open-ended-loop failure this enforces against.
+
+Escape hatch (requires a real reason): mkdir -p .ai && echo \\"why this plan has no Done-When\\" > ${PLAN_STATUS_ACK}" >&2
 exit 2
 '`;
 }
