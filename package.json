@@ -15,7 +15,8 @@
     "codex:validate-plugin": "node scripts/validate-plugin-metadata.js",
     "validate:plugins": "node scripts/validate-plugin-metadata.js",
     "prepare": "tsc",
-    "prepublishOnly": "node scripts/check-version.js"
+    "prepublishOnly": "node scripts/check-version.js",
+    "test": "vitest run __arch__/"
   },
   "keywords": [
     "codex",
@@ -39,6 +40,7 @@
   },
   "devDependencies": {
     "@types/node": "^22.15.0",
-    "typescript": "^5.8.0"
+    "typescript": "^5.8.0",
+    "vitest": "^4.1.10"
   }
 }

@@ -39,4 +39,4 @@ jobs:
           fi
 
       - name: Architecture fitness
-        run: npx vitest run __arch__/ 2>/dev/null || npx jest __arch__/ 2>/dev/null || true
+        run: npm test

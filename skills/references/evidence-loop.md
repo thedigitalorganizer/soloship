@@ -54,15 +54,20 @@ A row with any empty field is not `confirmed`.
 
 ## Escalation tier (financial / irreversible claims)
 
-> Wired in the loop-spine plan (needs the resumable-orchestration pattern). Until
-> then this section documents the intended trigger; do not rely on it as shipped.
-
 When a claim drives (a) a money movement or credit change, (b) an outbound
 message/report to a customer containing a figure, or (c) any irreversible write,
 the single-agent verdict is not enough. Dispatch **one independent sub-agent** to
 re-derive the claim from source (fresh context, no view of the first derivation),
 and converge only when the independent derivation agrees. Disagreement → the
 claim is unverified, full stop.
+
+Use the independent-verifier shape from `references/resumable-orchestration.md`:
+the lead holds the quality gate (does the re-derivation match?), the sub-agent
+re-derives on its own context from the underlying source. When several such claims
+must be checked at once, **orchestrate** them — one bounded worker per claim — with
+that reference's resumable checkpoint, so a long verification run survives a cap or
+crash instead of restarting. This reuses the kill-tested orchestration pattern
+rather than inventing a one-off dispatcher.
 
 ## What this loop does NOT do
 
