@@ -141,6 +141,17 @@ config / infra / non-UI migration) — state it explicitly and verify the outcom
 another way. "Tests pass" / "build is green" does NOT satisfy this gate. Do not
 proceed to Step 10 until it passes.
 
+### Step 9.7: Live-Data Claim Gate (Soloship — MANDATORY when applicable)
+
+If this change asserts or depends on any fact about live/production/CRM/financial
+data — a row count, a reconciled total, a backfill size, "these now match", "X no
+longer exists" — run the **evidence loop** (`references/evidence-loop.md`) and
+show a provenance-complete Claims-Table row (exact query, environment, timestamp,
+result + row count, verdict) before the merge. Per the `live-data-evidence-gate`
+rule, a data claim with no shown query is `inferred`, not `confirmed` — never
+report a reconciliation or count as fact on a query you did not run and show. If
+the change asserts no live-data fact, state that and skip.
+
 ### Step 10: Merge to Base Branch Locally (default)
 
 **Soloship default — no PR.** Soloship's user is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.
