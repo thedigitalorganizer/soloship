@@ -2,6 +2,43 @@
 
 ## [Unreleased]
 
+## [0.16.0] — 2026-07-15
+
+### Added — live-data evidence gate (1 new rule, 1 new hook)
+
+Soloship verified claims against **code** (`plan-claim-verification`) and gated
+**mutations** to money (`billing-confirmation-gate`), but had no gate on
+**assertions about data**. The most-cited, highest-cost friction was the agent
+stating a fact about live/production data it never verified — "the numbers
+matched exactly", "linking is free", "that person isn't in the system" — and
+being wrong, on real customer and financial data.
+
+The fix makes **evidence the currency of confidence**: a load-bearing data claim
+is `confirmed` only when backed by a query with **provenance** (exact query,
+environment, timestamp, result + row count, verdict); otherwise it is `inferred`
+and must be labeled so. A Claims Table alone proves formatting, not truth — the
+provenance fields are what make it real.
+
+- **live-data-evidence-gate rule** — the read-side twin of the billing gate.
+  Defines the provenance Claims-Table schema and the honest scope: it makes
+  evidence cheap to demand and its absence visible at the write and
+  data-publishing boundaries; it does not (and cannot) mechanically block a bare
+  conversational assertion.
+- **live-data evidence hook** (PostToolUse/Edit|Write, **warn-only**) — when a
+  `docs/solutions`, `docs/reports`, or plan file asserts a high-precision
+  data claim without a Claims Table, it warns so the agent adds provenance or
+  labels the claim inferred. Narrow scope + precision-first phrase list keeps
+  false-positives low; warn-not-block avoids training ignore-the-warning behavior.
+- **evidence-loop reference** (`skills/references/evidence-loop.md`) — the bounded
+  "factually confident / find every loophole" verifier that terminates on a
+  provenance-complete Claims Table or a named unverified list. Wired as an
+  explicit step into `/plan` claim-verification and the `shipfast`/`shipthorough`
+  pre-deploy checks.
+
+Deferred to a follow-up (loop-spine plan): Goal/Done-When required in plans,
+start-of-run scope lock, resumable orchestration, and the subagent escalation
+tier for financial/irreversible claims.
+
 ## [0.15.0] — 2026-07-14
 
 ### Added — plan truth gates + document artifact lifecycle (3 new hooks, 1 new rule)
