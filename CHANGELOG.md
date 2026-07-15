@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## [0.16.1] — 2026-07-15
+
+### Fixed — `init` merges hooks instead of replacing the whole block
+
+`installHooks` overwrote the entire `hooks` block in `settings.local.json`, so a
+re-`init` or upgrade would wipe any hook the user added themselves. It now stamps
+its own entries (`_soloshipManaged`) and **merges**: user-custom hooks and other
+settings keys are preserved, only Soloship's own hooks are replaced. A best-effort
+fingerprint sweep cleans up legacy (pre-marker) Soloship hooks so the first
+upgrade init doesn't duplicate them. Verified idempotent — init ×3 keeps a custom
+hook and never grows the Soloship set.
+
 ## [0.16.0] — 2026-07-15
 
 ### Added — live-data evidence gate (1 new rule, 1 new hook)

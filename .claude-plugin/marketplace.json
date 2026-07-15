@@ -12,7 +12,7 @@
         "url": "https://github.com/thedigitalorganizer/soloship.git"
       },
       "description": "Ship solo, safely. Guardrails for non-coders building software through AI agents.",
-      "version": "0.16.0",
+      "version": "0.16.1",
       "strict": true
     }
   ]
