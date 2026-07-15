@@ -249,6 +249,14 @@ Correct the plan to match reality (or mark the claim as an explicit assumption
 to validate first) before it proceeds. A plan with an unverified load-bearing
 claim does not pass the gate.
 
+**Claims about LIVE DATA (not the codebase):** the table above verifies claims
+against the repo. Any plan claim about production/CRM/financial *data* — a count,
+a total, a "these already match", an "X doesn't exist" — is verified differently:
+run the **evidence loop** (`references/evidence-loop.md`) and record a
+provenance-complete Claims-Table row (exact query, environment, timestamp, result
++ row count, verdict). Per the `live-data-evidence-gate` rule, a data claim with
+no shown query is `inferred`, not `confirmed` — label it so.
+
 ## Common Rationalizations
 
 | Excuse | Reality |

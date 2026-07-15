@@ -99,6 +99,7 @@ unapplied migration meant the fix never reached users. Before reporting Done:
    A 200 alone is not proof; the old version also returns 200.
 3. **Browser-QA the actual fixed flow on the live URL** (per the auto-loaded `browser-qa-gate` rule, applied to the live site). Open it with `/soloship:browse` and reproduce the exact scenario that was broken — confirm the fixed behavior now happens, not just that a string is present in the HTML. If the broken flow is behind a login, use the project's documented test account (`docs/testing/test-accounts.md`); if none exists, ask the user for credentials rather than skipping — a hotfix you couldn't actually exercise isn't verified.
 4. If the live page does not reflect the change, or the flow still misbehaves: the artifact was stale, the deploy hit the wrong target, or the fix is incomplete. Rebuild/redeploy or fix, then re-verify. Do not report Done until the fixed behavior is observably live in the browser.
+5. **If this deploy asserts any live-data fact** (a row count, a reconciled total, "these now match"): run the **evidence loop** (`references/evidence-loop.md`) and show the provenance-complete Claims-Table row before reporting Done. Per `live-data-evidence-gate`, a data claim with no shown query is inferred, not confirmed.
 
 ### Done
 

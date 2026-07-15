@@ -43,8 +43,8 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── init.ts            # Main init orchestration
 │   ├── detect.ts          # Stack detection (language, framework, package manager)
 │   ├── scaffold.ts        # Folder structure + doc creation
-│   ├── hooks.ts           # Codex hook configuration (9 hooks)
-│   ├── rules.ts           # Workflow rule installation (4 rules)
+│   ├── hooks.ts           # Codex hook configuration (10 hooks)
+│   ├── rules.ts           # Workflow rule installation (14 rules)
 │   ├── ci.ts              # GitHub Actions CI + architecture fitness functions
 │   └── templates.ts       # AGENTS.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
 ├── dist/                  # Compiled output (gitignored)
