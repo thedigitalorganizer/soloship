@@ -147,6 +147,24 @@ and **`git rm` the draft in the same commit**. Two live copies of the same inten
 means the next agent has to guess which one is current — and it will guess wrong
 eventually.
 
+## Goal + Done-When (MANDATORY sections — hook-enforced)
+
+Every plan must open with two sections, and this is **enforced by a hook**
+(`plan-completeness-gate`), not just this prose — a write into `docs/plans/` that
+is missing either section is blocked:
+
+- `## Goal` — one short paragraph: what this work is for and why it matters.
+- `## Done-When (observable)` — a list of **observable** conditions that mean the
+  work is finished: a behavior you can watch, a file that exists, a test that
+  passes. Never "the code is written." This is the loop's termination condition —
+  the thing an agent executing the plan checks itself against to know it can stop.
+  A plan without it has no mechanical definition of done, which is the open-ended
+  drift this gate exists to prevent.
+
+Each `## Done-When` item should trace to one or more `## QA Plan` rows below (how
+that observable condition gets verified). The escape hatch (`.ai/.plan-status-ack`)
+exists for the rare genuine exception and requires a written reason.
+
 ## QA Plan (MANDATORY section in every plan)
 
 How the work will be verified is a **planning decision, not an afterthought at
@@ -201,6 +219,7 @@ Rules for the section:
 After the plan is written to `docs/plans/YYYY-MM-DD-<slug>.md`, validate:
 
 - [ ] Plan file exists in `docs/plans/`
+- [ ] **`## Goal` and `## Done-When (observable)` sections exist (hook-enforced by `plan-completeness-gate`); Done-When lists observable conditions, not "code written"**
 - [ ] Each phase/step has a "Why:" line explaining motivation
 - [ ] Key Decisions section exists with alternatives considered
 - [ ] Execution Strategy section exists (Direct / Subagent / Agent Teams)
@@ -477,9 +496,13 @@ date: YYYY-MM-DD
 
 [Brief problem/feature description]
 
-## Acceptance Criteria
+## Goal
 
-- [ ] Core requirement 1
+[One sentence: what this work is for and why it matters.]
+
+## Done-When (observable)
+
+- [ ] [Observable condition that means done — a behavior you can watch, a file that exists, a test that passes — NOT "the code is written"]
 - [ ] Core requirement 2
 
 ## QA Plan
@@ -531,6 +554,17 @@ status: planned
 date: YYYY-MM-DD
 
 # [Issue Title]
+
+## Goal
+
+[One short paragraph: what this work is for and why it matters.]
+
+## Done-When (observable)
+
+Numbered, observable conditions that mean the work is done — each a behavior you can watch, a file that exists, or a test that passes. This is the loop's termination condition; do not write "the code is written".
+
+1. [Observable condition 1]
+2. [Observable condition 2]
 
 ## Overview
 
@@ -601,6 +635,17 @@ status: planned
 date: YYYY-MM-DD
 
 # [Issue Title]
+
+## Goal
+
+[One short paragraph: what this work is for and why it matters.]
+
+## Done-When (observable)
+
+Numbered, observable conditions that mean done — each a behavior you can watch, a file that exists, or a test that passes. The comprehensive Acceptance Criteria below elaborate these; this list is the crisp, top-level termination condition.
+
+1. [Observable condition 1]
+2. [Observable condition 2]
 
 ## Overview
 
