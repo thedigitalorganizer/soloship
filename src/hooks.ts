@@ -77,6 +77,43 @@ interface HooksConfig {
 interface HookEntry {
   matcher: string;
   hooks: HookCommand[];
+  // Stamped on every hook Soloship installs so a re-init can replace exactly
+  // its own hooks (idempotent) while leaving user-added hooks untouched.
+  _soloshipManaged?: boolean;
+}
+
+const HOOK_EVENTS = ["PreToolUse", "PostToolUse", "Stop", "SessionStart"] as const;
+
+// Best-effort fingerprints for Soloship hooks installed BEFORE the _soloshipManaged
+// marker existed (one-time migration). Kept specific to avoid dropping a user's
+// genuinely custom hook that merely mentions a common word.
+const LEGACY_SOLOSHIP_HOOK_RE =
+  /billing-confirmation-gate|live-data-evidence-gate|\.ai\/learnings\.jsonl|deploy-from-main|plan-truth|plan-namespace|plan-merge|Key Decisions|"systemMessage": "%-m|soloship\/(sessions|claims)|Soloship update|BLOCKED: (Dangerous|Direct|Force)|phone-a-friend|recurrence/i;
+
+function isLegacySoloshipHook(entry: HookEntry): boolean {
+  const cmd = (entry.hooks || []).map((h) => h.command || "").join("\n");
+  return LEGACY_SOLOSHIP_HOOK_RE.test(cmd);
+}
+
+// Merge Soloship's freshly-built hooks into whatever is already configured,
+// preserving user-custom hooks and dropping only Soloship's own (marked, or
+// legacy-fingerprinted). Idempotent: re-running never duplicates a Soloship hook.
+function mergeSoloshipHooks(
+  existing: HooksConfig["hooks"],
+  fresh: HooksConfig["hooks"]
+): HooksConfig["hooks"] {
+  const result: HooksConfig["hooks"] = { ...existing };
+  for (const ev of HOOK_EVENTS) {
+    const prior = existing[ev] || [];
+    const custom = prior.filter(
+      (e) => !e._soloshipManaged && !isLegacySoloshipHook(e)
+    );
+    const mine = (fresh[ev] || []).map((e) => ({ ...e, _soloshipManaged: true }));
+    const merged = [...custom, ...mine];
+    if (merged.length > 0) result[ev] = merged;
+    else delete result[ev];
+  }
+  return result;
 }
 
 interface HookCommand {
@@ -380,8 +417,13 @@ export async function installHooks(
   results.push("SessionStart: daily check for Soloship updates on npm");
   results.push("SessionStart: session presence (register this session, announce other live sessions in this repo)");
 
-  // Merge hooks into settings (don't overwrite other settings)
-  settings.hooks = hooks;
+  // Merge Soloship's hooks into settings, preserving user-custom hooks (and
+  // other settings keys). Soloship stamps its own entries so a re-init replaces
+  // exactly its own hooks — never duplicating them, never wiping the user's.
+  settings.hooks = mergeSoloshipHooks(
+    (settings.hooks as HooksConfig["hooks"]) || {},
+    hooks
+  );
 
   writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   results.push(`Written to .claude/settings.local.json`);
