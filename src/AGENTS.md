@@ -44,3 +44,17 @@ write `\${VAR}` (braces) in the TS template and keep hook-emitted messages
 ASCII-only. Verify generated scripts by executing them with real stdin
 payloads — this class is invisible in source review. See
 `docs/solutions/runtime-errors/multibyte-char-adjacent-to-shell-var-eats-expansion-20260706.md`.
+
+### Pitfall: `installHooks` must own-and-merge settings, never replace the block
+_Added by soloship-learn 2026-07-15_
+`installHooks` writes into the user's `.claude/settings.local.json`, which the
+user can also add their own hooks to. It stamps every entry it creates with
+`_soloshipManaged: true` and MERGES (keep unmarked user hooks, replace only its
+own), rather than doing `settings.hooks = hooks`. A whole-block replace silently
+wipes user-custom hooks on every re-init/upgrade. If you add a new hook, it is
+stamped automatically by the merge path — do not reintroduce a bare assignment.
+Legacy (pre-marker) Soloship hooks are cleaned up by `isLegacySoloshipHook`'s
+fingerprint regex; extend it when adding a hook whose command lacks an existing
+signature. Test idempotency: run init 2–3× over a config with a foreign hook and
+assert no duplication + the foreign hook survives. See
+`docs/solutions/patterns/installer-own-and-merge-config-not-replace-20260715.md`.
