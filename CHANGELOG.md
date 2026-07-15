@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## [0.17.0] — 2026-07-15
+
+### Added — goal-anchored loop spine (Phases 0–4)
+
+The deferred half of the loop-spine plan, built after a kill-test discovery loop
+resolved the runtime mechanics empirically rather than by assumption.
+
+- **Plan-completeness gate (17th hook protection).** A `PreToolUse` Edit/Write
+  gate blocks a write into `docs/plans/` that is missing `## Goal` or
+  `## Done-When` — a plan's observable stop condition is now mechanically
+  required, not advisory prose. All three plan templates gained the sections;
+  eng-review and review skills gained a quality check that the Done-When items
+  are genuinely observable. Escape hatch: `.ai/.plan-status-ack`.
+- **Start-of-run scope lock.** `/implement` now declares the deliverable, the
+  observable stop condition, and an out-of-scope parking lot at run start —
+  closing the gap the commit-time Scope Ledger leaves open. Lighter mirror in
+  `/brainstorm`.
+- **Resumable orchestration reference.** `references/resumable-orchestration.md`
+  codifies a kill-tested checkpoint design: idempotent sink (load-bearing),
+  per-item state file via atomic temp+rename (git-independent), retry-then-
+  dead-letter, and budget enforcement on the Workflow/Agent tool surface (a
+  markdown skill only *instructs* a budget). Wired into `/cron` add mode and
+  `/implement`'s observable advisor-vs-orchestrator routing. Evidence:
+  `docs/solutions/patterns/2026-07-15-resumable-batch-checkpoint-strategy.md`.
+- **Evidence-gate escalation wired.** The evidence gate's financial/irreversible
+  escalation tier now points at the shipped resumable-orchestration pattern
+  (independent sub-agent re-derivation), replacing its "not yet shipped"
+  placeholder.
+
 ## [0.16.1] — 2026-07-15
 
 ### Fixed — `init` merges hooks instead of replacing the whole block
