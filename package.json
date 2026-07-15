@@ -8,6 +8,7 @@
   },
   "scripts": {
     "build": "tsc",
+    "lint": "tsc --noEmit",
     "dev": "tsc --watch",
     "start": "node dist/cli.js",
     "codex:sync-local": "node scripts/sync-codex-plugin.js",
