@@ -159,6 +159,43 @@ that were live in production.
 handoff when the work completes — a handoff is consumed exactly once, and one
 that outlives its execution describes a world that no longer exists.
 
+## Step 2.0: Scope Lock (run start — Soloship)
+
+> The commit-time **Scope Ledger** (Phase 2 of the methodology below) catches
+> drift right before a commit — but the rabbit holes that cause drift happen
+> *during* the run, long before the commit. This step closes that gap by
+> declaring the boundary **up front**, when your judgment about what's in scope
+> is clearest and least tempted by whatever interesting thing you'll discover at
+> hour two.
+
+Before writing any code, state the scope lock — out loud, in the run, where the
+user can see it:
+
+1. **Deliverable.** One sentence: what will exist when this run is done, taken
+   from the plan's `## Goal` / `## Done-When`. If the plan has a `## Done-When`,
+   the deliverable is "every Done-When item observably true."
+2. **Stop condition.** The observable signal that means *stop* — the Done-When
+   met, the failing thing fixed and re-verified. Naming it now is what lets you
+   recognize "done" later instead of drifting past it.
+3. **Parking lot.** Open an explicit **out-of-scope discoveries** list, empty at
+   start. Every genuinely-interesting thing you find mid-run that is *not* the
+   deliverable — a nearby bug, a refactor that would be nice, a second feature
+   the code is begging for — goes in the list and you **keep going**. You do not
+   chase it. At the end of the run you surface the list to the user as
+   "found these along the way — want any of them next?".
+
+The parking lot is the mechanism. Without it, the honest impulse "I should fix
+this too" silently expands the run until it never finishes — the exact
+open-ended drift the loop spine exists to stop. Parking a discovery is not
+ignoring it; it's refusing to let it hijack *this* run.
+
+**This is visible in a dry-run:** an `/implement` that has started must be able
+to show its stated deliverable, stop condition, and current parking lot on
+request. If it can't, the scope was never locked.
+
+Skip the scope lock only for the trivial 1-2 step exception below (there is
+nothing to drift from).
+
 ## Step 2: Route to Execution
 
 Apply the execution methodology below with the plan file path as input.
