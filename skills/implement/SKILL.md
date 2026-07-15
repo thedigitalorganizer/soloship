@@ -210,6 +210,17 @@ you do not need to separately choose "subagent-driven" vs "parallel agents."
 Pass the plan as-is; if the plan's Execution Strategy section calls for
 parallelism, surface that in your hand-off to CE so it can fan out.
 
+**Advisor vs orchestrator (state your choice out loud).** If the plan is one hard
+task that needs steering, run as an **advisor** (single agent, no fan-out). If it
+is a splittable batch of similar items (N files, N records, N pages) — especially
+one long enough to risk a cap or interruption — run as an **orchestrator**: fan
+out a bounded worker per item on a cheap tier while you keep the quality gate, and
+make the run **resumable** with the checkpoint from
+`references/resumable-orchestration.md` (per-item state file, idempotent side
+effects, retry-then-dead-letter — so a kill at item 300 of 500 resumes instead of
+restarting or duplicating). Say which shape you picked and why in one line the
+user can see — it's a stated decision, never a hidden one.
+
 **Exception — trivial changes:** If the plan truly describes a 1-2 step direct
 change (typo fix, single-file tweak, obvious rename), skip the CE workflow and
 implement it directly. The CE workflow has real setup overhead; don't pay it

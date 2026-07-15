@@ -169,6 +169,17 @@ mandatory — it's what makes silent-failure-by-construction impossible:
    cycle; watch the row/status change). An automation whose first check-in
    was never OBSERVED is not done — "it should check in" is an assertion,
    not evidence.
+5. **Batch-shaped? Make it resumable.** If the automation processes many
+   items and could be interrupted mid-run (a token/spend cap, a timeout, a
+   crash), wire in the checkpoint from
+   `references/resumable-orchestration.md` **as part of building it, not a
+   follow-up**: per-item state file (temp+rename, gitignored), idempotent
+   sink, retry-then-dead-letter. A batch job that dies at item 300 of 500 and
+   restarts from item 1 either duplicates side effects or never finishes —
+   the exact failure the checkpoint prevents. **Retrofit scope (decided):**
+   this contract binds **new** batch automations here; existing/ad-hoc long
+   runs adopt the reference opt-in when they next hit a cap — a skill can't
+   safely rewrite a running job from the outside, so there is no auto-retrofit.
 
 ## Mode: remove
 
