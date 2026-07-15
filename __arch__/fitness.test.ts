@@ -1,18 +1,50 @@
 /**
  * Architecture Fitness Functions
  *
- * These tests enforce architectural boundaries. They run in CI and fail
- * the build if the architecture drifts from its blueprint.
- *
- * Customize these rules based on your project's module boundaries.
- * Run /audit to discover what rules should be added.
+ * These tests enforce architectural boundaries. They run in CI (`npm test`) and
+ * fail the build if the architecture drifts from its blueprint.
  */
 
 import { readdirSync, readFileSync, existsSync } from "node:fs";
-import { join, resolve } from "node:path";
+import { join, resolve, basename } from "node:path";
 import { describe, test, expect } from "vitest";
+import { getWorkflowRules } from "../src/rules";
 
 const ROOT = resolve(__dirname, "..");
+
+// Max lines for a genuine source file. Files that are predominantly embedded
+// string content (rule text, hook shell scripts) are exempt — a line limit is
+// the wrong metric for content, and splitting them would be churn with no
+// maintainability gain. Everything else must stay under the limit.
+const MAX_SOURCE_LINES = 500;
+const CONTENT_HEAVY_EXEMPT = new Set(["rules.ts", "hooks.ts"]);
+
+// The rules Soloship ships. Update this when adding/removing a rule — the test
+// then guarantees a rule can't be silently dropped from the installer.
+const EXPECTED_RULES = [
+  "solution-search.md",
+  "plan-materialization.md",
+  "plan-rationale.md",
+  "plan-lifecycle.md",
+  "plan-artifact-lifecycle.md",
+  "plan-claim-verification.md",
+  "billing-confirmation-gate.md",
+  "live-data-evidence-gate.md",
+  "recurrence-gate.md",
+  "parameterize-constants.md",
+  "browser-qa-gate.md",
+  "qa-plan-in-plans.md",
+  "deploy-from-main-only.md",
+  "automation-registry.md",
+];
+
+// The version files that must stay in sync every release (release-version-sync).
+const VERSION_FILES: { path: string; read: (j: any) => string }[] = [
+  { path: "package.json", read: (j) => j.version },
+  { path: ".claude-plugin/plugin.json", read: (j) => j.version },
+  { path: ".claude-plugin/marketplace.json", read: (j) => j.plugins[0].version },
+  { path: ".codex-plugin/plugin.json", read: (j) => j.version },
+];
 
 function getSourceFiles(dir: string, ext = ".ts"): string[] {
   const results: string[] = [];
@@ -32,25 +64,7 @@ function getSourceFiles(dir: string, ext = ".ts"): string[] {
   return results;
 }
 
-function getImports(filePath: string): string[] {
-  const content = readFileSync(filePath, "utf-8");
-  const imports: string[] = [];
-  const importRegex = /(?:import|from)\s+['"](.*?)['"]/g;
-  let match;
-  while ((match = importRegex.exec(content)) !== null) {
-    imports.push(match[1]);
-  }
-  return imports;
-}
-
 describe("Architecture Fitness Functions", () => {
-  test("no circular directory dependencies at top level", () => {
-    // This is a placeholder — customize based on your project structure.
-    // Example: src/pages/ should not import from src/components/
-    // if components/ imports from pages/ (circular).
-    expect(true).toBe(true);
-  });
-
   test("agent guidance exists", () => {
     const hasClaudeGuide = existsSync(join(ROOT, "CLAUDE.md"));
     const hasCodexGuide = existsSync(join(ROOT, "AGENTS.md"));
@@ -61,14 +75,15 @@ describe("Architecture Fitness Functions", () => {
     expect(existsSync(join(ROOT, "CHANGELOG.md"))).toBe(true);
   });
 
-  test("no source file exceeds 500 lines", () => {
+  test("no genuine source file exceeds the line limit (content-heavy files exempt)", () => {
     const srcDir = join(ROOT, "src");
     if (!existsSync(srcDir)) return;
 
     const violations: string[] = [];
     for (const file of getSourceFiles(srcDir)) {
+      if (CONTENT_HEAVY_EXEMPT.has(basename(file))) continue;
       const lines = readFileSync(file, "utf-8").split("\n").length;
-      if (lines > 500) {
+      if (lines > MAX_SOURCE_LINES) {
         violations.push(`${file.replace(ROOT + "/", "")} (${lines} lines)`);
       }
     }
@@ -91,5 +106,27 @@ describe("Architecture Fitness Functions", () => {
     }
 
     expect(violations).toEqual([]);
+  });
+
+  test("installer ships exactly the expected rules (none silently dropped)", () => {
+    const shipped = Object.keys(getWorkflowRules()).sort();
+    expect(shipped).toEqual([...EXPECTED_RULES].sort());
+  });
+
+  test("every shipped rule has non-empty content", () => {
+    const rules = getWorkflowRules();
+    const empty = Object.entries(rules)
+      .filter(([, body]) => !body || body.trim().length < 50)
+      .map(([name]) => name);
+    expect(empty).toEqual([]);
+  });
+
+  test("all version files are in sync (release-version-sync)", () => {
+    const versions = VERSION_FILES.map(({ path, read }) => {
+      const j = JSON.parse(readFileSync(join(ROOT, path), "utf-8"));
+      return { path, version: read(j) };
+    });
+    const distinct = new Set(versions.map((v) => v.version));
+    expect(distinct.size, `version drift: ${JSON.stringify(versions)}`).toBe(1);
   });
 });
