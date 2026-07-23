@@ -129,7 +129,17 @@ Review the frontend changes in the git diff for design quality:
    overly rounded corners, generic placeholder copy
 4. Consistency: does this match the existing design system?
 5. Loading/error states: are they handled?
+6. Component duplication: does this diff add a component that duplicates an
+   inventoried one?
 ```
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). For item 6, hand the agent the
+inventory so "duplicates an inventoried one" is checked against data, not
+memory.
 
 ## Common Rationalizations
 

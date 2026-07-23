@@ -96,6 +96,16 @@ Identify recurring problems:
 - "Hard-coded colors appear in 15+ components, should use design tokens"
 - "Touch targets consistently too small (<44px) throughout mobile experience"
 - "Missing focus indicators on all custom interactive components"
+- Duplicate / near-duplicate components (same purpose, different files —
+  e.g. EmailBox vs EmailComposer). Report as findings only; the fix routes
+  through /soloship:implement, this audit never consolidates.
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). Cross-check duplicate findings against
+that inventory when it exists.
 
 ### Positive Findings
 

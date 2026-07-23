@@ -7,10 +7,18 @@
     "skills": [
       "audit",
       "bootstrap",
+      "ceo-review",
+      "cleanup",
+      "code-review",
       "component-inventory",
+      "eng-review",
       "frontend-design",
       "implement",
-      "plan"
+      "learn",
+      "plan",
+      "plan-design-review",
+      "review",
+      "ui-audit"
     ]
   }
 }

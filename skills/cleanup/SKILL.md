@@ -44,7 +44,7 @@ what is *proposed and executed*, not what is *audited*.
 
 ## Phase 1: AUDIT (Parallel Agents, Read-Only)
 
-Launch these 5 agents **in parallel** using the Agent tool. All read-only. Each
+Launch these 6 agents **in parallel** using the Agent tool. All read-only. Each
 returns structured findings.
 
 ### Agent 1: Solution Health Scanner
@@ -248,11 +248,47 @@ Return your findings as JSON:
 }
 ```
 
+### Agent 6: Component Inventory Freshness
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). This agent audits that inventory's
+freshness — it never edits source code (consolidating duplicate components is
+implementation work that routes through /soloship:plan → /soloship:implement).
+
+```
+Prompt: You are auditing the freshness of docs/architecture/COMPONENTS.md.
+Read-only — do not modify any files.
+
+If docs/architecture/COMPONENTS.md does not exist, return {"exists": false}.
+
+Otherwise:
+1. Parse the rows between <!-- soloship:components START --> and
+   <!-- soloship:components END -->.
+2. For each row, check the component's file still exists (Glob) and still
+   exports a component of that name (grep).
+3. Discover components in the codebase (git ls-files -- '*.tsx' '*.jsx'
+   '*.vue' '*.svelte', skip tests/stories) that have NO inventory row.
+4. Return your findings as JSON:
+{
+  "exists": true,
+  "staleRows": [{"component": "...", "file": "...", "reason": "file gone|export gone"}],
+  "missingComponents": [{"component": "...", "file": "..."}],
+  "rowCount": N
+}
+```
+
+If stale rows or missing components are found, Phase 2 proposes: "regenerate
+the inventory via /soloship:component-inventory (delta-update)". Never
+propose consolidating components from here.
+
 ---
 
 ## Comprehension Checkpoint
 
-After all 5 agents complete, present a summary table to the user:
+After all 6 agents complete, present a summary table to the user:
 
 ```
 ## Cleanup Audit Results
@@ -519,7 +555,7 @@ The main agent never holds all source content simultaneously.
 | "The knowledge base is small, it doesn't need cleanup" | Small bases still accumulate stale refs and missing cross-links. The audit takes 2 minutes. Run it. |
 | "I'll just merge these solutions manually without the subagent" | Holding 3+ solution docs in main context degrades rewrite quality. The subagent pattern exists to prevent this. Use it. |
 | "These solutions are similar but not really duplicates" | That's why the 2-of-3 signal threshold exists. If 2+ signals align, they're merge candidates. Present them to the user — they decide. |
-| "I can skip the audit and just fix what I know is broken" | You don't know what's broken until you audit. Stale AGENTS.md references hide behind healthy-looking files. Run all 5 agents. |
+| "I can skip the audit and just fix what I know is broken" | You don't know what's broken until you audit. Stale AGENTS.md references hide behind healthy-looking files. Run all 6 agents. |
 | "The user approved everything, I can batch the commit" | You should batch the commit — that's correct. But each merge still gets its own subagent. Batching the commit ≠ batching the content. |
 | "This plan is probably completed but I can't find the commit" | "Probably" is not evidence. If git log doesn't show implementation commits, the plan stays as "keep" not "delete". |
 | "I'll skip the learnings rebuild, it's just an index" | The index is how future agents find solutions quickly. 13 entries for 75 solutions means most solutions are invisible. Rebuild it. |

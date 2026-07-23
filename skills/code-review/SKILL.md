@@ -76,6 +76,14 @@ Review the PR across these lenses in parallel — each is a general-purpose suba
 - **Performance** — rubric: `references/performance-checklist.md`
 - **Test coverage** — rubric: `references/testing-patterns.md`
 - **Accessibility** (only if the PR touches UI) — rubric: `references/accessibility-checklist.md`
+- **Component duplication** (only if the PR adds/renames UI components):
+  <!-- concern:component-reuse -->
+  If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+  specifying UI components — reuse or extend an existing component on purpose
+  match, cite what you found, and apply the rule of three (see
+  `references/component-inventory.md`). The reviewer checks each new component
+  in the diff against the inventory (and a name/prop-shape grep) and flags
+  reintroduced duplicates as findings.
 
 Additionally, always run this regardless of the above:
 - Dispatch a general-purpose subagent with the prompt in `references/agents/learnings-researcher.md`, input: the PR content — searches `docs/solutions/` for past issues related to this PR's modules and patterns
