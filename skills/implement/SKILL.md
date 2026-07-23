@@ -177,7 +177,16 @@ user can see it:
 2. **Stop condition.** The observable signal that means *stop* — the Done-When
    met, the failing thing fixed and re-verified. Naming it now is what lets you
    recognize "done" later instead of drifting past it.
-3. **Parking lot.** Open an explicit **out-of-scope discoveries** list, empty at
+3. **Component reuse declaration (UI work only).**
+   <!-- concern:component-reuse -->
+   If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+   specifying UI components — reuse or extend an existing component on purpose
+   match, cite what you found, and apply the rule of three (see
+   `references/component-inventory.md`). As part of the scope lock, list the
+   components this run will REUSE vs CREATE, citing the inventory (or the
+   grep that came up empty). A run that creates a component it never declared
+   should treat that as scope drift.
+4. **Parking lot.** Open an explicit **out-of-scope discoveries** list, empty at
    start. Every genuinely-interesting thing you find mid-run that is *not* the
    deliverable — a nearby bug, a refactor that would be nice, a second feature
    the code is begging for — goes in the list and you **keep going**. You do not
@@ -509,7 +518,12 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    - The plan should reference similar code - read those files first
    - Match naming conventions exactly
-   - Reuse existing components where possible
+   - Reuse existing components — this is checkable, not aspirational:
+     <!-- concern:component-reuse -->
+     If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+     specifying UI components — reuse or extend an existing component on purpose
+     match, cite what you found, and apply the rule of three (see
+     `references/component-inventory.md`).
    - Follow project coding standards (see CLAUDE.md)
    - When in doubt, grep for similar implementations
 

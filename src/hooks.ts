@@ -336,6 +336,22 @@ export async function installHooks(
   });
   results.push("PostToolUse: live-data evidence gate (warns when a solution/report/plan asserts a data claim with no Claims Table)");
 
+  // Duplicate-component warn (warn-only): a new .tsx/.jsx export colliding
+  // with a component name already exported elsewhere gets flagged to the
+  // agent at the moment the duplicate is born. Mechanical floor for the
+  // component-reuse rule.
+  postToolUseHooks.push({
+    matcher: "Edit|Write|MultiEdit",
+    hooks: [
+      {
+        type: "command",
+        command: buildComponentDupWarnScript(),
+        timeout: 5000,
+      },
+    ],
+  });
+  results.push("PostToolUse: duplicate-component warn (flags a new component export whose name already exists elsewhere)");
+
   // Session heartbeat: touch this session's presence file after every tool
   // call so other sessions can tell live sessions from dead ones.
   postToolUseHooks.push({
@@ -1283,6 +1299,62 @@ WHY="$PATH_HIT"
 [ -z "$WHY" ] && WHY="$CONTENT_HIT"
 
 echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation violates the rule." >&2
+exit 2
+'`;
+}
+
+// File extensions the duplicate-component warn hook inspects. v1 is React-only
+// (.tsx/.jsx); the LLM-driven component-inventory skill covers .vue/.svelte.
+// Extending the hook to other frameworks is a one-line change here.
+const COMPONENT_HOOK_EXTENSIONS_RE = "\\.(tsx|jsx)$";
+// git grep pathspecs matching the same extensions — repo-wide (tracked files
+// only, so node_modules is skipped by construction; no hardcoded source-dir
+// list, so monorepos / packages/ui / route-local components are covered).
+const COMPONENT_HOOK_PATHSPECS = `-- "*.tsx" "*.jsx"`;
+// Component declaration pattern: an exported PascalCase function/const/class.
+// By construction this EXCLUDES re-exports (`export { X } from`,
+// `export * from`) and type-only exports (`export type X`) — none of those
+// have function|const|class after `export`. `export const X = memo(...)` and
+// `forwardRef(...)` assignments match via the const form.
+const COMPONENT_DECL_RE =
+  "export[[:space:]]+(default[[:space:]]+)?(async[[:space:]]+)?(function|const|class)[[:space:]]+[A-Z][A-Za-z0-9_]*";
+
+export function buildComponentDupWarnScript(): string {
+  // Duplicate-component warn hook (PostToolUse/Edit|Write). Mechanical floor
+  // for the component-reuse rule at the moment a duplicate is born: when a
+  // just-written .tsx/.jsx file exports a component whose name is already
+  // exported by another file, surface a warning to the agent (stderr + exit 2
+  // on PostToolUse = shown to Claude, never blocks — the write already
+  // happened; same warn pattern as the live-data evidence gate).
+  //
+  // Detection ceiling is deliberate: name collisions only — the cheap
+  // real-time layer. Same-purpose components with DIFFERENT names are caught
+  // upstream (component-inventory dup-flagging, review lenses). Fail-safe:
+  // any internal error (not a git repo, grep failure) exits 0 silently — a
+  // warn hook must never break an edit.
+  return `bash -c '
+FILE="$HOOK_MODIFIED_FILE"
+[ -n "$FILE" ] || exit 0
+echo "$FILE" | grep -qE "${COMPONENT_HOOK_EXTENSIONS_RE}" || exit 0
+[ -f "$FILE" ] || exit 0
+DIR=$(dirname "$FILE")
+git -C "$DIR" rev-parse --show-toplevel >/dev/null 2>&1 || exit 0
+TOP=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
+REL=$(git -C "$DIR" ls-files --full-name --error-unmatch "$FILE" 2>/dev/null)
+NAMES=$(grep -hoE "${COMPONENT_DECL_RE}" "$FILE" 2>/dev/null | grep -oE "[A-Z][A-Za-z0-9_]*$" | sort -u)
+[ -n "$NAMES" ] || exit 0
+WARN=""
+for NAME in $NAMES; do
+  # Boundary class instead of \\b — macOS git grep ERE has no \\b support
+  # (found by the fixture tests: \\b matched nothing and the fail-safe
+  # silently swallowed the miss).
+  HITS=$(git -C "$TOP" grep -lE "export[[:space:]]+(default[[:space:]]+)?(async[[:space:]]+)?(function|const|class)[[:space:]]+$NAME([^A-Za-z0-9_]|$)" ${COMPONENT_HOOK_PATHSPECS} 2>/dev/null | grep -v "^$REL\$" || true)
+  if [ -n "$HITS" ]; then
+    WARN="$WARN component $NAME already exported by: $(echo "$HITS" | tr "\\n" " ");"
+  fi
+done
+[ -z "$WARN" ] && exit 0
+echo "WARN (component-reuse): $FILE exports$WARN Reuse or extend the existing component if it serves the same purpose, or rename if genuinely different. Check docs/architecture/COMPONENTS.md (regenerate with /soloship:component-inventory) and apply the rule of three — see the component-reuse rule." >&2
 exit 2
 '`;
 }

@@ -153,6 +153,29 @@ Don't build watchdog infrastructure during bootstrap — registering what
 exists is Step 5's whole job. Wiring check-ins and standing up a watchdog is
 real feature work that goes through `/soloship:plan`.
 
+## Step 5.5: Component Inventory (UI projects)
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`).
+
+For projects with a UI (React/Vue/Svelte files present), make sure that
+inventory exists — it's the data source every reuse checkpoint reads:
+
+- If an audit ran, its Architecture Discovery agent already generated
+  `docs/architecture/COMPONENTS.md`. Verify it's there.
+- No audit? Scaffold it by running the `/soloship:component-inventory` skill
+  (delta-update, marker-delimited — never overwrites user content outside the
+  markers, matching bootstrap's never-overwrite contract).
+- No UI in this project? Skip — say so explicitly.
+
+The `component-reuse.md` rule (installed in Step 6 via init) makes the
+contract stick: search + cite before creating any component, rule of three
+against over-abstraction, and the duplicate-component warn hook flags name
+collisions in real time.
+
 ---
 
 ## Step 6: Hooks + CI (via `npx soloship init`)

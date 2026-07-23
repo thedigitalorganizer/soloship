@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (17 hook protections, 12 always-on rules, and CI checks, no judgment calls required), **45 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (18 hook protections, 15 always-on rules, and CI checks, no judgment calls required), **46 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -123,7 +123,7 @@ For both:
 npx soloship init --agent both
 ```
 
-`init` creates the documentation structure, 12 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+`init` creates the documentation structure, 15 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
 
 For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
 
@@ -206,7 +206,7 @@ When you run `/soloship:bootstrap` (or `/soloship:audit` then `/soloship:bootstr
 
 - **Folder scaffolding**: `docs/plans/`, `docs/solutions/`, `docs/audit/`, `docs/automations/` (the automation registry), `AGENTS.md` stubs
 - **17 Claude Code hook protections** across four events. PreToolUse: dangerous command blocking, phone-a-friend warnings, Semgrep security scan on commits, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate, plan-completeness gate (every plan must declare an observable Goal + Done-When). PostToolUse: auto-lint, CHANGELOG check, recurrence audit, session heartbeat. Stop: plan validation, workflow navigator, handoff reminder, and a reply timestamp (so session logs can reconstruct when work actually happened). SessionStart: checkpoint commit, update check, session presence.
-- **12 workflow rules**: solution search, plan materialization, plan rationale, plan lifecycle, claim verification, QA plan in plans, billing confirmation, recurrence, parameterized constants, browser QA gate, deploy-from-main-only, automation registry
+- **15 workflow rules**: solution search, plan materialization, plan rationale, plan lifecycle, plan artifact lifecycle, claim verification, QA plan in plans, billing confirmation, live-data evidence, recurrence, parameterized constants, browser QA gate, deploy-from-main-only, automation registry, component reuse
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs**: `CLAUDE.md`, `AGENTS.md`, `CHANGELOG`, `SOLUTION_GUIDE`, sized to your stack
 
@@ -219,7 +219,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 **Setup & orientation**
 
 - `/soloship:audit`: Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 7 more to assess quality, entanglement, security, dependencies, gaps, leverage points, and the automation surface (every cron, webhook, and scheduled job plus its monitoring state). Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
-- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 12 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
+- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 15 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard`: Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. Fully self-contained.
 
 **Daily work**
@@ -232,6 +232,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 - `/soloship:debug`: Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then runs the Superpowers-derived 4-phase discipline (Investigate, Analyze, Hypothesize, Implement). Nudges `/soloship:learn` for non-obvious fixes.
 - `/soloship:learn`: Captures knowledge from non-obvious work. Runs the Compound-Engineering-derived compound methodology to write a solution doc. Adds Soloship protocols: JSONL logging for cross-session search, architecture registry drift checking, and distributed AGENTS.md propagation (pitfalls into existing AGENTS.md files, new ones for directories above the 3-file governance threshold). Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
 - `/soloship:cleanup`: Knowledge system maintenance. Launches 5 parallel audit agents (solution health, overlap detection, plan lifecycle, AGENTS.md staleness, index sync), presents findings interactively, then executes approved changes in a single atomic commit. Merge candidates require 2-of-3 signal threshold.
+- `/soloship:component-inventory`: Scans the codebase for UI components (React/Vue/Svelte) and generates `docs/architecture/COMPONENTS.md` — name, file, purpose, props, and usage sites per component, plus a "Possible duplicates" section the user decides on. Delta-updates an existing inventory (unchanged rows are preserved byte-for-byte, so a no-change re-run produces no diff). The data source behind the `component-reuse` rule and the duplicate-component warn hook.
 
 **Operations**
 

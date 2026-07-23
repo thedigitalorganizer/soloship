@@ -24,6 +24,14 @@ Do not skip the checkpoint. Do not rush through Phase 1 to get to Phase 2.
 
 ## Phase 1: Understand the System
 
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). Audit is a WRITE-side owner of that
+inventory: Agent 1 generates/refreshes it (step 7); Agent 5 flags likely
+duplicate components as findings.
+
 Launch these 4 agents **in parallel** using the Agent tool. Each agent investigates
 independently and returns structured findings.
 
@@ -41,6 +49,11 @@ Do the following:
 4. Identify circular dependencies (madge --circular or manual detection)
 5. Find orphan files (files not imported by anything)
 6. Map the module boundaries: what are the major groupings? (pages, components, services, hooks, etc.)
+7. UI projects only: generate/refresh the component inventory at
+   docs/architecture/COMPONENTS.md by following the component-inventory
+   contract in the plugin's references/component-inventory.md (marker-delimited
+   block, delta-update — never re-word unchanged rows). This turns your
+   component mapping into a durable artifact instead of report prose.
 
 Return your findings as structured markdown:
 
@@ -279,6 +292,11 @@ Do the following:
 4. Look for code duplication (similar blocks across files)
 5. Identify dead code (exports that nothing imports, unused functions)
 6. Rate each major module as deep or shallow
+7. UI projects only: flag likely DUPLICATE COMPONENTS — near-identical names
+   (EmailBox vs EmailComposer) or heavily-overlapping prop shapes with the
+   same apparent purpose. Cross-check docs/architecture/COMPONENTS.md if
+   Agent 1 generated it. List pairs as findings for the human checkpoint —
+   propose, never merge.
 
 Return findings as:
 

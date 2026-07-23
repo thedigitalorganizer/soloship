@@ -36,6 +36,7 @@ const EXPECTED_RULES = [
   "qa-plan-in-plans.md",
   "deploy-from-main-only.md",
   "automation-registry.md",
+  "component-reuse.md",
 ];
 
 // The version files that must stay in sync every release (release-version-sync).

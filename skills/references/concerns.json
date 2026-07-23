@@ -4,6 +4,13 @@
     "reference": "references/component-inventory.md",
     "marker": "concern:component-reuse",
     "keyPhrase": "COMPONENTS.md",
-    "skills": []
+    "skills": [
+      "audit",
+      "bootstrap",
+      "component-inventory",
+      "frontend-design",
+      "implement",
+      "plan"
+    ]
   }
 }

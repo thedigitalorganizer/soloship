@@ -12,6 +12,18 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 This skill guides creation of distinctive, production-grade frontend interfaces that avoid generic "AI slop" aesthetics. Implement real working code with exceptional attention to aesthetic details and creative choices.
 
+## Before Generating: Reuse Check (Soloship override)
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). This skill generates new UI — which
+makes it the primary place duplicates are born. Before writing any new
+component, state what the inventory (or a `git grep` for likely names) showed
+and whether you are reusing, extending, or creating — then design boldly
+within that decision.
+
 ## Design Direction
 
 Commit to a BOLD aesthetic direction:
