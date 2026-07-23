@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.18.0] — 2026-07-23
+
 ### Added — component-reuse system + cross-cutting concern registry
 
 Solves the duplicate-component problem (a second EmailComposer gets built,
