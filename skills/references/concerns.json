@@ -7,18 +7,30 @@
     "skills": [
       "audit",
       "bootstrap",
+      "brainstorm",
       "ceo-review",
       "cleanup",
       "code-review",
       "component-inventory",
       "eng-review",
+      "executing-plans",
+      "finish",
       "frontend-design",
       "implement",
       "learn",
+      "office-hours",
+      "onboard",
       "plan",
       "plan-design-review",
+      "polish",
       "review",
-      "ui-audit"
+      "simplify",
+      "spec",
+      "subagent-driven-development",
+      "ui-audit",
+      "ui-ux-pro-max",
+      "verification-before-completion",
+      "writing-plans"
     ]
   }
 }

@@ -150,6 +150,14 @@ Run a quick repo scan to understand existing patterns:
 
 Focus on: similar features, established patterns, CLAUDE.md guidance.
 
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). Point the research subagent at the
+inventory so exploration builds on existing UI instead of inventing parallel
+components.
+
 #### 1.2 Collaborative Dialogue
 
 Use the **AskUserQuestion tool** to ask questions **one at a time**.

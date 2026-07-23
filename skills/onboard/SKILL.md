@@ -48,6 +48,12 @@ In parallel, read:
 4. `docs/audit/AUDIT-*.md` (most recent, if exists)
 5. Recent git history: `git log --oneline -20`
 6. `docs/architecture/REGISTRY.md` (if exists)
+7. <!-- concern:component-reuse -->
+   If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+   specifying UI components — reuse or extend an existing component on purpose
+   match, cite what you found, and apply the rule of three (see
+   `references/component-inventory.md`). Surface the inventory in the briefing
+   so a new contributor learns the reusable-component surface immediately.
 
 **Freshness check:** For audit reports, check frontmatter `date` and `ttl_days`.
 If stale, note in the briefing: "Audit report is N days old (expires after M days) —

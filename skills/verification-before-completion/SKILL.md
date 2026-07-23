@@ -195,6 +195,14 @@ For the specific value/behavior this change introduces or modifies, enumerate
 serializer, migration, cache, and test** that holds or depends on the same fact.
 One row each. Each row must end in a resolved state with evidence:
 
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). When the change ADDS or MODIFIES a UI
+component, include a Touch-Map row asserting the reuse check ran: "checked
+COMPONENTS.md + grep — reused/extended X" or "no purpose match, created new".
+
 ```
 TOUCH MAP — <the fact that changed, e.g. "trial length = 14d">
   | location                          | handled? | evidence                       |

@@ -113,6 +113,14 @@ Systematically remove complexity across these dimensions:
 - **Flatten component trees**: Reduce nesting depth
 - **Consolidate styles**: Merge similar styles, use utilities consistently
 - **Reduce variants**: Does that component need 12 variations, or can 3 cover 90% of cases?
+- **Consolidate duplicate components**:
+  <!-- concern:component-reuse -->
+  If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+  specifying UI components — reuse or extend an existing component on purpose
+  match, cite what you found, and apply the rule of three (see
+  `references/component-inventory.md`). Use the inventory's "Possible
+  duplicates" section to spot cross-file components to merge — with the user's
+  approval, since consolidation has blast radius.
 
 **NEVER**:
 - Remove necessary functionality (simplicity ≠ feature-less)

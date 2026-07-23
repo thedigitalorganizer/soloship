@@ -54,6 +54,13 @@ Focus on the interface, not the implementation.
 
 ### 5. User Flow
 Step-by-step: what does the user do, what do they see at each step?
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). Specs that name UI surfaces should name
+the existing components they reuse, not invent new ones the inventory covers.
 Include error states and edge cases.
 
 ### 6. Out of Scope

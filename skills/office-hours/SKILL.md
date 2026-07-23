@@ -515,6 +515,12 @@ Before proposing solutions, challenge the premises:
 1. **Is this the right problem?** Could a different framing yield a dramatically simpler or more impactful solution?
 2. **What happens if we do nothing?** Real pain point or hypothetical one?
 3. **What existing code already partially solves this?** Map existing patterns, utilities, and flows that could be reused.
+   <!-- concern:component-reuse -->
+   If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+   specifying UI components — reuse or extend an existing component on purpose
+   match, cite what you found, and apply the rule of three (see
+   `references/component-inventory.md`). Answer this question from the
+   inventory when it exists, not from ad-hoc memory.
 4. **If the deliverable is a new artifact** (CLI binary, library, package, container image, mobile app): **how will users get it?** Code without distribution is code nobody can use. The design must include a distribution channel (GitHub Releases, package manager, container registry, app store) and CI/CD pipeline — or explicitly defer it.
 5. **Startup mode only:** Synthesize the diagnostic evidence from Phase 2A. Does it support this direction? Where are the gaps?
 

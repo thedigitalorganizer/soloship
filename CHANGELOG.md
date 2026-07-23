@@ -2,6 +2,66 @@
 
 ## [Unreleased]
 
+### Added — component-reuse system + cross-cutting concern registry
+
+Solves the duplicate-component problem (a second EmailComposer gets built,
+then a fix ships to one of two copies) at every layer, plus the meta-problem
+of keeping ~20-skill cross-cutting sweeps alive as the skill set evolves.
+
+- **New auto-loaded rule `component-reuse.md` (15th rule).** Search-before-
+  create is checkable, not aspirational: read `docs/architecture/COMPONENTS.md`
+  + grep, cite what you found, extend on purpose match, state blast radius when
+  editing shared components. Carries its own anti-over-DRY guardrail — the rule
+  of three (never abstract on first or second use; >7 props is a smell).
+- **New skill `/soloship:component-inventory` (46th skill).** Generates
+  `docs/architecture/COMPONENTS.md` — name, file, purpose, props, usage sites
+  per component (React/Vue/Svelte), plus a "Possible duplicates" section the
+  user decides on. **Delta-update:** unchanged rows (including prose) are
+  preserved byte-for-byte, so a no-change re-run produces no diff; content
+  outside the marker-delimited block is never touched.
+- **Duplicate-component warn hook (18th hook protection).** PostToolUse on
+  Edit/Write: a just-written `.tsx`/`.jsx` file exporting a component whose
+  name is already exported elsewhere gets flagged to the agent (stderr, never
+  blocks — same warn pattern as the live-data gate). Uses the real
+  `HOOK_MODIFIED_FILE` contract, repo-wide `git grep` pathspec (monorepo-safe,
+  node_modules skipped by construction), ignores re-exports and type-only
+  exports by construction, fails safe (any internal error is silent exit 0).
+  10 behavioral fixture tests exec the generated script end-to-end — and
+  caught a real bug pre-ship: macOS git grep ERE has no `\b`, so the collision
+  match uses a boundary class instead.
+- **Cross-cutting concern registry (the meta-fix).** One reference file per
+  concern (`skills/references/component-inventory.md` — the contract + a
+  canonical pointer template), a manifest (`skills/references/concerns.json`),
+  and `__arch__/concerns.test.ts` enforcing the wiring bidirectionally: every
+  listed skill carries the marker, every marker is registered, the reference
+  file exists, and the canonical wording sits next to each marker. A vendored
+  refresh that wipes a touchpoint turns `npm test` red instead of rotting
+  silently. Future sweeps copy this shape.
+- **26 skills wired** with the canonical pointer at their existing anchors:
+  generation (audit Agent 1, bootstrap Step 5.5, component-inventory),
+  plan-time consumption (plan Step 2 beside the REGISTRY read, writing-plans,
+  brainstorm, office-hours, spec), build-time consumption (implement Scope
+  Lock + Follow Existing Patterns, frontend-design pre-generation gate,
+  executing-plans, subagent-driven-development, ui-ux-pro-max hierarchical
+  retrieval), review-time enforcement (eng-review Step 0, ceo-review 0B,
+  plan-design-review 0C, code-review dup lens, review Pass 3, ui-audit
+  report-only), lifecycle (learn drift check, cleanup Agent 6 freshness
+  auditor, finish nudge, verification-before-completion Touch-Map row).
+  autoplan inherits via the loaded review skills.
+- **`EXPECTED_RULES` updated** in the fitness suite; a 15th rule can't be
+  silently dropped from the installer.
+
+### Fixed
+
+- **Root `LICENSE` file added (MIT).** package.json declared MIT but the repo
+  had no LICENSE file — GitHub reported "no license", which legally means no
+  grant. One-file fix.
+- **README counts corrected**: 15 always-on rules (the list had been
+  undercounting by two — plan-artifact-lifecycle and live-data-evidence were
+  installed but unlisted), 18 hook protections, 46 workflow skills.
+- **`commands/cron.md` and `commands/status.md` stubs backfilled** — 43 of 45
+  skills had command stubs; these two were drift from their original ship.
+
 ## [0.17.0] — 2026-07-15
 
 ### Added — goal-anchored loop spine (Phases 0–4)
