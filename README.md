@@ -186,7 +186,7 @@ Three layers, from most mechanical to most guided:
 
 ### Skill architecture
 
-Every one of the 45 skills ships inside the Soloship plugin. Earlier versions routed to external plugins (Superpowers, Compound Engineering, gstack) when they were installed; that design was retired in v0.5.0. The curated set is now vendored directly into Soloship, so there are no external plugin dependencies and no broken dispatches for users who only install Soloship.
+Every one of the 46 skills ships inside the Soloship plugin. Earlier versions routed to external plugins (Superpowers, Compound Engineering, gstack) when they were installed; that design was retired in v0.5.0. The curated set is now vendored directly into Soloship, so there are no external plugin dependencies and no broken dispatches for users who only install Soloship.
 
 Skills come in three kinds:
 
