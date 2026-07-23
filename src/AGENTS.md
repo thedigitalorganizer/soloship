@@ -13,8 +13,11 @@ for `.claude/rules/` + `.codex/rules/`), `scaffold.ts`, `templates.ts`,
 
 - `bin/soloship.js` shims to `dist/cli.js` — CLI surface changes are semver
   events (see `.claude/rules/publish-version-bump.md`).
-- `installHooks()` overwrites the whole `hooks` key of
-  `.claude/settings.local.json`; other settings keys are preserved.
+- `installHooks()` **own-and-merges** the `hooks` key of
+  `.claude/settings.local.json`: it replaces only entries stamped
+  `_soloshipManaged` (or legacy-fingerprinted) and preserves user-custom
+  hooks; other settings keys are preserved. (Stale "overwrites the whole
+  key" wording corrected 2026-07-23 — see the own-and-merge pitfall below.)
 - `hooks.ts` exports SESSION_PRUNE_HOURS / SESSION_ACTIVE_MIN /
   SESSION_IDLE_MIN / DEPLOY_LOCK_STALE_MIN and rewrites them to
   `<git-common-dir>/soloship/config.json` on every SessionStart — skills read
@@ -58,3 +61,15 @@ fingerprint regex; extend it when adding a hook whose command lacks an existing
 signature. Test idempotency: run init 2–3× over a config with a foreign hook and
 assert no duplication + the foreign hook survives. See
 `docs/solutions/patterns/installer-own-and-merge-config-not-replace-20260715.md`.
+
+### Pitfall: macOS git grep ERE has no `\b` — boundary regexes silently match nothing
+_Added by soloship-learn 2026-07-23_
+Any ERE handed to `git grep -E` (or POSIX grep) inside a generated hook script
+must not use `\b` — it's a GNU-only atom; BSD/macOS regcomp never matches it,
+and a fail-safe hook (exit 0 on internal error, correct design) converts the
+dead regex into "nothing to report." Use `([^A-Za-z0-9_]|$)` boundary classes.
+Every fail-safe hook needs must-fire behavioral fixtures (see
+`__arch__/component-hook.test.ts` — exec the generated script with the real
+`HOOK_MODIFIED_FILE` contract); a unit test of the builder string passes right
+through this bug. See
+`docs/solutions/integration-issues/macos-git-grep-ere-no-word-boundary-20260723.md`.
