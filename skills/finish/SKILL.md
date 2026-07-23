@@ -149,6 +149,15 @@ git rm -q docs/handoffs/<file>   # if the plan's frontmatter names a `handoff:`
 git rm -q docs/drafts/<file>     # if the plan's frontmatter names a `promoted_from:`
 ```
 
+**Component inventory nudge (UI branches):**
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). If this branch added, removed, or
+renamed components, remind the user the inventory can be refreshed with
+`/soloship:component-inventory` — a reminder only; /cleanup owns freshness.
+
 #### Option 2: Push and Create PR
 
 The user explicitly chose the PR path. Push the branch, then create the PR:

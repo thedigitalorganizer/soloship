@@ -452,6 +452,14 @@ Feed into the Premise Challenge (0A) and Dream State Mapping (0C). If you find a
 1. What existing code already partially or fully solves each sub-problem? Map every sub-problem to existing code. Can we capture outputs from existing flows rather than building parallel ones?
 2. Is this plan rebuilding anything that already exists? If yes, explain why rebuilding is better than refactoring.
 
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). A plan proposing a component the
+inventory already covers is rebuilding what exists — reject per the DRY
+principle unless the plan argues why.
+
 ### 0C. Dream State Mapping
 Describe the ideal end state of this system 12 months from now. Does this plan move toward that state or away from it?
 ```

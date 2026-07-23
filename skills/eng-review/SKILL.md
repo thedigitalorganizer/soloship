@@ -280,6 +280,13 @@ If none was produced (user may have cancelled), proceed with standard review.
 ### Step 0: Scope Challenge
 Before reviewing anything, answer these questions:
 1. **What existing code already partially or fully solves each sub-problem?** Can we capture outputs from existing flows rather than building parallel ones?
+   <!-- concern:component-reuse -->
+   If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+   specifying UI components — reuse or extend an existing component on purpose
+   match, cite what you found, and apply the rule of three (see
+   `references/component-inventory.md`). Flag any plan that proposes a new
+   component duplicating an inventoried one; the "What already exists" output
+   section must cite the inventory for UI plans.
 2. **What is the minimum set of changes that achieves the stated goal?** Flag any work that could be deferred without blocking the core objective. Be ruthless about scope creep.
 3. **Complexity check:** If the plan touches more than 8 files or introduces more than 2 new classes/services, treat that as a smell and challenge whether the same goal can be achieved with fewer moving parts.
 4. **Search check:** For each architectural pattern, infrastructure component, or concurrency approach the plan introduces:

@@ -1,0 +1,36 @@
+{
+  "_comment": "Cross-cutting concern registry. Each concern maps to: the reference file holding its single-source contract, the marker comment its touchpoints carry, and the skills wired with that marker. __arch__/concerns.test.ts enforces the mapping bidirectionally (listed skill must carry the marker; marker-carrying skill must be listed; reference file must exist; the line after each marker must match the canonical template). Adding/removing a touchpoint requires updating this file in the same commit.",
+  "component-reuse": {
+    "reference": "references/component-inventory.md",
+    "marker": "concern:component-reuse",
+    "keyPhrase": "COMPONENTS.md",
+    "skills": [
+      "audit",
+      "bootstrap",
+      "brainstorm",
+      "ceo-review",
+      "cleanup",
+      "code-review",
+      "component-inventory",
+      "eng-review",
+      "executing-plans",
+      "finish",
+      "frontend-design",
+      "implement",
+      "learn",
+      "office-hours",
+      "onboard",
+      "plan",
+      "plan-design-review",
+      "polish",
+      "review",
+      "simplify",
+      "spec",
+      "subagent-driven-development",
+      "ui-audit",
+      "ui-ux-pro-max",
+      "verification-before-completion",
+      "writing-plans"
+    ]
+  }
+}

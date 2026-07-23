@@ -113,6 +113,16 @@ If `docs/architecture/REGISTRY.md` exists, do a quick drift check:
 
 If no registry exists, skip this step.
 
+**Component inventory drift (parallel check).**
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). When it exists, run the same drift
+check on it: components added/removed/renamed since the last update →
+delta-update the inventory per the contract (unchanged rows preserved
+byte-for-byte) and include it in the next commit. No inventory → skip.
+
 ## Step 4: AGENTS.md Propagation
 
 Using the `files` and `components` fields from the solution doc frontmatter as

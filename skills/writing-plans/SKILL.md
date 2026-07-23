@@ -36,6 +36,12 @@ Before defining tasks, map out which files will be created or modified and what 
 - You reason best about code you can hold in context at once, and your edits are more reliable when files are focused. Prefer smaller, focused files over large ones that do too much.
 - Files that change together should live together. Split by responsibility, not by technical layer.
 - In existing codebases, follow established patterns. If the codebase uses large files, don't unilaterally restructure - but if a file you're modifying has grown unwieldy, including a split in the plan is reasonable.
+- <!-- concern:component-reuse -->
+  If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+  specifying UI components — reuse or extend an existing component on purpose
+  match, cite what you found, and apply the rule of three (see
+  `references/component-inventory.md`). Tasks should say "extend component X"
+  over "create new component" whenever the inventory has a purpose match.
 
 This structure informs the task decomposition. Each task should produce self-contained changes that make sense independently.
 

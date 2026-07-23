@@ -414,8 +414,19 @@ I am building the [Page Name] page. Please read design-system/MASTER.md.
 Also check if design-system/pages/[page-name].md exists.
 If the page file exists, prioritize its rules.
 If not, use the Master rules exclusively.
+Also read docs/architecture/COMPONENTS.md if it exists and prefer reusing or
+extending the components it lists over creating new ones.
 Now, generate the code...
 ```
+
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). The design system (MASTER.md) governs
+how things look; the component inventory governs what already exists — read
+both so generated UI reuses inventoried components styled by the system's
+rules.
 
 ### Step 3: Supplement with Detailed Searches (as needed)
 

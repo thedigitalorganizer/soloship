@@ -478,6 +478,13 @@ Explain what a 10 looks like for THIS plan.
 ### 0C. Existing Design Leverage
 What existing UI patterns, components, or design decisions in the codebase should this plan reuse? Don't reinvent what already works.
 
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). Concretely flag: "the plan proposes a
+new {X} but COMPONENTS.md already lists {Y} with the same purpose."
+
 ### 0D. Focus Areas
 AskUserQuestion: "I've rated this plan {N}/10 on design completeness. The biggest gaps are {X, Y, Z}. I'll generate visual mockups next, then review all 7 dimensions. Want me to focus on specific areas instead of all 7?"
 

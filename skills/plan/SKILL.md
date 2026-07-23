@@ -59,6 +59,14 @@ If `docs/architecture/REGISTRY.md` exists, read it to understand:
 - What depends on them (blast radius)
 - What decisions have been made about them
 
+<!-- concern:component-reuse -->
+If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+specifying UI components — reuse or extend an existing component on purpose
+match, cite what you found, and apply the rule of three (see
+`references/component-inventory.md`). Plans that touch UI must specify "reuse
+component X" / "extend X with prop Y" over "create new component" whenever the
+inventory has a purpose match.
+
 If `docs/audit/audit-findings.json` exists:
 1. Check the `date` and `ttl_days` fields. If today exceeds date + ttl_days, warn:
    "Audit findings are N days old (expires after M days). Consider re-running /audit for current data."
@@ -285,6 +293,7 @@ no shown query is `inferred`, not `confirmed` — label it so.
 | "The scope is obvious, I don't need an Execution Strategy" | Without an explicit strategy, agents default to "just start coding." This is how 3-file changes become 12-file refactors. |
 | "I'll skip the enforcement gate — the plan looks good" | The gate exists because plans always look good to their author. Check the boxes. Every unchecked box is a failure mode in execution. |
 | "I don't need to read the architecture registry" | The registry tells you what depends on what you're changing. Skipping it means surprise breakage in components you didn't know existed. |
+| "I don't need to read the component inventory for this UI work" | COMPONENTS.md tells you what already exists. Skipping it is how a second EmailComposer gets planned — and how one fix later ships to one of two copies. |
 | "CE's workflow already produced a plan, so I'm done" | CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done. |
 | "The plan says X is already done, so I'll trust it" | The plan is an assertion, not evidence. `git grep` it. "Already done" claims that were false are the most expensive plan defect — they send the next agent to build on nothing. |
 | "Grepping every claim is tedious" | One false load-bearing claim = a full implementation built on a wrong premise, then reverted. The grep is seconds; the rework is hours. |

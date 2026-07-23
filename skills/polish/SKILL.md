@@ -158,6 +158,14 @@ Every interactive element needs all states:
 - **Consistent naming**: Variables and functions follow conventions
 - **Type safety**: No TypeScript `any` or ignored errors
 - **Accessibility**: Proper ARIA labels and semantic HTML
+- **Component consistency**:
+  <!-- concern:component-reuse -->
+  If `docs/architecture/COMPONENTS.md` exists, read it before creating or
+  specifying UI components — reuse or extend an existing component on purpose
+  match, cite what you found, and apply the rule of three (see
+  `references/component-inventory.md`). Same element, same component — flag
+  (don't silently merge) any near-duplicate components the polish pass
+  surfaces.
 
 ## Polish Checklist
 
