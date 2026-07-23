@@ -189,6 +189,39 @@ parent directory (de-duplicated) as the scope. Check each for governance gaps:
 
 ---
 
+## Step 5.5: Commit the Knowledge Artifacts (MANDATORY — do not leave them dirty)
+
+Learn is not done when the docs are written; it is done when they are
+**committed**. An uncommitted solution doc left in a shared main checkout shows
+up as foreign dirty state to every parallel session — agents stop to attribute
+it, stash around it, or mistake it for their own work-in-progress. The
+knowledge capture ends with a commit, every time.
+
+1. **Stage ONLY the files this learn session created or modified** — the
+   solution doc(s), any AGENTS.md files touched, `docs/architecture/REGISTRY.md`
+   / `docs/architecture/COMPONENTS.md` if the drift checks updated them, and the
+   learnings index **only if it is tracked** (`git ls-files --error-unmatch
+   .ai/learnings.jsonl` — many projects gitignore `.ai/`; never force-add an
+   ignored file). Never `git add .` — a shared checkout may carry other
+   sessions' work.
+2. **Commit** with a conventional message:
+   ```bash
+   git commit -m "docs(solutions): <short title of what was captured>"
+   ```
+3. **Verify** with `git show --stat HEAD` that the commit contains exactly the
+   knowledge artifacts and nothing else. If a foreign file slipped in, amend it
+   out before doing anything else.
+4. **Do not push from here by default** — committing is Step 5.5's job; pushing
+   is `/shipfast`/`/shipthorough`'s (or the enclosing workflow's). Exception:
+   if learn ran standalone on an otherwise-clean default branch and the project
+   pushes docs freely, a push is fine — say which you did.
+5. If the user explicitly asked to hold the commit (e.g., they want the doc
+   bundled into an in-flight feature commit), skip with a stated reason — that
+   is the only exemption, and "I'll let the user commit later" without their
+   asking is not it.
+
+---
+
 ## Common Rationalizations
 
 | Excuse | Reality |
@@ -199,6 +232,7 @@ parent directory (de-duplicated) as the scope. Check each for governance gaps:
 | "The registry audit is overkill — I only changed one file" | One file change can shift dependency graphs. The drift check takes 30 seconds and catches stale entries. |
 | "The AGENTS.md already covers this area, no need to update" | Read it and check. "Covers an area" and "documents this specific pitfall" are different. Append the specific pitfall — future agents need it. |
 | "I'll create AGENTS.md later when the directory is more stable" | Governance gaps compound. Context is freshest right now. A 15-line file today saves hours of archaeology later. |
+| "I'll leave the docs uncommitted for the user to review and commit" | Nobody asked for that. An uncommitted doc in a shared checkout is dirty state that confuses every parallel session. Commit the knowledge artifacts (Step 5.5); the user reviews git history, not a dirty tree. |
 
 ---
 
@@ -213,6 +247,7 @@ Learn is not complete until ALL of these are true:
 - [ ] Solution doc written to `docs/solutions/<category>/` with valid frontmatter
 - [ ] Frontmatter includes: title, date, problem_type, category, components, tags — and, for **bug-track** docs (`problem_type` is build_error/test_failure/runtime_error/performance_issue/database_issue/security_issue/ui_bug/integration_issue/logic_error), also `symptoms`, `root_cause` (a value from the enum), and `resolution_type` (a value from the enum). Knowledge-track docs may omit the latter three.
 - [ ] Bug-track doc body has a **Solution** section and a **Why This Works** (root-cause) section
+- [ ] **Knowledge artifacts committed (Step 5.5)** — solution doc + AGENTS.md/registry updates staged explicitly and committed (`git show --stat HEAD` shows only them), or the user explicitly asked to hold the commit (stated reason)
 - [ ] JSONL entry appended to `.ai/learnings.jsonl` with key, type, insight, solution path
 - [ ] Registry drift check completed (or registry confirmed absent)
 - [ ] AGENTS.md files updated for all affected directories where new knowledge applies (or "not transferable" noted)

@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## [0.18.1] — 2026-07-23
+
+### Changed
+
+- **`/learn` now commits its own artifacts (new Step 5.5, mandatory).** An
+  uncommitted solution doc left in a shared main checkout reads as foreign
+  dirty state to every parallel session. Learn now ends by staging exactly the
+  files it created/modified (solution doc, AGENTS.md updates, registry/
+  inventory drift fixes, the learnings index only if tracked — never
+  `git add .`), committing with a `docs(solutions):` message, and verifying
+  the commit contents via `git show --stat`. Pushing stays with the ship
+  skills. Only exemption: the user explicitly asked to hold the commit.
+
 ## [0.18.0] — 2026-07-23
 
 ### Added — component-reuse system + cross-cutting concern registry
