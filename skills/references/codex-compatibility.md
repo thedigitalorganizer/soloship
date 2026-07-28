@@ -19,6 +19,8 @@ Soloship skills are shared by Claude Code and Codex. When a skill mentions a hos
 
 When a skill dispatches a prompt from `references/agents/*.md`, first resolve it relative to this plugin's `skills/references/agents/` directory. If subagents are unavailable, read the prompt and perform the requested research in the main thread.
 
+**Inline-fallback semantics (applies to any subagent prompt run in the main thread):** subagent prompts are written for a real worker-to-controller boundary — "return your findings", "report back", "your final message is the report". When the prompt runs inline, there is no boundary: treat every return/report instruction as "produce that content here (or write it to the stated file), then continue with the calling skill's next step." An inline-run prompt never ends the session; only the calling skill decides what happens next.
+
 ## Paths
 
 Do not assume Claude-only paths such as `~/.claude/plugins/...`. Prefer paths relative to the loaded skill directory. For installed Codex plugin development, also check:

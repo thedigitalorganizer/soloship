@@ -39,7 +39,7 @@ Tests failing (<N> failures). Must fix before completing:
 Cannot proceed with merge/PR until tests pass.
 ```
 
-Stop. Don't proceed to Step 2.
+Don't proceed to Step 2 with failing tests. Fix the failures yourself, re-run the suite, and start again from the top of Step 1. If a failure genuinely can't be fixed right now (external blocker, needs a product decision), report it and ask the user how to proceed rather than merging around it.
 
 **If tests pass:** Continue to Step 2.
 
