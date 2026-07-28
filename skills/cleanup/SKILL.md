@@ -47,6 +47,13 @@ what is *proposed and executed*, not what is *audited*.
 Launch these 6 agents **in parallel** using the Agent tool. All read-only. Each
 returns structured findings.
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`. The 6-agent set
+above is that ceiling.
+
 ### Agent 1: Solution Health Scanner
 
 ```

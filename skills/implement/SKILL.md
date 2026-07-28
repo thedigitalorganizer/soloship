@@ -230,6 +230,12 @@ effects, retry-then-dead-letter — so a kill at item 300 of 500 resumes instead
 restarting or duplicating). Say which shape you picked and why in one line the
 user can see — it's a stated decision, never a hidden one.
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`.
+
 **Exception — trivial changes:** If the plan truly describes a 1-2 step direct
 change (typo fix, single-file tweak, obvious rename), skip the CE workflow and
 implement it directly. The CE workflow has real setup overhead; don't pay it
@@ -312,6 +318,13 @@ for any browser-reachable surface regardless of what the plan says.
 **No plan is finished until the change has been exercised in a real browser and any issues found have been fixed and re-verified.** This gate runs AFTER implementation and the quality checks, and BEFORE the finishing/merge step (Step 2.5 / CE Phase 4). "Tests pass" and "build succeeds" are necessary but not sufficient — they do not prove the actual user-facing behavior works. Only driving the real UI does.
 
 This is a hard gate. Passing it requires observed evidence, not assertion. "It should work," "the build is green so the page is fine," or "I changed the code that renders it" do NOT satisfy this gate — only watching the real flow happen does. This is `verification-before-completion` applied to the user-facing surface.
+
+<!-- concern:verification-sufficiency -->
+This gate's named evidence, once produced for the current state, is sufficient —
+stacking further passes or reviewer dispatches on top is scope creep, not rigor.
+A changed state (post-fix, post-edit) still requires fresh evidence; see
+`references/verification-sufficiency.md`. Each iteration of the
+fix-and-re-verify loop below verifies a new state and remains mandatory.
 
 ### What "browser QA" means here
 

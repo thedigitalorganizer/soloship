@@ -69,6 +69,13 @@ If a review agent flags any file in these directories for cleanup or removal, di
 
 Review the PR across these lenses in parallel — each is a general-purpose subagent given the PR content plus the relevant Soloship checklist as its rubric:
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`. The lens set
+below is that ceiling.
+
 <parallel_tasks>
 
 - **Correctness & quality** — rubric: `references/code-review-axes.md`

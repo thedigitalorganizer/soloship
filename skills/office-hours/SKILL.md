@@ -601,6 +601,12 @@ On any Codex error, fall back to the Claude subagent below.
 
 Dispatch via the Agent tool. The subagent has fresh context — genuine independence.
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`.
+
 Subagent prompt: same mode-appropriate prompt as above (Startup or Builder variant).
 
 Present findings under a `SECOND OPINION (Claude subagent):` header.

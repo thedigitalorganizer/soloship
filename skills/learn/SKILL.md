@@ -353,6 +353,14 @@ The orchestrating agent (main conversation) performs these steps:
 
 Based on problem type, optionally dispatch a general-purpose subagent to sanity-check the documentation against the relevant Soloship checklist before saving:
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`. This optional
+sanity-check is a decision to make once, with a stated reason — not a
+default-yes.
+
 - **performance_issue** → `references/performance-checklist.md`
 - **security_issue** → `references/security-checklist.md`
 - **test_failure** → `references/testing-patterns.md`

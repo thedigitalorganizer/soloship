@@ -1106,6 +1106,12 @@ Record baseline design score and AI slop score at end of Phase 6.
 
 **Automatic:** Outside voices run automatically when Codex is available. No opt-in needed.
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`.
+
 **Check Codex availability:**
 ```bash
 which codex 2>/dev/null && echo "CODEX_AVAILABLE" || echo "CODEX_NOT_AVAILABLE"

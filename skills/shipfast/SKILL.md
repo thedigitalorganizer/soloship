@@ -50,6 +50,12 @@ of the broken value ships the bug right back. `git grep` the changed value/name
 across the whole repo; resolve every hit with evidence before committing. If
 anything is REMAINING, the "Shipped." report must say so.
 
+<!-- concern:verification-sufficiency -->
+This gate's named evidence, once produced for the current state, is sufficient —
+stacking further passes or reviewer dispatches on top is scope creep, not rigor.
+A changed state (post-fix, post-edit) still requires fresh evidence; see
+`references/verification-sufficiency.md`.
+
 Stage the changed files (be specific — don't `git add -A`).
 Write a concise commit message with the appropriate prefix:
 - `fix:` for bug fixes

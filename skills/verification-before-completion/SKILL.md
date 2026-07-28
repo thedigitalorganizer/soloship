@@ -172,6 +172,12 @@ a task, or the final ship commit/merge), you MUST emit a **Scope Ledger** and
 get past it. No commit until the ledger is emitted and every Touch-Map row is
 resolved.
 
+<!-- concern:verification-sufficiency -->
+This gate's named evidence, once produced for the current state, is sufficient —
+stacking further passes or reviewer dispatches on top is scope creep, not rigor.
+A changed state (post-fix, post-edit) still requires fresh evidence; see
+`references/verification-sufficiency.md`.
+
 ### 1. Scope Ledger (three columns, always all three)
 
 ```

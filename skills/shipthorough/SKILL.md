@@ -124,6 +124,12 @@ report must state exactly what shipped and what remains — do not claim the pla
 is fully delivered when it is not. This is the in-run catch for stale-state
 bugs and premature phase-done over-claims.
 
+<!-- concern:verification-sufficiency -->
+This gate's named evidence, once produced for the current state, is sufficient —
+stacking further passes or reviewer dispatches on top is scope creep, not rigor.
+A changed state (post-fix, post-edit) still requires fresh evidence; see
+`references/verification-sufficiency.md`.
+
 ### Step 9.6: Browser QA Gate (Soloship — MANDATORY)
 
 Before the merge, the user-facing surface must have been exercised in a real

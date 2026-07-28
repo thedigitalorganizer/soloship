@@ -32,5 +32,36 @@
       "verification-before-completion",
       "writing-plans"
     ]
+  },
+  "delegation-discipline": {
+    "reference": "references/delegation-discipline.md",
+    "marker": "concern:delegation-discipline",
+    "keyPhrase": "ceiling, not the floor",
+    "skills": [
+      "autoplan",
+      "ceo-review",
+      "cleanup",
+      "code-review",
+      "design-review",
+      "devex-review",
+      "eng-review",
+      "implement",
+      "learn",
+      "office-hours",
+      "plan",
+      "subagent-driven-development"
+    ]
+  },
+  "verification-sufficiency": {
+    "reference": "references/verification-sufficiency.md",
+    "marker": "concern:verification-sufficiency",
+    "keyPhrase": "scope creep, not rigor",
+    "skills": [
+      "implement",
+      "plan",
+      "shipfast",
+      "shipthorough",
+      "verification-before-completion"
+    ]
   }
 }
