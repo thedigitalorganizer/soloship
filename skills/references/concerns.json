@@ -32,5 +32,23 @@
       "verification-before-completion",
       "writing-plans"
     ]
+  },
+  "delegation-discipline": {
+    "reference": "references/delegation-discipline.md",
+    "marker": "concern:delegation-discipline",
+    "keyPhrase": "ceiling, not the floor",
+    "skills": [
+      "implement",
+      "subagent-driven-development"
+    ]
+  },
+  "verification-sufficiency": {
+    "reference": "references/verification-sufficiency.md",
+    "marker": "concern:verification-sufficiency",
+    "keyPhrase": "scope creep, not rigor",
+    "skills": [
+      "implement",
+      "verification-before-completion"
+    ]
   }
 }
