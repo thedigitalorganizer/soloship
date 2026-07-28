@@ -155,7 +155,7 @@ and **`git rm` the draft in the same commit**. Two live copies of the same inten
 means the next agent has to guess which one is current — and it will guess wrong
 eventually.
 
-## Goal + Done-When (MANDATORY sections — hook-enforced)
+## Goal + Done-When (required sections — hook-enforced)
 
 Every plan must open with two sections, and this is **enforced by a hook**
 (`plan-completeness-gate`), not just this prose — a write into `docs/plans/` that
@@ -173,7 +173,7 @@ Each `## Done-When` item should trace to one or more `## QA Plan` rows below (ho
 that observable condition gets verified). The escape hatch (`.ai/.plan-status-ack`)
 exists for the rare genuine exception and requires a written reason.
 
-## QA Plan (MANDATORY section in every plan)
+## QA Plan (required section in every plan)
 
 How the work will be verified is a **planning decision, not an afterthought at
 ship time**. Every plan must contain a `## QA Plan` section that names, for each
@@ -246,7 +246,7 @@ stacking further passes or reviewer dispatches on top is scope creep, not rigor.
 A changed state (post-fix, post-edit) still requires fresh evidence; see
 `references/verification-sufficiency.md`.
 
-### Claim Verification (MANDATORY — do not skip)
+### Claim Verification (required — do not skip)
 
 A plan is a set of assertions about a codebase that does not exist in your
 context — it exists on disk. Every **factual claim** in the plan must be
@@ -290,21 +290,14 @@ provenance-complete Claims-Table row (exact query, environment, timestamp, resul
 + row count, verdict). Per the `live-data-evidence-gate` rule, a data claim with
 no shown query is `inferred`, not `confirmed` — label it so.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "This is simple, I don't need to search solutions first" | Simple tasks on complex codebases still hit documented pitfalls. The search takes 10 seconds; re-discovering a known issue takes an hour. |
-| "I'll add the Key Decisions section later" | Plans without Key Decisions get executed with implicit decisions that nobody can review. Later never comes. |
-| "The scope is obvious, I don't need an Execution Strategy" | Without an explicit strategy, agents default to "just start coding." This is how 3-file changes become 12-file refactors. |
-| "I'll skip the enforcement gate — the plan looks good" | The gate exists because plans always look good to their author. Check the boxes. Every unchecked box is a failure mode in execution. |
-| "I don't need to read the architecture registry" | The registry tells you what depends on what you're changing. Skipping it means surprise breakage in components you didn't know existed. |
-| "I don't need to read the component inventory for this UI work" | COMPONENTS.md tells you what already exists. Skipping it is how a second EmailComposer gets planned — and how one fix later ships to one of two copies. |
-| "CE's workflow already produced a plan, so I'm done" | CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done. |
-| "The plan says X is already done, so I'll trust it" | The plan is an assertion, not evidence. `git grep` it. "Already done" claims that were false are the most expensive plan defect — they send the next agent to build on nothing. |
-| "Grepping every claim is tedious" | One false load-bearing claim = a full implementation built on a wrong premise, then reverted. The grep is seconds; the rework is hours. |
-| "The test suite covers this — that's the QA plan" | Tests prove units pass, not that the surface behaves. Every plan names at least one observed end-to-end verification of the real surface (browser QA for anything user-facing). |
-| "I'll figure out how to QA it during implementation" | Improvised QA defaults to whatever is easiest, not whatever matches the work. The QA method is a planning decision — pick the row from the QA method table now. |
+- "This is simple, I don't need to search solutions first" → simple tasks on complex codebases still hit documented pitfalls. The search takes 10 seconds; re-discovering a known issue takes an hour.
+- "I'll add the Key Decisions / Execution Strategy sections later" → later never comes. Plans without them get executed with implicit decisions nobody can review, and "just start coding" is how 3-file changes become 12-file refactors.
+- "I don't need the architecture registry or the component inventory" → they tell you what depends on what you're changing and what already exists. Skipping them is how surprise breakage happens and how a second EmailComposer gets planned.
+- "The plan says X is already done, so I'll trust it" → the plan is an assertion, not evidence. `git grep` every load-bearing claim — a false "already done" sends the next agent to build on nothing. The grep is seconds; the rework is hours.
+- "The test suite covers this — that's the QA plan / I'll figure out QA during implementation" → tests prove units pass, not that the surface behaves, and improvised QA defaults to whatever is easiest. Every plan names at least one observed end-to-end verification of the real surface, chosen now from the QA method table.
+- "CE's workflow already produced a plan, so I'm done" → CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done.
 
 ---
 

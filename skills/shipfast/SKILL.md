@@ -42,7 +42,7 @@ Must pass. If build fails, fix before proceeding.
 
 ### 4. Commit
 
-**Scope Ledger Gate (Soloship — MANDATORY, even in emergency):** Before this
+**Scope Ledger Gate (Soloship — required even in an emergency):** Before this
 commit, invoke `verification-before-completion` and emit its **Scope Ledger**
 (shipped / remaining / out-of-scope) and **Touch Map**. Emergency fixes are the
 *highest*-risk place for stale-state bugs — a hotfix that patches 1 of 4 copies

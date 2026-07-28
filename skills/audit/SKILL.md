@@ -695,15 +695,13 @@ Include artifact contract fields at the top level:
 
 ---
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "I can combine Phase 1 and 2 for efficiency" | Phase 2 depends on Phase 1 findings. Combining them produces shallow analysis that misses how components interact. |
-| "The comprehension checkpoint is a formality" | User corrections at the checkpoint are often the highest-severity findings. Skipping it means building assessment on wrong assumptions. |
-| "I'll skip some Phase 2 agents — not all are relevant" | You don't know what's relevant until you look. Security surfaces hide in unexpected places. Entanglement hides in "clean" code. Run all agents. |
-| "The codebase is small, I can just skim it" | Small codebases still have architectural decisions, hidden dependencies, and security surface. Size doesn't reduce the need for systematic investigation. |
-| "I already know this codebase from earlier in the conversation" | Audits must be evidence-based, not memory-based. Run the agents — they'll find things you forgot or never noticed. |
+- "I can combine Phase 1 and 2 for efficiency" → Phase 2 depends on Phase 1 findings. Combining them produces shallow analysis that misses how components interact.
+- "The comprehension checkpoint is a formality" → user corrections at the checkpoint are often the highest-severity findings. Skipping it means building assessment on wrong assumptions.
+- "I'll skip some Phase 2 agents — not all are relevant" → you don't know what's relevant until you look. Security surfaces hide in unexpected places; entanglement hides in "clean" code. Run all agents.
+- "The codebase is small, I can just skim it" → small codebases still have architectural decisions, hidden dependencies, and security surface. Size doesn't reduce the need for systematic investigation.
+- "I already know this codebase from earlier in the conversation" → audits are evidence-based, not memory-based. Run the agents — they'll find things you forgot or never noticed.
 
 ---
 

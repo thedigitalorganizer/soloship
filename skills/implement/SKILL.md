@@ -241,18 +241,14 @@ change (typo fix, single-file tweak, obvious rename), skip the CE workflow and
 implement it directly. The CE workflow has real setup overhead; don't pay it
 for five-minute changes.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "I don't need a plan for this, it's straightforward" | If it were straightforward, you wouldn't be using `/implement`. No plan = no shared understanding of what "done" means. Run `/plan` first. |
-| "I'll adjust the plan as I go" | Adjustments are fine — but update the plan file. An executed plan that doesn't match the written plan is worse than no plan at all. |
-| "I'll skip the methodology and just code it" | The execution methodology handles branch setup, clarification gates, and quality checks that are easy to forget when coding solo. Apply it unless the change is genuinely trivial. |
-| "I'll skip `/learn` — this was routine" | "Routine" work that needed a plan and an implementation skill is, by definition, not trivial. Capture what you learned. |
-| "The build passes, so the feature works" | A green build proves it compiles, not that the button does the thing. The Browser QA Gate (Step 2.6) is not optional. Drive the real flow. |
-| "I changed the rendering code, so the page is obviously fine" | You changed code you *believe* renders correctly. You haven't watched it. Open it in `/soloship:browse` and look. |
-| "I can't test that flow — it needs a login / paid account / specific data" | That's an unmet gate, not an exemption. Use a test account or seeded fixture; if none exists, ask the user for one. Don't call an untested authenticated flow done. |
-| "It's done, I'll just note the QA is pending" | "Done with QA pending" is not done. Nothing ships until the affected flows were observed working and any fixes were re-verified. |
+- "I don't need a plan / I'll skip the methodology and just code it" → no plan means no shared understanding of what "done" means, and the methodology handles branch setup, clarification gates, and quality checks that are easy to forget solo. Run `/plan` first; skip the methodology only for genuinely trivial changes.
+- "I'll adjust the plan as I go" → adjustments are fine — but update the plan file. An executed plan that doesn't match the written plan is worse than no plan at all.
+- "I'll skip `/learn` — this was routine" → "routine" work that needed a plan and an implementation skill is, by definition, not trivial. Capture what you learned.
+- "The build passes / I changed the rendering code, so the page is fine" → a green build proves it compiles, not that the button does the thing, and code you *believe* renders correctly is not code you've watched work. The Browser QA Gate (Step 2.6) means driving the real flow in `/soloship:browse`.
+- "I can't test that flow — it needs a login / paid account / specific data" → that's an unmet gate, not an exemption. Use a test account or seeded fixture; if none exists, ask the user for one. An untested authenticated flow is not done.
+- "It's done, I'll just note the QA is pending" → "done with QA pending" is not done. Nothing ships until the affected flows were observed working and any fixes were re-verified.
 
 ---
 
@@ -299,7 +295,7 @@ Report the merge target, the commit hash that's now on the base branch, and conf
 
 If the user later wants a PR for an already-merged change, they can run it manually from the base branch, or use `/soloship:finish` Option 2 on a new branch.
 
-## Step 2.6: QA Gate (Soloship — MANDATORY before "done")
+## Step 2.6: QA Gate (Soloship — required before "done")
 
 > This step implements the auto-loaded `browser-qa-gate` and `qa-plan-in-plans`
 > rules. The rules are the always-on source of truth; this step is where
@@ -498,7 +494,7 @@ This command takes a work document (plan, specification, or todo file) and execu
 
    **Heuristic:** "Can I write a commit message that describes a complete, valuable change? If yes, commit. If the message would be 'WIP' or 'partial X', wait."
 
-   **Scope Ledger Gate (Soloship — MANDATORY before this commit):** Before the
+   **Scope Ledger Gate (Soloship — required before this commit):** Before the
    commit that closes a task, invoke the `verification-before-completion` skill
    and emit its **Scope Ledger** (shipped / remaining / out-of-scope) and
    **Touch Map** (`git grep` the changed value/name across the whole repo; one
@@ -589,7 +585,7 @@ This command takes a work document (plan, specification, or todo file) and execu
    - Code follows existing patterns
    - Figma designs match (if applicable)
    - No console errors or warnings
-   - **QA Gate passed (Step 2.6) — MANDATORY.** Every row of the plan's QA Plan executed with evidence, and every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed and re-verified by re-running the flow, evidence captured. Or an explicit "no browser surface" exemption with the QA Plan rows for those surfaces executed instead. **Do not enter Phase 4 (Ship It) until this passes** — a green build is not QA.
+   - **QA Gate passed (Step 2.6) — required.** Every row of the plan's QA Plan executed with evidence, and every affected user-facing flow exercised in a real browser via `/soloship:browse` (test account where needed), issues fixed and re-verified by re-running the flow, evidence captured. Or an explicit "no browser surface" exemption with the QA Plan rows for those surfaces executed instead. **Do not enter Phase 4 (Ship It) until this passes** — a green build is not QA.
 
 4. **Prepare Operational Validation Plan** (REQUIRED)
    - Add a `## Post-Deploy Monitoring & Validation` section to the PR description for every change.
@@ -605,7 +601,7 @@ This command takes a work document (plan, specification, or todo file) and execu
 
 1. **Create Commit**
 
-   **Scope Ledger Gate (Soloship — MANDATORY before this final commit):**
+   **Scope Ledger Gate (Soloship — required before this final commit):**
    Invoke `verification-before-completion` and emit the **Scope Ledger** +
    **Touch Map** for the whole change set, not just the last file touched.
    `git grep` every value/name introduced or changed across the repo; resolve

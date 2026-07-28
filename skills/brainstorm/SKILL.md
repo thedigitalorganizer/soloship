@@ -54,9 +54,9 @@ this before suggesting /plan:
 > how to build it. Use Stitch, Figma, or sketch it on paper. When you can see
 > it, run `/plan`.
 
-This is not optional. Real product teams (Apple, Google, Stripe) start with
-design, not architecture. You can't plan how to build something until you can
-see what you're building.
+Present this nudge every time. Real product teams (Apple, Google, Stripe) start
+with design, not architecture. You can't plan how to build something until you
+can see what you're building.
 
 ## Step 3.5: Grill-Me Nudge (for medium-or-larger work)
 

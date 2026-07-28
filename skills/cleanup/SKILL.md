@@ -18,7 +18,7 @@ create. Over time, solution docs accumulate duplicates, stale file references, a
 missing cross-links. Plans pile up after implementation. AGENTS.md files reference
 deleted directories. learnings.jsonl falls out of sync. You fix all of that.
 
-**IMPORTANT:** This is a 3-phase process: AUDIT → PROPOSE → EXECUTE.
+This is a 3-phase process: AUDIT → PROPOSE → EXECUTE.
 Never execute changes without user approval. Never skip the audit.
 
 ---
@@ -326,7 +326,7 @@ After all 6 agents complete, present a summary table to the user:
 [learnings.jsonl gap: N solutions, M entries]
 ```
 
-If subcommand was `/cleanup report`, STOP HERE. Present the audit and done.
+If subcommand was `/cleanup report`, stop here — present the audit and you're done.
 
 ---
 
@@ -402,7 +402,7 @@ The main agent never holds all source content simultaneously.
    ## Related
    [Links + "Merged from: [list of original paths, recoverable via git history]"]
 
-   IMPORTANT: Preserve ALL information from the originals. Condense, don't discard.
+   Preserve all information from the originals. Condense, don't discard.
    ```
    After each subagent returns, `git rm` the original source files.
 
@@ -555,19 +555,14 @@ The main agent never holds all source content simultaneously.
 
 ---
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "The knowledge base is small, it doesn't need cleanup" | Small bases still accumulate stale refs and missing cross-links. The audit takes 2 minutes. Run it. |
-| "I'll just merge these solutions manually without the subagent" | Holding 3+ solution docs in main context degrades rewrite quality. The subagent pattern exists to prevent this. Use it. |
-| "These solutions are similar but not really duplicates" | That's why the 2-of-3 signal threshold exists. If 2+ signals align, they're merge candidates. Present them to the user — they decide. |
-| "I can skip the audit and just fix what I know is broken" | You don't know what's broken until you audit. Stale AGENTS.md references hide behind healthy-looking files. Run all 6 agents. |
-| "The user approved everything, I can batch the commit" | You should batch the commit — that's correct. But each merge still gets its own subagent. Batching the commit ≠ batching the content. |
-| "This plan is probably completed but I can't find the commit" | "Probably" is not evidence. If git log doesn't show implementation commits, the plan stays as "keep" not "delete". |
-| "I'll skip the learnings rebuild, it's just an index" | The index is how future agents find solutions quickly. 13 entries for 75 solutions means most solutions are invisible. Rebuild it. |
-| "I can normalize frontmatter inline, it's just YAML" | 14 solution bodies in main context crowds out orchestration quality. Batch into subagents of ~5. |
-| "Cross-references aren't that important" | Cross-refs are how agents discover related solutions they didn't search for directly. Missing links = missed prevention strategies. Wire them. |
+- "The knowledge base is small / I'll just fix what I know is broken" → you don't know what's broken until you audit, and stale AGENTS.md references hide behind healthy-looking files. The audit takes 2 minutes — run all the agents.
+- "I'll merge these solutions (or normalize frontmatter) inline without the subagent" → holding several solution bodies in main context degrades rewrite and orchestration quality. The subagent pattern exists to prevent this — use it.
+- "These solutions are similar but not really duplicates" → that's why the 2-of-3 signal threshold exists. If 2+ signals align, they're merge candidates — present them to the user, who decides.
+- "The user approved everything, I can batch the commit" → batching the commit is correct, but each merge still gets its own subagent. Batching the commit is not batching the content.
+- "This plan is probably completed but I can't find the commit" → "probably" is not evidence. If git log doesn't show implementation commits, the plan stays "keep", not "delete".
+- "I'll skip the learnings rebuild / cross-references aren't that important" → the index and cross-links are how future agents find solutions they didn't search for directly. Unindexed, unlinked solutions are invisible.
 
 ---
 

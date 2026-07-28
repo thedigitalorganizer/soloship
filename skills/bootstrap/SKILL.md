@@ -255,15 +255,13 @@ Based on context, present the appropriate next step:
 
 ---
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "I'll use the template defaults, the project is standard" | No project is standard. Defaults that don't match the project's actual conventions create rules that fight the codebase. Read the audit or ask questions. |
-| "Existing AGENTS.md looks stale, I'll replace it" | Stale AGENTS.md was written by someone who knew the directory. Update it, don't replace it. Existing content has context you don't. |
-| "I'll add more than 8 rules to be thorough" | More rules = less compliance. Cognitive overload makes agents ignore all rules. Pick the 4-8 that matter most. |
-| "This directory only has 2 files, but it's important enough for AGENTS.md" | The 3-file threshold exists because AGENTS.md overhead exceeds value for tiny directories. Important directories will grow past 3 files when they need governance. |
-| "I'll skip the audit and go straight to bootstrap" | Bootstrapping without audit data means guessing at conventions, components, and gaps. Audit-informed mode exists for a reason. |
+- "I'll use the template defaults, the project is standard" → no project is standard. Defaults that don't match the project's actual conventions create rules that fight the codebase. Read the audit or ask questions.
+- "Existing AGENTS.md looks stale, I'll replace it" → stale AGENTS.md was written by someone who knew the directory. Update it, don't replace it — existing content has context you don't.
+- "I'll add more than 8 rules to be thorough" → more rules mean less compliance; cognitive overload makes agents ignore all rules. Pick the 4-8 that matter most.
+- "This directory only has 2 files, but it's important enough for AGENTS.md" → the 3-file threshold exists because AGENTS.md overhead exceeds value for tiny directories. Important directories will grow past 3 files when they need governance.
+- "I'll skip the audit and go straight to bootstrap" → bootstrapping without audit data means guessing at conventions, components, and gaps. Audit-informed mode exists for a reason.
 
 ---
 

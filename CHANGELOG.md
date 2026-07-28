@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+### Added — Claude 5 adaptation (Tier 1)
+
+- **Two new cross-cutting concerns via the concern registry:
+  `delegation-discipline` and `verification-sufficiency`.** Claude 5 models
+  delegate and verify proactively; when a skill already mandates dispatches
+  and evidence, the instinct stacks on top and the run pays twice. Both
+  concerns cap stacking without ever licensing skipping (the counter-pressure
+  sections are load-bearing). Wired into 17 skills; reference contracts in
+  `skills/references/`.
+- **Both concerns also ship as installer rules (16th and 17th rules)** into
+  user projects' `.claude/rules/` and `.codex/rules/`. A new arch test
+  extracts key phrases from the reference contracts at test time so the rule
+  copies cannot silently drift.
+- **SDD re-vendored from Superpowers v6.2.0.** Review findings now resume the
+  original implementer (rounds 1–3) and escalate to a fresh implementer on a
+  stronger model (rounds 4–5), with a five-round circuit breaker and
+  controller adjudication instead of an unbounded fix loop; re-reviews are
+  scoped to the fix diff; the SDD workspace is plan-scoped
+  (`.ai/sdd/<plan-slug>/`), removing the stale-ledger cross-plan failure.
+
+### Changed
+
+- **Corpus-wide tone softening for Claude 5.** Forceful 4.x-era phrasing
+  (ALL-CAPS mandates, threat framing, psychological-pressure tables) calmed
+  to firm prose with identical gate semantics — Sonnet 5 can flag coercive
+  skill text as prompt injection (Superpowers #1878), and Claude 5 follows
+  calm instructions literally. Includes a deliberate, documented divergence
+  from upstream wording in the vendored verification-before-completion,
+  test-driven-development, and debug skills.
+
 ## [0.18.1] — 2026-07-23
 
 ### Changed

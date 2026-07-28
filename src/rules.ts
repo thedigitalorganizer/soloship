@@ -203,8 +203,9 @@ Four gates enforce this; they are the floor, not the rule:
   branch, and any statusless file sitting in \`docs/plans/\`.
 
 Escape hatch: \`.ai/.plan-status-ack\`. As with the billing and recurrence gates,
-creating it without a real, written reason defeats the instrument and violates
-this rule. If a gate fires, the default correct response is to **fix the status**,
+creating it without a real, written reason removes the protection the gate
+provides — don't do it; if the gate seems wrong, surface that to the user
+instead. If a gate fires, the default correct response is to **fix the status**,
 not to silence the gate.
 
 ## When This Triggers
@@ -447,7 +448,8 @@ possible.
 
 **Writing \`.ai/.recurrence-ack\` to make the block go away — without a real,
 written reason that a mechanical fix is genuinely not the right call here —
-defeats the entire instrument and violates this rule.** The block is telling
+removes the protection the gate provides — don't do it; if the gate seems
+wrong, surface that to the user instead.** The block is telling
 you the same thing was patched before; the correct default response is to
 escalate to a *mechanical* fix (a hook, a test, or a structural change that
 makes the failure impossible to recur), not to re-patch and ack.
@@ -536,7 +538,7 @@ the authenticated path.
    it exists, use the account it names as the default for QA (and read the
    credentials from the gitignored secrets file it points to). Use a different
    account only when the task specifically calls for one.
-2. **If no test account is documented and a flow needs auth, STOP and ask the
+2. **If no test account is documented and a flow needs auth, stop and ask the
    user:** *"This project has no documented test account and this flow needs a
    login. Want me to create a test account and document it so QA always uses it
    from now on (unless a specific account is needed)?"*
@@ -653,7 +655,7 @@ regression on an adjacent surface:
 
 The loop has exactly two exits: every row passes with evidence, or a failure is
 genuinely unfixable right now (external blocker, needs the user's product
-decision) — then STOP, report the work as **NOT done** with the failing row and
+decision) — then stop, report the work as **not done** with the failing row and
 why, and ask the user. Never silently proceed. If the same fix keeps failing,
 debug the root cause instead of re-patching, then resume the loop.
 
@@ -725,10 +727,10 @@ now," and never deploy around the queue because another session is mid-deploy.
    explicitly and creates the tag.
 3. **One deploy at a time.** Acquire the deploy lock
    (\`<git-common-dir>/soloship/deploy.lock\`) before deploying; release it on
-   success AND failure. A fresh lock owned by another session = wait or ask,
+   success and failure. A fresh lock owned by another session = wait or ask,
    never proceed. A stale lock (older than the \`deploy_lock_stale_min\`
    threshold in \`<git-common-dir>/soloship/config.json\`) is *presumed*
-   abandoned but NEVER auto-broken — surface it and let the user decide.
+   abandoned but never auto-broken — surface it and let the user decide.
 
 The full step-by-step sequence lives in the Soloship skill reference
 \`references/deploy-sequence.md\` and is what \`/soloship:shipfast\` and

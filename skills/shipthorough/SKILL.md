@@ -111,7 +111,7 @@ splitting into logical, bisectable commits:
 - Each commit should build and pass tests independently
 - Use `git rebase` to reorganize if needed (ask user first)
 
-### Step 9.5: Scope Ledger Gate (Soloship — MANDATORY)
+### Step 9.5: Scope Ledger Gate (Soloship — required)
 
 Before the merge (the point of no return where "shipped" gets claimed), invoke
 the `verification-before-completion` skill and emit its **Scope Ledger**
@@ -130,7 +130,7 @@ stacking further passes or reviewer dispatches on top is scope creep, not rigor.
 A changed state (post-fix, post-edit) still requires fresh evidence; see
 `references/verification-sufficiency.md`.
 
-### Step 9.6: Browser QA Gate (Soloship — MANDATORY)
+### Step 9.6: Browser QA Gate (Soloship — required)
 
 Before the merge, the user-facing surface must have been exercised in a real
 browser — not just "tests pass." Per the auto-loaded `browser-qa-gate` rule:
@@ -147,7 +147,7 @@ config / infra / non-UI migration) — state it explicitly and verify the outcom
 another way. "Tests pass" / "build is green" does NOT satisfy this gate. Do not
 proceed to Step 10 until it passes.
 
-### Step 9.7: Live-Data Claim Gate (Soloship — MANDATORY when applicable)
+### Step 9.7: Live-Data Claim Gate (Soloship — required when applicable)
 
 If this change asserts or depends on any fact about live/production/CRM/financial
 data — a row count, a reconciled total, a backfill size, "these now match", "X no
@@ -252,16 +252,14 @@ unapplied migrations are the most expensive recurring prod gap. After deploy:
 4. If a D1/Postgres migration shipped, confirm it was applied against the prod database (`wrangler d1 migrations list <DB>` or equivalent), not just committed.
 5. If the live state doesn't reflect the change: rebuild, redeploy, re-verify. Do not proceed to Done until it is observably live.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "Tests pass, I can skip the coverage audit" | Tests passing means existing tests pass. Coverage audit asks: do tests exist for the NEW code? Different question. |
-| "I'll clean up commits later" | Non-bisectable commits become permanent the moment you push. Rewriting history after push requires force-push, which is destructive. Do it now. |
-| "The registry doesn't need updating — my changes are minor" | Minor changes that affect imports shift the dependency graph. If the registry exists, it's there because dependencies matter. Update it. |
-| "Code review is redundant — I already reviewed as I wrote" | The 3-pass review (structural, adversarial, design-lite) catches categories of issues that authoring doesn't. You don't proofread your own essay. |
-| "I'll skip the verification gate — it passed before the PR" | Review fixes, merge conflict resolution, and commit reorg can all introduce regressions. The verification gate exists to catch them. |
-| "CHANGELOG is busywork" | CHANGELOGs are the only human-readable record of what shipped and when. They're the first thing users and future-you check. |
+- "Tests pass, I can skip the coverage audit" → tests passing means existing tests pass. The coverage audit asks whether tests exist for the new code — a different question.
+- "I'll clean up commits later" → non-bisectable commits become permanent the moment you push; rewriting pushed history requires a destructive force-push. Do it now.
+- "The registry doesn't need updating — my changes are minor" → minor changes that affect imports shift the dependency graph. If the registry exists, it's there because dependencies matter. Update it.
+- "Code review is redundant — I already reviewed as I wrote" → the 3-pass review (structural, adversarial, design-lite) catches categories of issues that authoring doesn't. You don't proofread your own essay.
+- "I'll skip the verification gate — it passed before the PR" → review fixes, merge conflict resolution, and commit reorg can all introduce regressions. The verification gate exists to catch them.
+- "CHANGELOG is busywork" → CHANGELOGs are the only human-readable record of what shipped and when. They're the first thing users and future-you check.
 
 **Ship thorough uses checklists from `references/code-review-axes.md`, `references/testing-patterns.md`, and `references/performance-checklist.md`.**
 

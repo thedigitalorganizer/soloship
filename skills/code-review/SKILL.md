@@ -220,7 +220,7 @@ Check whether the code can be simplified — dispatch a general-purpose subagent
 
 ### 5. Findings Synthesis and Todo Creation Using file-todos Skill
 
-<critical_requirement> ALL findings MUST be stored in the todos/ directory using the file-todos skill. Create todo files immediately after synthesis - do NOT present findings for user approval first. Use the skill for structured todo management. </critical_requirement>
+<critical_requirement> All findings must be stored in the todos/ directory using the file-todos skill. Create todo files immediately after synthesis — do not present findings for user approval first. Use the skill for structured todo management. </critical_requirement>
 
 #### Step 1: Synthesize All Findings
 

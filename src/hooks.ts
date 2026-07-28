@@ -1298,7 +1298,7 @@ fi
 WHY="$PATH_HIT"
 [ -z "$WHY" ] && WHY="$CONTENT_HIT"
 
-echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation violates the rule." >&2
+echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation removes the protection this gate provides — if the gate seems wrong, surface that to the user instead." >&2
 exit 2
 '`;
 }
@@ -1491,7 +1491,7 @@ if [ $ACK -eq 1 ]; then
 fi
 
 if [ $TIER -ge 2 ]; then
-  echo "BLOCKED by recurrence-gate — HARD STOP (this failure class has recurred $TIER times):$HIST" >&2
+  echo "BLOCKED by recurrence-gate — Hard stop (this failure class has recurred $TIER times):$HIST" >&2
   echo "A repeat patch is not the fix. Escalate to a MECHANICAL fix (hook, test, or structural change) so it cannot recur. If a patch is genuinely correct this time, record why: mkdir -p .ai && echo \\"<reason> ($(date +%F))\\" >> .ai/.recurrence-ack then re-commit." >&2
   exit 2
 fi
@@ -1502,7 +1502,7 @@ if [ $DEGRADED -eq 1 ]; then
 fi
 
 echo "BLOCKED by recurrence-gate — first recurrence:$HIST" >&2
-echo "This failure class was already addressed (see the solution path above). A second patch is not allowed. Either escalate to a mechanical fix (hook/test/structural change) so it cannot recur, or, if a patch is genuinely correct this time, record why: mkdir -p .ai && echo \\"<reason> ($(date +%F))\\" >> .ai/.recurrence-ack then re-commit. Writing that file without a real reason violates the recurrence-gate rule." >&2
+echo "This failure class was already addressed (see the solution path above). A second patch is not allowed. Either escalate to a mechanical fix (hook/test/structural change) so it cannot recur, or, if a patch is genuinely correct this time, record why: mkdir -p .ai && echo \\"<reason> ($(date +%F))\\" >> .ai/.recurrence-ack then re-commit. Writing that file without a real reason removes the protection this gate provides — if the gate seems wrong, surface that to the user instead." >&2
 exit 2
 '`;
 }

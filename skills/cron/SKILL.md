@@ -189,15 +189,13 @@ confirm it's gone from the status endpoint. If a coherence test pins slots
 to registry entries, it will fail until both sides move together — that's by
 design.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "I'll register it after I see it working" | Backwards. Registration is one JSON entry and makes the watchdog watch you get it working. Unregistered-but-live is exactly the state that rots into a silent failure. |
-| "This job is too trivial to monitor" | Trivial jobs fail silently too, and their failures compound quietly (a stale index, a missed onboarding email). If it's worth scheduling, it's worth one registry entry. |
-| "I'll build a quick watchdog just for this job" | One watchdog, ever. A per-job watchdog is the fragmentation this system exists to end. Register the job. |
-| "The build is green so the automation works" | A green build proves nothing about a scheduler firing at 9am. Observe the first real check-in. |
-| "The webhook never checked in but it's probably fine" | A webhook that has never checked in is indistinguishable from one that silently can't. Seed the baseline, then let the activity window judge. |
+- "I'll register it after I see it working" → backwards. Registration is one JSON entry and makes the watchdog watch you get it working. Unregistered-but-live is exactly the state that rots into a silent failure.
+- "This job is too trivial to monitor" → trivial jobs fail silently too, and their failures compound quietly (a stale index, a missed onboarding email). If it's worth scheduling, it's worth one registry entry.
+- "I'll build a quick watchdog just for this job" → one watchdog, ever. A per-job watchdog is the fragmentation this system exists to end. Register the job.
+- "The build is green so the automation works" → a green build proves nothing about a scheduler firing at 9am. Observe the first real check-in.
+- "The webhook never checked in but it's probably fine" → a webhook that has never checked in is indistinguishable from one that silently can't. Seed the baseline, then let the activity window judge.
 
 ## Verification
 

@@ -141,15 +141,13 @@ match, cite what you found, and apply the rule of three (see
 inventory so "duplicates an inventoried one" is checked against data, not
 memory.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "The changes are small, a quick skim is fine" | Small changes cause big outages. A one-line auth bypass is a small change. Run all three passes. |
-| "I wrote this code, I already know it's correct" | You're the worst reviewer of your own code. The adversarial pass exists specifically to find what you missed. |
-| "The structural review found nothing, skip the adversarial pass" | Structural review checks what's there. Adversarial review checks what's missing — race conditions, edge cases, failure modes. Different lenses, both required. |
-| "This is backend-only, skip the design-lite pass" | Skip it if no frontend files changed (that's the rule). But don't skip it because you assume the frontend is fine. Check the diff. |
-| "I'll just flag everything as 'suggestion'" | Severity classification exists for a reason. If it's a security vulnerability, it's Critical — not a suggestion. See `references/code-review-axes.md`. |
+- "The changes are small, a quick skim is fine" → small changes cause big outages. A one-line auth bypass is a small change. Run all three passes.
+- "I wrote this code, I already know it's correct" → you're the worst reviewer of your own code. The adversarial pass exists specifically to find what you missed.
+- "The structural review found nothing, skip the adversarial pass" → structural review checks what's there; adversarial review checks what's missing — race conditions, edge cases, failure modes. Different lenses, both required.
+- "This is backend-only, skip the design-lite pass" → skip it if no frontend files changed (that's the rule), not because you assume the frontend is fine. Check the diff.
+- "I'll just flag everything as 'suggestion'" → severity classification exists for a reason. If it's a security vulnerability, it's Critical — not a suggestion. See `references/code-review-axes.md`.
 
 **Review uses the 5-axis framework and severity classification from `references/code-review-axes.md`.**
 

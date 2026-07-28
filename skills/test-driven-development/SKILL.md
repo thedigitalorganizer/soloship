@@ -7,7 +7,7 @@ description: Use when implementing any feature or bugfix, before writing impleme
 
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
-<!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Content (SKILL.md + testing-anti-patterns.md) unchanged from 4.1.1 through 6.0.3; bumped to confirm currency. The `@testing-anti-patterns.md` reference uses Claude Code's @-syntax (Soloship adaptation of upstream's markdown link). -->
+<!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Tone softened for Claude 5 (2026-07-28): register calmed, gate semantics unchanged; deliberately diverges from upstream wording (see Superpowers issue #1878). The `@testing-anti-patterns.md` reference uses Claude Code's @-syntax (Soloship adaptation of upstream's markdown link). -->
 
 # Test-Driven Development (TDD)
 
@@ -17,7 +17,7 @@ Write the test first. Watch it fail. Write minimal code to pass.
 
 **Core principle:** If you didn't watch the test fail, you don't know if it tests the right thing.
 
-**Violating the letter of the rules is violating the spirit of the rules.**
+The rules apply in spirit, not just letter — rewording an exception does not create one.
 
 ## When to Use
 
@@ -32,23 +32,19 @@ Write the test first. Watch it fail. Write minimal code to pass.
 - Generated code
 - Configuration files
 
-Thinking "skip TDD just this once"? Stop. That's rationalization.
+If you're reaching for "skip TDD just this once," treat it as a signal to stop and follow the cycle — or ask your human partner whether this genuinely fits an exception.
 
 ## The Iron Law
 
-```
-NO PRODUCTION CODE WITHOUT A FAILING TEST FIRST
-```
+**The rule: no production code without a failing test first.**
 
-Write code before the test? Delete it. Start over.
+If you wrote code before its test, delete it and start over from the test. Deleting means deleting:
 
-**No exceptions:**
 - Don't keep it as "reference"
 - Don't "adapt" it while writing tests
 - Don't look at it
-- Delete means delete
 
-Implement fresh from tests. Period.
+Implement fresh from the tests.
 
 ## Red-Green-Refactor
 
@@ -118,7 +114,7 @@ Vague name, tests mock not code
 
 ### Verify RED - Watch It Fail
 
-**MANDATORY. Never skip.**
+Required — never skip this step.
 
 ```bash
 npm test path/to/test.test.ts
@@ -173,7 +169,7 @@ Don't add features, refactor other code, or "improve" beyond the test.
 
 ### Verify GREEN - Watch It Pass
 
-**MANDATORY.**
+Required — never skip this step.
 
 ```bash
 npm test path/to/test.test.ts
@@ -241,13 +237,13 @@ The "waste" is keeping code you can't trust. Working code without real tests is 
 
 **"TDD is dogmatic, being pragmatic means adapting"**
 
-TDD IS pragmatic:
+TDD is the pragmatic choice:
 - Finds bugs before commit (faster than debugging after)
 - Prevents regressions (tests catch breaks immediately)
 - Documents behavior (tests show how to use code)
 - Enables refactoring (change freely, tests catch breaks)
 
-"Pragmatic" shortcuts = debugging in production = slower.
+Shortcut "pragmatism" turns into debugging in production — which is slower.
 
 **"Tests after achieve the same goals - it's spirit not ritual"**
 
@@ -259,30 +255,23 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 
 30 minutes of tests after ≠ TDD. You get coverage, lose proof tests work.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "Too simple to test" | Simple code breaks. Test takes 30 seconds. |
-| "I'll test after" | Tests passing immediately prove nothing. |
-| "Tests after achieve same goals" | Tests-after = "what does this do?" Tests-first = "what should this do?" |
-| "Already manually tested" | Ad-hoc ≠ systematic. No record, can't re-run. |
-| "Deleting X hours is wasteful" | Sunk cost fallacy. Keeping unverified code is technical debt. |
-| "Keep as reference, write tests first" | You'll adapt it. That's testing after. Delete means delete. |
-| "Need to explore first" | Fine. Throw away exploration, start with TDD. |
-| "Test hard = design unclear" | Listen to test. Hard to test = hard to use. |
-| "TDD will slow me down" | TDD faster than debugging. Pragmatic = test-first. |
-| "Manual test faster" | Manual doesn't prove edge cases. You'll re-test every change. |
-| "Existing code has no tests" | You're improving it. Add tests for existing code. |
+- "Too simple to test" → simple code breaks too, and the test takes 30 seconds.
+- "I'll test after / tests-after achieve the same goals" → tests written after the code pass immediately, which proves nothing. Tests-after answer "what does this do?"; tests-first answer "what should this do?"
+- "I already manually tested it" → ad-hoc is not systematic: no record of what you tested, nothing to re-run when the code changes.
+- "Deleting X hours is wasteful / I'll keep it as reference" → sunk cost; kept code gets "adapted," which is testing after. Unverified code is technical debt.
+- "I need to explore first" → fine — throw the exploration away and start with TDD.
+- "The test is hard to write / TDD will slow me down" → hard to test means hard to use; listen to the test and simplify the design. TDD is faster than debugging after.
 
-## Red Flags - STOP and Start Over
+## Signs you're off the process
 
 - Code before test
 - Test after implementation
 - Test passes immediately
-- Can't explain why test failed
+- Can't explain why a test failed
 - Tests added "later"
-- Rationalizing "just this once"
+- Reaching for "just this once"
 - "I already manually tested it"
 - "Tests after achieve the same purpose"
 - "It's about spirit not ritual"
@@ -291,7 +280,7 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 - "TDD is dogmatic, I'm being pragmatic"
 - "This is different because..."
 
-**All of these mean: Delete code. Start over with TDD.**
+Any of these means the code was written outside the cycle. The response is the same in every case: delete the code and start over from a failing test.
 
 ## Example: Bug Fix
 
@@ -343,7 +332,7 @@ Before marking work complete:
 - [ ] Tests use real code (mocks only if unavoidable)
 - [ ] Edge cases and errors covered
 
-Can't check all boxes? You skipped TDD. Start over.
+If you can't check every box, the work went outside the cycle — go back and run it with TDD.
 
 ## When Stuck
 
@@ -374,4 +363,4 @@ Production code → test exists and failed first
 Otherwise → not TDD
 ```
 
-No exceptions without your human partner's permission.
+Exceptions require your human partner's explicit permission.

@@ -78,13 +78,13 @@ Net: <one-line synthesis of what you're actually trading off>
 
 D-numbering: first question in a skill invocation is `D1`; increment yourself. This is a model-level instruction, not a runtime counter.
 
-ELI10 is always present, in plain English, not function names. Recommendation is ALWAYS present. Keep the `(recommended)` label.
+ELI10 is always present, in plain English, not function names. Recommendation is always present. Keep the `(recommended)` label.
 
 Completeness: use `Completeness: N/10` only when options differ in coverage. 10 = complete, 7 = happy path, 3 = shortcut. If options differ in kind, write: `Note: options differ in kind, not coverage — no completeness score.`
 
 Pros / cons: use ✅ and ❌. Minimum 2 pros and 1 con per option when the choice is real; minimum 40 characters per bullet. Hard-stop escape for one-way/destructive confirmations: `✅ No cons — this is a hard-stop choice`.
 
-Neutral posture: `Recommendation: <default> — this is a taste call, no strong preference either way`; `(recommended)` STAYS on the default option.
+Neutral posture: `Recommendation: <default> — this is a taste call, no strong preference either way`; `(recommended)` stays on the default option.
 
 Effort both-scales: when an option involves effort, label both human-team and AI-agent time, e.g. `(human: ~2 days / AI: ~15 min)`. Makes AI compression visible at decision time.
 
@@ -106,7 +106,7 @@ Before calling AskUserQuestion, verify:
 - [ ] Dual-scale effort labels on effort-bearing options (human / AI)
 - [ ] Net line closes the decision
 - [ ] You are calling the tool, not writing prose
-- [ ] Non-ASCII characters written directly, NOT \u-escaped
+- [ ] Non-ASCII characters written directly, not \u-escaped
 
 ## Voice
 
@@ -145,13 +145,13 @@ When options differ in coverage, include `Completeness: X/10` (10 = all edge cas
 
 ## Confusion Protocol
 
-For high-stakes ambiguity (architecture, data model, destructive scope, missing context), STOP. Name it in one sentence, present 2-3 options with tradeoffs, and ask. Do not use for routine coding or obvious changes.
+For high-stakes ambiguity (architecture, data model, destructive scope, missing context), stop. Name it in one sentence, present 2-3 options with tradeoffs, and ask. Do not use for routine coding or obvious changes.
 
 ## Context Health (soft directive)
 
 During long-running skill sessions, periodically write a brief `[PROGRESS]` summary: done, next, surprises.
 
-If you are looping on the same diagnostic, same file, or failed fix variants, STOP and reassess. Consider escalation or context-save. Progress summaries must NEVER mutate git state.
+If you are looping on the same diagnostic, same file, or failed fix variants, stop and reassess. Consider escalation or context-save. Progress summaries must never mutate git state.
 
 ## Repo Ownership — See Something, Say Something
 
@@ -457,9 +457,9 @@ Commands:
 - `$D check --image /path.png --brief "..."` — vision quality gate
 - `$D iterate --session /path/session.json --feedback "..." --output /path.png` — iterate
 
-**CRITICAL PATH RULE:** All design artifacts (mockups, comparison boards, approved.json)
-MUST be saved to `~/.soloship/projects/$SLUG/designs/`, NEVER to `.context/`,
-`docs/designs/`, `/tmp/`, or any project-local directory. Design artifacts are USER
+**Path rule:** all design artifacts (mockups, comparison boards, approved.json)
+must be saved to `~/.soloship/projects/$SLUG/designs/`, never to `.context/`,
+`docs/designs/`, `/tmp/`, or any project-local directory. Design artifacts are user
 data, not project files. They persist across branches, conversations, and workspaces.
 
 ## Step 0: Design Scope Assessment
@@ -488,7 +488,7 @@ new {X} but COMPONENTS.md already lists {Y} with the same purpose."
 ### 0D. Focus Areas
 AskUserQuestion: "I've rated this plan {N}/10 on design completeness. The biggest gaps are {X, Y, Z}. I'll generate visual mockups next, then review all 7 dimensions. Want me to focus on specific areas instead of all 7?"
 
-**STOP.** Do NOT proceed until user responds.
+Stop here and wait for the user's response before proceeding.
 
 ## Step 0.5: Visual Mockups (DEFAULT when DESIGN_READY)
 
@@ -802,7 +802,7 @@ descriptions of what 10/10 looks like.
 ### Pass 1: Information Architecture
 Rate 0-10: Does the plan define what the user sees first, second, third?
 FIX TO 10: Add information hierarchy to the plan. Include ASCII diagram of screen/page structure and navigation flow. Apply "constraint worship" — if you can only show 3 things, which 3?
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY. If no issues, say so and move on. Do NOT proceed until user responds.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. If no issues, say so and move on. Wait for the user's response before proceeding.
 
 ### Pass 2: Interaction State Coverage
 Rate 0-10: Does the plan specify loading, empty, error, success, partial states?
@@ -814,7 +814,7 @@ FIX TO 10: Add interaction state table to the plan:
 ```
 For each state: describe what the user SEES, not backend behavior.
 Empty states are features — specify warmth, primary action, context.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 3: User Journey & Emotional Arc
 Rate 0-10: Does the plan consider the user's emotional experience?
@@ -826,7 +826,7 @@ FIX TO 10: Add user journey storyboard:
   ...
 ```
 Apply time-horizon design: 5-sec visceral, 5-min behavioral, 5-year reflective.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 4: AI Slop Risk
 Rate 0-10: Does the plan describe specific, intentional UI — or generic patterns?
@@ -880,20 +880,20 @@ FIX TO 10: Rewrite vague UI descriptions with specific alternatives.
 - Cards only when card IS the interaction
 - Section headings state what area is or what user can do ("Selected KPIs", "Plan status")
 
-**Universal rules** (apply to ALL types):
+**Universal rules** (apply to all types):
 - Define CSS variables for color system
 - No default font stacks (Inter, Roboto, Arial, system)
 - One job per section
 - "If deleting 30% of the copy improves it, keep deleting"
 - Cards earn their existence — no decorative card grids
-- NEVER use small, low-contrast type (body text < 16px or contrast ratio < 4.5:1 on body text)
-- NEVER put labels inside form fields as the only label (placeholder-as-label pattern — labels must be visible when the field has content)
-- ALWAYS preserve visited vs unvisited link distinction (visited links must have a different color)
-- NEVER float headings between paragraphs (heading must be visually closer to the section it introduces than to the preceding section)
+- Never use small, low-contrast type (body text < 16px or contrast ratio < 4.5:1 on body text)
+- Never put labels inside form fields as the only label (placeholder-as-label pattern — labels must be visible when the field has content)
+- Always preserve visited vs unvisited link distinction (visited links must have a different color)
+- Never float headings between paragraphs (heading must be visually closer to the section it introduces than to the preceding section)
 
 **AI Slop blacklist** (the 10 patterns that scream "AI-generated"):
 1. Purple/violet/indigo gradient backgrounds or blue-to-purple color schemes
-2. **The 3-column feature grid:** icon-in-colored-circle + bold title + 2-line description, repeated 3x symmetrically. THE most recognizable AI layout.
+2. **The 3-column feature grid:** icon-in-colored-circle + bold title + 2-line description, repeated 3x symmetrically. The most recognizable AI layout.
 3. Icons in colored circles as section decoration (SaaS starter template look)
 4. Centered everything (`text-align: center` on all headings, descriptions, cards)
 5. Uniform bubbly border-radius on every element (same large radius on everything)
@@ -910,18 +910,18 @@ Source: [OpenAI "Designing Delightful Frontends with GPT-5.4"](https://developer
 - "Clean, modern UI" → meaningless. Replace with actual design decisions.
 - "Dashboard with widgets" → what makes this NOT every other dashboard?
 If visual mockups were generated in Step 0.5, evaluate them against the AI slop blacklist above. Read each mockup image using the Read tool. Does the mockup fall into generic patterns (3-column grid, centered hero, stock-photo feel)? If so, flag it and offer to regenerate with more specific direction via `$D iterate --feedback "..."`.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 5: Design System Alignment
 Rate 0-10: Does the plan align with DESIGN.md?
 FIX TO 10: If DESIGN.md exists, annotate with specific tokens/components. If no DESIGN.md, flag the gap and recommend `/design-consultation`.
 Flag any new component — does it fit the existing vocabulary?
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 6: Responsive & Accessibility
 Rate 0-10: Does the plan specify mobile/tablet, keyboard nav, screen readers?
 FIX TO 10: Add responsive specs per viewport — not "stacked on mobile" but intentional layout changes. Add a11y: keyboard nav patterns, ARIA landmarks, touch target sizes (44px min), color contrast requirements.
-**STOP.** AskUserQuestion once per issue. Do NOT batch. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 7: Unresolved Design Decisions
 Surface ambiguities that will haunt implementation:
