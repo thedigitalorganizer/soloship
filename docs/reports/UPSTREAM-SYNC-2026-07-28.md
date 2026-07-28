@@ -1,4 +1,25 @@
-# Upstream sync research — 2026-07-28 (working-branch artifact; consume then delete/move)
+# Upstream sync research — 2026-07-28 (point-in-time report; consumed 2026-07-28)
+
+> **Status note (2026-07-28, post-verification):** Tier 1 candidates were assessed
+> against upstream sources and decided by Shawn. Corrections and outcomes:
+>
+> - **Candidate 1 was wrong** — Superpowers merged its dual reviewers in v6.0.0,
+>   and Soloship's vendored v6.0.3 SDD already contains the merged single
+>   task-reviewer (one dispatch, two verdicts). Verified against upstream tag
+>   v6.0.3. Nothing to adopt; already have the savings.
+> - **Candidate 2 (v6.2.0 resume-based fix loop + plan-scoped workspace):**
+>   ADOPT in full.
+> - **Candidate 4 (Sonnet 5 tone audit):** ADOPT — soften Soloship-authored
+>   surfaces AND fork the vendored heavies from upstream wording. Issue #1878
+>   confirmed real, unfixed upstream as of 2026-07-28.
+> - **Candidate 3 (ce-retune):** NOT adopting the skill — its Phase 0 gate
+>   requires a run archive Soloship doesn't have, and CE explicitly bans
+>   presenting a static audit as retuning. Borrowing only the one-time
+>   halt-site audit (ten grep-able "stops and hands control to the user"
+>   patterns) and the proposer/defender shape for future trim passes.
+>
+> The concern work on this branch merged to main 2026-07-28. Adoption work is
+> planned in `docs/plans/2026-07-28-claude5-tier1-adoption.md`.
 
 Context: researched the three main vendored upstreams for changes since Soloship's
 vendored baselines, focused on Claude 5 family (Opus 5 / Sonnet 5 / Fable 5)

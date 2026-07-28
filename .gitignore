@@ -22,6 +22,7 @@ CLAUDE.md
 docs/*
 !docs/known-issues/
 !docs/solutions/
+!docs/reports/
 site/
 .claude/settings.local.json
 .gstack/
