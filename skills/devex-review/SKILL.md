@@ -82,13 +82,13 @@ Net: <one-line synthesis of what you're actually trading off>
 
 D-numbering: first question in a skill invocation is `D1`; increment yourself. This is a model-level instruction, not a runtime counter.
 
-ELI10 is always present, in plain English, not function names. Recommendation is ALWAYS present. Keep the `(recommended)` label.
+ELI10 is always present, in plain English, not function names. Recommendation is always present. Keep the `(recommended)` label.
 
 Completeness: use `Completeness: N/10` only when options differ in coverage. 10 = complete, 7 = happy path, 3 = shortcut. If options differ in kind, write: `Note: options differ in kind, not coverage — no completeness score.`
 
 Pros / cons: use ✅ and ❌. Minimum 2 pros and 1 con per option when the choice is real; minimum 40 characters per bullet. Hard-stop escape for one-way/destructive confirmations: `✅ No cons — this is a hard-stop choice`.
 
-Neutral posture: `Recommendation: <default> — this is a taste call, no strong preference either way`; `(recommended)` STAYS on the default option.
+Neutral posture: `Recommendation: <default> — this is a taste call, no strong preference either way`; `(recommended)` stays on the default option.
 
 Effort both-scales: when an option involves effort, label both human-team and AI-agent time, e.g. `(human: ~2 days / AI: ~15 min)`. Makes AI compression visible at decision time.
 
@@ -110,7 +110,7 @@ Before calling AskUserQuestion, verify:
 - [ ] Dual-scale effort labels on effort-bearing options (human / AI)
 - [ ] Net line closes the decision
 - [ ] You are calling the tool, not writing prose
-- [ ] Non-ASCII characters written directly, NOT \u-escaped
+- [ ] Non-ASCII characters written directly, not \u-escaped
 
 ## Voice
 
@@ -149,13 +149,13 @@ When options differ in coverage, include `Completeness: X/10` (10 = all edge cas
 
 ## Confusion Protocol
 
-For high-stakes ambiguity (architecture, data model, destructive scope, missing context), STOP. Name it in one sentence, present 2-3 options with tradeoffs, and ask. Do not use for routine coding or obvious changes.
+For high-stakes ambiguity (architecture, data model, destructive scope, missing context), stop. Name it in one sentence, present 2-3 options with tradeoffs, and ask. Do not use for routine coding or obvious changes.
 
 ## Context Health (soft directive)
 
 During long-running skill sessions, periodically write a brief `[PROGRESS]` summary: done, next, surprises.
 
-If you are looping on the same diagnostic, same file, or failed fix variants, STOP and reassess. Consider escalation or context-save. Progress summaries must NEVER mutate git state.
+If you are looping on the same diagnostic, same file, or failed fix variants, stop and reassess. Consider escalation or context-save. Progress summaries must never mutate git state.
 
 ## Repo Ownership — See Something, Say Something
 
@@ -476,7 +476,7 @@ Tolerance: [how many minutes/steps before they abandon]
 Expects:   [what they assume exists before trying]
 ```
 
-**STOP.** Do NOT proceed until user responds. This persona shapes the entire review.
+Stop here and wait for the user's response before proceeding — this persona shapes the entire review.
 
 ### 0B. Empathy Narrative as Conversation Starter
 
@@ -500,7 +500,7 @@ Then SHOW it to the user via AskUserQuestion:
 > B) Some of this is wrong, let me correct it
 > C) This is way off, the actual experience is..."
 
-**STOP.** Incorporate corrections into the narrative. This narrative becomes a required
+Stop here and wait for the user's response, then incorporate corrections into the narrative. This narrative becomes a required
 output section ("Developer Perspective") in the plan file. The implementer should read
 it and feel what the developer feels.
 
@@ -543,7 +543,7 @@ AskUserQuestion:
 > C) Current trajectory ([X] min) -- acceptable for now, improve later
 > D) Tell me what's realistic for our constraints"
 
-**STOP.** The chosen tier becomes the benchmark for Pass 1 (Getting Started).
+Stop here and wait for the user's response. The chosen tier becomes the benchmark for Pass 1 (Getting Started).
 
 ### 0D. Magical Moment Design
 
@@ -584,7 +584,7 @@ AskUserQuestion:
 > RECOMMENDATION: [A/B/C/D] because for [persona], [reason]. Your competitor [name]
 > uses [their approach]."
 
-**STOP.** The chosen delivery vehicle is tracked through the scoring passes.
+Stop here and wait for the user's response. The chosen delivery vehicle is tracked through the scoring passes.
 
 ### 0E. Mode Selection
 
@@ -616,7 +616,7 @@ Context-dependent defaults:
 
 Once selected, commit fully. Do not silently drift toward a different mode.
 
-**STOP.** Do NOT proceed until user responds.
+Stop here and wait for the user's response before proceeding.
 
 ### 0F. Developer Journey Trace with Friction-Point Questions
 
@@ -705,7 +705,7 @@ AskUserQuestion:
 > C) The critical ones (#[N], #[N]) -- skip the rest
 > D) This is unrealistic -- our developers already know [context]"
 
-**STOP.** Do NOT proceed until user responds.
+Stop here and wait for the user's response before proceeding.
 
 ---
 
@@ -779,7 +779,7 @@ time chosen in 0C.
 Stripe test: Can a [persona from 0A] go from "never heard of this" to "it worked"
 in one terminal session without leaving the terminal?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY. Reference the persona.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why, referencing the persona. Wait for the response before proceeding.
 
 ### Pass 2: API/CLI/SDK Design (Usable + Useful)
 
@@ -803,7 +803,7 @@ Evaluate:
 
 Good API design test: Can a [persona] use this API correctly after seeing one example?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 3: Error Messages & Debugging (Fight Uncertainty)
 
@@ -828,7 +828,7 @@ Also evaluate:
 - **Debug mode**: Verbose output available?
 - **Stack traces**: Useful or internal framework noise?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 4: Documentation & Learning (Findable + Learn by Doing)
 
@@ -848,7 +848,7 @@ Evaluate:
 - **Versioning**: Docs match the version dev is using?
 - **Tutorials vs references**: Both exist?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 5: Upgrade & Migration Path (Credible)
 
@@ -863,7 +863,7 @@ Evaluate:
 - **Codemods**: Automated migration scripts?
 - **Versioning strategy**: Semantic versioning? Clear policy?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 6: Developer Environment & Tooling (Valuable + Accessible)
 
@@ -884,7 +884,7 @@ Evaluate:
 - **Local env reproducibility**: Works across OS, package managers, containers, proxies?
 - **Observability/testability**: Dry-run mode? Verbose output? Sample apps? Fixtures?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 7: Community & Ecosystem (Findable + Desirable)
 
@@ -900,7 +900,7 @@ Evaluate:
 - **Contributing guide**: Process clear?
 - **Pricing transparency**: No surprise bills?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Pass 8: DX Measurement & Feedback Loops (Implement + Refine)
 
@@ -915,7 +915,7 @@ Evaluate:
 - **Friction audits**: Periodic reviews planned?
 - **Boomerang readiness**: Will /devex-review be able to measure reality vs. plan?
 
-**STOP.** AskUserQuestion once per issue. Recommend + WHY.
+Stop here and ask via AskUserQuestion — one question per issue, not batched. Recommend an option and say why. Wait for the response before proceeding.
 
 ### Appendix: Claude Code Skill DX Checklist
 
@@ -928,7 +928,7 @@ Load reference: Read the "## Claude Code Skill DX Checklist" section from
 
 Check each item. For any unchecked item, explain what's missing and suggest the fix.
 
-**STOP.** AskUserQuestion for any item that requires a design decision.
+Stop here and ask via AskUserQuestion for any item that requires a design decision; wait for the response before proceeding.
 
 ## Outside Voice — Independent Plan Challenge (optional, recommended)
 

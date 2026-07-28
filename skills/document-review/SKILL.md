@@ -83,7 +83,7 @@ After changes are complete, ask:
 
 After 2 refinement passes, recommend completion—diminishing returns are likely. But if the user wants to continue, allow it.
 
-Return control to the caller (workflow or user) after selection.
+Act on the selection in this same session: "Refine again" loops back to Step 2 for another pass; "Review complete" means the document is ready — confirm that to the user and continue with whatever workflow invoked this review, if any.
 
 ## What NOT to Do
 

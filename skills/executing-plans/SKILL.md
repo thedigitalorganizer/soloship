@@ -48,6 +48,12 @@ When batch complete:
 - Show verification output
 - Say: "Ready for feedback."
 
+The checkpoint is the product of this skill: a human architect reviews between
+batches. If no partner is present to respond (an unattended or scripted run),
+this skill is the wrong tool — use /soloship:subagent-driven-development, which
+executes continuously without per-batch check-ins. Do not simulate feedback or
+skip the checkpoint to keep going.
+
 ### Step 4: Continue
 Based on feedback:
 - Apply changes if needed

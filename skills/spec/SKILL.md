@@ -69,15 +69,13 @@ Explicitly list what this feature does NOT include. Prevents scope creep.
 ### 7. Open Questions
 Anything unresolved that needs a decision before building.
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "We can figure out edge cases during implementation" | Edge cases discovered during implementation become scope creep, rework, or bugs shipped to production. Specs exist to find them early. |
-| "The API contract is obvious from the feature description" | "Obvious" contracts have implicit assumptions about error codes, pagination, auth, and rate limits that only become explicit when you write them down. |
-| "Data model will emerge naturally from the code" | Emergent data models produce inconsistent naming, missing relationships, and migration nightmares. Decide the shape before you build. |
-| "Out of Scope section is unnecessary — we know what we're building" | Without explicit boundaries, every conversation adds "one more thing." Out of Scope is scope defense. |
-| "Open Questions can wait" | Unresolved questions become blocked PRs, mid-sprint pivots, and "I thought you meant..." conversations. Surface them now. |
+- "We can figure out edge cases during implementation" → edge cases discovered during implementation become scope creep, rework, or bugs shipped to production. Specs exist to find them early.
+- "The API contract is obvious from the feature description" → "obvious" contracts have implicit assumptions about error codes, pagination, auth, and rate limits that only become explicit when you write them down.
+- "Data model will emerge naturally from the code" → emergent data models produce inconsistent naming, missing relationships, and migration nightmares. Decide the shape before you build.
+- "Out of Scope section is unnecessary — we know what we're building" → without explicit boundaries, every conversation adds "one more thing." Out of Scope is scope defense.
+- "Open Questions can wait" → unresolved questions become blocked PRs, mid-sprint pivots, and "I thought you meant..." conversations. Surface them now.
 
 ---
 

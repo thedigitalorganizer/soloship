@@ -189,7 +189,7 @@ parent directory (de-duplicated) as the scope. Check each for governance gaps:
 
 ---
 
-## Step 5.5: Commit the Knowledge Artifacts (MANDATORY — do not leave them dirty)
+## Step 5.5: Commit the Knowledge Artifacts (required — do not leave them dirty)
 
 Learn is not done when the docs are written; it is done when they are
 **committed**. An uncommitted solution doc left in a shared main checkout shows
@@ -222,17 +222,14 @@ knowledge capture ends with a commit, every time.
 
 ---
 
-## Common Rationalizations
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "This fix was straightforward, not worth documenting" | If it was straightforward, the solution doc takes 2 minutes. If it wasn't and you think it was, you're forgetting the hour you spent figuring it out. |
-| "I'll remember this next time" | You won't. And even if you do, the next agent in a fresh session definitely won't. Solution docs are for future sessions, not your memory. |
-| "There's no good category for this" | Create one. Categories emerge from solutions, not the other way around. |
-| "The registry audit is overkill — I only changed one file" | One file change can shift dependency graphs. The drift check takes 30 seconds and catches stale entries. |
-| "The AGENTS.md already covers this area, no need to update" | Read it and check. "Covers an area" and "documents this specific pitfall" are different. Append the specific pitfall — future agents need it. |
-| "I'll create AGENTS.md later when the directory is more stable" | Governance gaps compound. Context is freshest right now. A 15-line file today saves hours of archaeology later. |
-| "I'll leave the docs uncommitted for the user to review and commit" | Nobody asked for that. An uncommitted doc in a shared checkout is dirty state that confuses every parallel session. Commit the knowledge artifacts (Step 5.5); the user reviews git history, not a dirty tree. |
+- "This fix was straightforward / I'll remember it next time" → if it was straightforward, the doc takes 2 minutes; either way, the next agent in a fresh session starts from zero. Solution docs are for future sessions, not your memory.
+- "There's no good category for this" → create one. Categories emerge from solutions, not the other way around.
+- "The registry audit is overkill — I only changed one file" → one file change can shift dependency graphs. The drift check takes 30 seconds and catches stale entries.
+- "The AGENTS.md already covers this area, no need to update" → read it and check. "Covers an area" and "documents this specific pitfall" are different. Append the specific pitfall — future agents need it.
+- "I'll create AGENTS.md later when the directory is more stable" → governance gaps compound and context is freshest right now. A 15-line file today saves hours of archaeology later.
+- "I'll leave the docs uncommitted for the user to review and commit" → an uncommitted doc in a shared checkout is dirty state that confuses every parallel session. Commit the knowledge artifacts (Step 5.5); the user reviews git history, not a dirty tree.
 
 ---
 

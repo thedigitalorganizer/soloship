@@ -81,13 +81,13 @@ Net: <one-line synthesis of what you're actually trading off>
 
 D-numbering: first question in a skill invocation is `D1`; increment yourself. This is a model-level instruction, not a runtime counter.
 
-ELI10 is always present, in plain English, not function names. Recommendation is ALWAYS present. Keep the `(recommended)` label.
+ELI10 is always present, in plain English, not function names. Recommendation is always present. Keep the `(recommended)` label.
 
 Completeness: use `Completeness: N/10` only when options differ in coverage. 10 = complete, 7 = happy path, 3 = shortcut. If options differ in kind, write: `Note: options differ in kind, not coverage — no completeness score.`
 
 Pros / cons: use ✅ and ❌. Minimum 2 pros and 1 con per option when the choice is real; minimum 40 characters per bullet. Hard-stop escape for one-way/destructive confirmations: `✅ No cons — this is a hard-stop choice`.
 
-Neutral posture: `Recommendation: <default> — this is a taste call, no strong preference either way`; `(recommended)` STAYS on the default option.
+Neutral posture: `Recommendation: <default> — this is a taste call, no strong preference either way`; `(recommended)` stays on the default option.
 
 Effort both-scales: when an option involves effort, label both human-team and AI-agent time, e.g. `(human: ~2 days / AI: ~15 min)`. Makes AI compression visible at decision time.
 
@@ -109,7 +109,7 @@ Before calling AskUserQuestion, verify:
 - [ ] Dual-scale effort labels on effort-bearing options (human / AI)
 - [ ] Net line closes the decision
 - [ ] You are calling the tool, not writing prose
-- [ ] Non-ASCII characters written directly, NOT \u-escaped
+- [ ] Non-ASCII characters written directly, not \u-escaped
 
 ## Voice
 
@@ -148,13 +148,13 @@ When options differ in coverage, include `Completeness: X/10` (10 = all edge cas
 
 ## Confusion Protocol
 
-For high-stakes ambiguity (architecture, data model, destructive scope, missing context), STOP. Name it in one sentence, present 2-3 options with tradeoffs, and ask. Do not use for routine coding or obvious changes.
+For high-stakes ambiguity (architecture, data model, destructive scope, missing context), stop. Name it in one sentence, present 2-3 options with tradeoffs, and ask. Do not use for routine coding or obvious changes.
 
 ## Context Health (soft directive)
 
 During long-running skill sessions, periodically write a brief `[PROGRESS]` summary: done, next, surprises.
 
-If you are looping on the same diagnostic, same file, or failed fix variants, STOP and reassess. Consider escalation or context-save. Progress summaries must NEVER mutate git state.
+If you are looping on the same diagnostic, same file, or failed fix variants, stop and reassess. Consider escalation or context-save. Progress summaries must never mutate git state.
 
 ## Repo Ownership — See Something, Say Something
 
@@ -243,7 +243,7 @@ If `CDP_MODE=true`: skip cookie import prompts (the real browser already has coo
 git status --porcelain
 ```
 
-If the output is non-empty (working tree is dirty), **STOP** and use AskUserQuestion:
+If the output is non-empty (working tree is dirty), stop and use AskUserQuestion:
 
 "Your working tree has uncommitted changes. /qa needs a clean tree so each bug fix gets its own atomic commit."
 
@@ -298,7 +298,7 @@ fi
 ```
 
 If `NEEDS_SETUP: <path>`:
-1. Tell the user: "Soloship's browse daemon needs a one-time setup on this machine (~2 minutes — installs bun if missing, compiles for your CPU architecture, downloads Chromium). OK to proceed?" Then STOP and wait for confirmation.
+1. Tell the user: "Soloship's browse daemon needs a one-time setup on this machine (~2 minutes — installs bun if missing, compiles for your CPU architecture, downloads Chromium). OK to proceed?" Then stop and wait for confirmation.
 2. With user approval, run: `bash <path>` (the path reported in `NEEDS_SETUP`). The script installs bun (SHA-pinned), `bun install`s deps, compiles the launcher for the current architecture, and downloads Playwright Chromium.
 3. After the script completes, re-run the SETUP check.
 
@@ -901,7 +901,7 @@ Use auto-incrementing names to avoid collisions: check existing `{name}.regressi
 
 **5. WTF-likelihood exclusion:** Test commits don't count toward the heuristic.
 
-### 8f. Self-Regulation (STOP AND EVALUATE)
+### 8f. Self-Regulation (stop and evaluate)
 
 Every 5 fixes (or after any revert), compute the WTF-likelihood:
 
@@ -915,7 +915,7 @@ WTF-LIKELIHOOD:
   Touching unrelated files:   +20%
 ```
 
-**If WTF > 20%:** STOP immediately. Show the user what you've done so far. Ask whether to continue.
+**If WTF > 20%:** stop immediately. Show the user what you've done so far. Ask whether to continue.
 
 **Hard cap: 50 fixes.** After 50 fixes, stop regardless of remaining issues.
 

@@ -15,7 +15,7 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 Remove unnecessary complexity from designs, revealing the essential elements and creating clarity through ruthless simplification.
 
-## MANDATORY PREPARATION
+## Preparation (required, before any changes)
 
 ### Context Gathering (Do This First)
 
@@ -23,14 +23,14 @@ You cannot do a great job without having necessary context, such as target audie
 
 Attempt to gather these from the current thread or codebase.
 
-1. If you don't find *exact* information and have to infer from existing design and functionality, you MUST STOP and STOP and call the AskUserQuestionTool to clarify. whether you got it right.
-2. Otherwise, if you can't fully infer or your level of confidence is medium or lower, you MUST STOP and call the AskUserQuestionTool to clarify. clarifying questions first to complete your context.
+1. If you don't find *exact* information and have to infer from existing design and functionality, stop and call the AskUserQuestionTool to confirm whether you got it right.
+2. Otherwise, if you can't fully infer or your level of confidence is medium or lower, stop and call the AskUserQuestionTool with clarifying questions first to complete your context.
 
-Do NOT proceed until you have answers. Simplifying the wrong things destroys usability.
+Do not proceed until you have answers — simplifying the wrong things destroys usability.
 
 ### Use frontend-design skill
 
-Use the frontend-design skill for design principles and anti-patterns. Do NOT proceed until it has executed and you know all DO's and DON'Ts.
+Use the frontend-design skill for design principles and anti-patterns. Do not proceed until it has executed and you know all the do's and don'ts.
 
 ---
 
@@ -47,25 +47,25 @@ Analyze what makes the design feel complex or cluttered:
    - **Feature creep**: Too many options, actions, or paths forward
 
 2. **Find the essence**:
-   - What's the primary user goal? (There should be ONE)
+   - What's the primary user goal? (There should be one)
    - What's actually necessary vs nice-to-have?
    - What can be removed, hidden, or combined?
    - What's the 20% that delivers 80% of value?
 
-If any of these are unclear from the codebase, STOP and call the AskUserQuestionTool to clarify.
+If any of these are unclear from the codebase, stop and call the AskUserQuestionTool to clarify.
 
-**CRITICAL**: Simplicity is not about removing features - it's about removing obstacles between users and their goals. Every element should justify its existence.
+**Keep in mind:** simplicity is not about removing features — it's about removing obstacles between users and their goals. Every element should justify its existence.
 
 ## Plan Simplification
 
 Create a ruthless editing strategy:
 
-- **Core purpose**: What's the ONE thing this should accomplish?
+- **Core purpose**: What's the one thing this should accomplish?
 - **Essential elements**: What's truly necessary to achieve that purpose?
 - **Progressive disclosure**: What can be hidden until needed?
 - **Consolidation opportunities**: What can be combined or integrated?
 
-**IMPORTANT**: Simplification is hard. It requires saying no to good ideas to make room for great execution. Be ruthless.
+Simplification is hard: it requires saying no to good ideas to make room for great execution. Cut decisively.
 
 ## Simplify the Design
 
@@ -75,7 +75,7 @@ Systematically remove complexity across these dimensions:
 - **Reduce scope**: Remove secondary actions, optional features, redundant information
 - **Progressive disclosure**: Hide complexity behind clear entry points (accordions, modals, step-through flows)
 - **Combine related actions**: Merge similar buttons, consolidate forms, group related content
-- **Clear hierarchy**: ONE primary action, few secondary actions, everything else tertiary or hidden
+- **Clear hierarchy**: one primary action, few secondary actions, everything else tertiary or hidden
 - **Remove redundancy**: If it's said elsewhere, don't repeat it here
 
 ### Visual Simplification
@@ -98,7 +98,7 @@ Systematically remove complexity across these dimensions:
 - **Smart defaults**: Make common choices automatic, only ask when necessary
 - **Inline actions**: Replace modal flows with inline editing where possible
 - **Remove steps**: Can signup be one step instead of three? Can checkout be simplified?
-- **Clear CTAs**: ONE obvious next step, not five competing actions
+- **Clear CTAs**: one obvious next step, not five competing actions
 
 ### Content Simplification
 - **Shorter copy**: Cut every sentence in half, then do it again
@@ -122,7 +122,7 @@ Systematically remove complexity across these dimensions:
   duplicates" section to spot cross-file components to merge — with the user's
   approval, since consolidation has blast radius.
 
-**NEVER**:
+**Never**:
 - Remove necessary functionality (simplicity ≠ feature-less)
 - Sacrifice accessibility for simplicity (clear labels and ARIA still required)
 - Make things so simple they're unclear (mystery ≠ minimalism)

@@ -62,6 +62,8 @@ export function getWorkflowRules(): Record<string, string> {
     "deploy-from-main-only.md": RULE_DEPLOY_FROM_MAIN_ONLY,
     "automation-registry.md": RULE_AUTOMATION_REGISTRY,
     "component-reuse.md": RULE_COMPONENT_REUSE,
+    "delegation-discipline.md": RULE_DELEGATION_DISCIPLINE,
+    "verification-sufficiency.md": RULE_VERIFICATION_SUFFICIENCY,
   };
 }
 
@@ -201,8 +203,9 @@ Four gates enforce this; they are the floor, not the rule:
   branch, and any statusless file sitting in \`docs/plans/\`.
 
 Escape hatch: \`.ai/.plan-status-ack\`. As with the billing and recurrence gates,
-creating it without a real, written reason defeats the instrument and violates
-this rule. If a gate fires, the default correct response is to **fix the status**,
+creating it without a real, written reason removes the protection the gate
+provides — don't do it; if the gate seems wrong, surface that to the user
+instead. If a gate fires, the default correct response is to **fix the status**,
 not to silence the gate.
 
 ## When This Triggers
@@ -445,7 +448,8 @@ possible.
 
 **Writing \`.ai/.recurrence-ack\` to make the block go away — without a real,
 written reason that a mechanical fix is genuinely not the right call here —
-defeats the entire instrument and violates this rule.** The block is telling
+removes the protection the gate provides — don't do it; if the gate seems
+wrong, surface that to the user instead.** The block is telling
 you the same thing was patched before; the correct default response is to
 escalate to a *mechanical* fix (a hook, a test, or a structural change that
 makes the failure impossible to recur), not to re-patch and ack.
@@ -534,7 +538,7 @@ the authenticated path.
    it exists, use the account it names as the default for QA (and read the
    credentials from the gitignored secrets file it points to). Use a different
    account only when the task specifically calls for one.
-2. **If no test account is documented and a flow needs auth, STOP and ask the
+2. **If no test account is documented and a flow needs auth, stop and ask the
    user:** *"This project has no documented test account and this flow needs a
    login. Want me to create a test account and document it so QA always uses it
    from now on (unless a specific account is needed)?"*
@@ -651,7 +655,7 @@ regression on an adjacent surface:
 
 The loop has exactly two exits: every row passes with evidence, or a failure is
 genuinely unfixable right now (external blocker, needs the user's product
-decision) — then STOP, report the work as **NOT done** with the failing row and
+decision) — then stop, report the work as **not done** with the failing row and
 why, and ask the user. Never silently proceed. If the same fix keeps failing,
 debug the root cause instead of re-patching, then resume the loop.
 
@@ -723,10 +727,10 @@ now," and never deploy around the queue because another session is mid-deploy.
    explicitly and creates the tag.
 3. **One deploy at a time.** Acquire the deploy lock
    (\`<git-common-dir>/soloship/deploy.lock\`) before deploying; release it on
-   success AND failure. A fresh lock owned by another session = wait or ask,
+   success and failure. A fresh lock owned by another session = wait or ask,
    never proceed. A stale lock (older than the \`deploy_lock_stale_min\`
    threshold in \`<git-common-dir>/soloship/config.json\`) is *presumed*
-   abandoned but NEVER auto-broken — surface it and let the user decide.
+   abandoned but never auto-broken — surface it and let the user decide.
 
 The full step-by-step sequence lives in the Soloship skill reference
 \`references/deploy-sequence.md\` and is what \`/soloship:shipfast\` and
@@ -805,6 +809,119 @@ watchdog — don't fork it.
   webhook receiver, queue consumer, or local scheduled job.
 - Any \`/soloship:implement\` run whose plan touches those surfaces.
 - Retiring/renaming any registered automation.
+`;
+
+const RULE_DELEGATION_DISCIPLINE = `# Delegation Discipline — Mandated Dispatches Are The Ceiling (Auto-Loaded)
+
+## The Rule
+
+**A skill's mandated dispatches are the ceiling, not the floor.**
+
+Current-generation models (the Claude 5 family onward) reach for subagents far
+more readily than the models these workflows were tuned on. Every dispatch
+multiplies cost and latency: the subagent re-establishes context, re-explores,
+reports back, and the controller re-reads the report. When a skill already
+mandates a dispatch set — reviewer lenses, research pairs, per-batch workers —
+an eager model adds *more* dispatches around them: an extra verification
+subagent here, a parallel pair for a task one worker could do there. The
+mandated orchestration and the model's instinct stack, and the run pays twice
+for the same assurance.
+
+## The Contract
+
+- Run every dispatch the skill names — a fixed lens set, a review pair, a
+  per-group worker requirement is the floor *and* the ceiling. Never collapse
+  a mandated multi-dispatch set down to fewer.
+- Do not add discretionary dispatches on top of the named set. No extra
+  verification or review subagents beyond the roles the skill defines — review
+  and verification happen where the skill puts them, not wherever an extra
+  check would feel reassuring.
+- Do not split one modest task across parallel workers. Parallel dispatch is
+  for genuinely independent, sizeable tracks a skill fans out — not for
+  dividing a single small job into pieces.
+- Where a skill marks a dispatch **optional**, treat the option as a decision
+  to make once, with a stated reason — not a default-yes.
+- Brief a subagent precisely the first time, and commit to the delegation:
+  never redo a subagent's work or re-derive its findings after it reports.
+
+The only exemption is a skill whose explicit purpose is unbounded, dynamic
+fan-out (maximum-coverage skills like \`/soloship:deepen-plan\`) — there,
+breadth is the product and no ceiling exists by design.
+
+## A capping rule is not a skipping license (counter-pressure)
+
+This rule removes dispatches an agent *added on its own*; it never removes
+dispatches a *skill mandates*. If you find yourself citing
+delegation-discipline to skip a reviewer the skill names, to run one lens
+where the skill lists six, or to answer "dispatch the task reviewer?" with
+"unnecessary" — stop: that is the skipping misread, and it is wrong. When a
+mandated dispatch genuinely seems wasteful, that is a finding to surface to
+the user, not a license to skip.
+
+## When This Triggers
+
+- Any time a skill's workflow names a dispatch set (reviewer lenses, research
+  pairs, per-batch workers) and you are tempted to add subagents around it.
+- Any time you are about to dispatch a discretionary subagent for verification
+  or review that no skill step names.
+- Any time you are about to split one modest task across parallel workers.
+- Any time you are tempted to cite this rule to skip a dispatch a skill
+  mandates — that is the misread; run the dispatch, and surface the concern
+  to the user instead.
+`;
+
+const RULE_VERIFICATION_SUFFICIENCY = `# Verification Sufficiency — Named Evidence Is Enough (Auto-Loaded)
+
+## The Rule
+
+**The gate's named evidence, once produced for the current state, is sufficient —
+stacking more on top is scope creep, not rigor.**
+
+Current-generation models (the Claude 5 family onward) verify their own work
+without being told. This project's gates already mandate specific evidence —
+fresh command output before any completion claim, the QA Plan's per-surface
+runs, the browser-QA gate's observed flows. An eager model runs the mandated
+evidence *and then keeps going*: a second test pass over code that didn't
+change, a reviewer subagent to double-check a checklist that's already
+resolved, a re-audit of a claim whose evidence is minutes old and untouched.
+The gate and the instinct stack, and the run pays twice for one assurance.
+
+## The Contract
+
+- When a gate's checklist is satisfied with evidence — the command ran, the
+  output is shown, every ledger row is resolved — the gate is passed. Do not
+  re-verify a claim whose underlying state has not changed since its evidence
+  was produced.
+- Do not add verification passes, reviewer dispatches, or audit layers beyond
+  what the gate names. The gates define where verification lives; extra layers
+  belong in the gate's definition (a change to propose to the user), not
+  improvised per-run.
+- Evidence another always-on rule mandates is part of the gate, not an
+  addition — e.g. a QA Plan row's per-surface run is mandated evidence, never
+  "extra."
+
+## Changed state still requires fresh evidence (counter-pressure)
+
+This rule bans re-verifying **unchanged** state. It never weakens the
+verification of **changed** state:
+
+- The fix-and-re-verify loop stands in full. After ANY fix, re-execute the
+  failing QA row and observe the fix working — each iteration verifies a *new*
+  state, which is exactly what evidence-before-claims demands. Citing this
+  rule to skip that re-run is the misread, and it is wrong.
+- No completion claim without fresh evidence *for the state being claimed*.
+  If you edited anything after the last run, the state changed — run it again.
+- If you find yourself citing verification-sufficiency to skip a mandated
+  gate, ledger row, or QA Plan row, stop: this rule caps stacking, it never licenses skipping.
+
+## When This Triggers
+
+- Any time a gate's checklist is fully satisfied with shown evidence and you
+  are tempted to add another pass, reviewer dispatch, or audit layer anyway.
+- Any time you are about to re-verify a claim whose underlying state has not
+  changed since its evidence was produced.
+- Any time you are tempted to cite this rule to skip a re-run after a fix or
+  edit — changed state requires fresh evidence; run it again.
 `;
 
 const RULE_COMPONENT_REUSE = `# Reuse Components Before Creating Them (Auto-Loaded)

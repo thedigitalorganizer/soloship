@@ -7,41 +7,39 @@ description: Use when about to claim work is complete, fixed, or passing, before
 
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
-<!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Base content unchanged from 4.1.1 through 6.0.3; bumped to confirm currency. Soloship's Scope Ledger Gate extension below is unaffected. -->
+<!-- Vendored from superpowers v6.0.3 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Tone softened for Claude 5 (2026-07-28): register calmed, gate semantics unchanged; deliberately diverges from upstream wording (see Superpowers issue #1878). Soloship's Scope Ledger Gate extension below is unaffected. -->
 
 # Verification Before Completion
 
 ## Overview
 
-Claiming work is complete without verification is dishonesty, not efficiency.
+A completion claim without verification is a false claim — run the verification first. Skipping it is not efficiency.
 
-**Core principle:** Evidence before claims, always.
+**Core principle:** evidence before claims, always.
 
-**Violating the letter of this rule is violating the spirit of this rule.**
+The rule applies in spirit, not just letter: rewording a claim does not exempt it.
 
 ## The Iron Law
 
-```
-NO COMPLETION CLAIMS WITHOUT FRESH VERIFICATION EVIDENCE
-```
+**The rule: no completion claims without fresh verification evidence for the current state.**
 
 If you haven't run the verification command in this message, you cannot claim it passes.
 
 ## The Gate Function
 
 ```
-BEFORE claiming any status or expressing satisfaction:
+Before claiming any status or expressing satisfaction:
 
-1. IDENTIFY: What command proves this claim?
-2. RUN: Execute the FULL command (fresh, complete)
-3. READ: Full output, check exit code, count failures
-4. VERIFY: Does output confirm the claim?
-   - If NO: State actual status with evidence
-   - If YES: State claim WITH evidence
-5. ONLY THEN: Make the claim
-
-Skip any step = lying, not verifying
+1. Identify: what command proves this claim?
+2. Run: execute the full command (fresh, complete)
+3. Read: full output, check exit code, count failures
+4. Verify: does the output confirm the claim?
+   - If no: state the actual status, with evidence
+   - If yes: state the claim, with evidence
+5. Only then: make the claim
 ```
+
+A claim made with any of these steps skipped is unverified — state the actual status instead.
 
 ## Common Failures
 
@@ -55,29 +53,26 @@ Skip any step = lying, not verifying
 | Agent completed | VCS diff shows changes | Agent reports "success" |
 | Requirements met | Line-by-line checklist | Tests passing |
 
-## Red Flags - STOP
+## Signs you're off the process
+
+If any of these apply, stop and run the verification before saying anything about status:
 
 - Using "should", "probably", "seems to"
 - Expressing satisfaction before verification ("Great!", "Perfect!", "Done!", etc.)
 - About to commit/push/PR without verification
 - Trusting agent success reports
 - Relying on partial verification
-- Thinking "just this once"
-- Tired and wanting work over
-- **ANY wording implying success without having run verification**
+- Wanting the work to be over and reaching for "just this once"
+- Any wording implying success without having run verification
 
-## Rationalization Prevention
+## Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "Should work now" | RUN the verification |
-| "I'm confident" | Confidence ≠ evidence |
-| "Just this once" | No exceptions |
-| "Linter passed" | Linter ≠ compiler |
-| "Agent said success" | Verify independently |
-| "I'm tired" | Exhaustion ≠ excuse |
-| "Partial check is enough" | Partial proves nothing |
-| "Different words so rule doesn't apply" | Spirit over letter |
+- "Should work now" → "should" is a prediction, not evidence. Run the verification.
+- "I'm confident" → confidence is not evidence.
+- "Linter passed" → a linter is not a compiler and not a test suite. Each claim needs the command that proves that claim.
+- "The agent said success" → verify independently; check the VCS diff.
+- "A partial check is enough" → a partial check proves nothing about the part you didn't check.
+- "I used different words, so the rule doesn't apply" → the rule covers paraphrases, synonyms, and implications of success. Spirit over letter.
 
 ## Key Patterns
 
@@ -89,7 +84,7 @@ Skip any step = lying, not verifying
 
 **Regression tests (TDD Red-Green):**
 ```
-✅ Write → Run (pass) → Revert fix → Run (MUST FAIL) → Restore → Run (pass)
+✅ Write → Run (pass) → Revert fix → Run (must fail) → Restore → Run (pass)
 ❌ "I've written a regression test" (without red-green verification)
 ```
 
@@ -113,19 +108,14 @@ Skip any step = lying, not verifying
 
 ## Why This Matters
 
-From 24 failure memories:
-- your human partner said "I don't believe you" - trust broken
-- Undefined functions shipped - would crash
-- Missing requirements shipped - incomplete features
-- Time wasted on false completion → redirect → rework
-- Violates: "Honesty is a core value. If you lie, you'll be replaced."
+From recorded failure memories: false completion claims broke the user's trust ("I don't believe you"), shipped undefined functions that would have crashed, shipped incomplete features, and cost real rework once the false claim surfaced. Accurate status reporting — including "not done yet" — is what keeps the collaboration working.
 
 ## When To Apply
 
-**ALWAYS before:**
-- ANY variation of success/completion claims
-- ANY expression of satisfaction
-- ANY positive statement about work state
+**Always before:**
+- Any variation of success/completion claims
+- Any expression of satisfaction
+- Any positive statement about work state
 - Committing, PR creation, task completion
 - Moving to next task
 - Delegating to agents
@@ -134,15 +124,13 @@ From 24 failure memories:
 - Exact phrases
 - Paraphrases and synonyms
 - Implications of success
-- ANY communication suggesting completion/correctness
+- Any communication suggesting completion/correctness
 
 ## The Bottom Line
 
 **No shortcuts for verification.**
 
-Run the command. Read the output. THEN claim the result.
-
-This is non-negotiable.
+Run the command. Read the output. Then claim the result.
 
 ---
 
@@ -167,8 +155,8 @@ in front of them.
 
 ## The Gate
 
-**Before the terminal commit of ANY task** (the incremental commit that closes
-a task, or the final ship commit/merge), you MUST emit a **Scope Ledger** and
+**Before the terminal commit of any task** (the incremental commit that closes
+a task, or the final ship commit/merge), emit a **Scope Ledger** and
 get past it. No commit until the ledger is emitted and every Touch-Map row is
 resolved.
 
@@ -232,15 +220,13 @@ Every hit is a Touch-Map row. A row may resolve to `yes` (handled),
 `N/A` (genuinely unrelated — say why), but **never left blank**. A blank or
 unexamined row is a stale-state bug you are about to commit.
 
-### Rationalizations — STOP
+### Common misreads
 
-| Excuse | Reality |
-|--------|---------|
-| "I only changed one file, no ledger needed" | The one-file assumption is exactly the stale-state bug. Grep first, then decide. |
-| "It's obviously just this constant" | Constants get copied into copy, configs, seeds, and tests. Grep proves it; intuition doesn't. |
-| "I'll note what's left in the commit message" | A buried caveat is not a Scope Ledger. Emit the three columns where the user sees them. |
-| "The task is basically done" | "Basically done" = REMAINING is non-empty. Say what remains. |
-| "Grepping the whole repo is overkill" | One missed call site is a revert + a backfill. The grep is 5 seconds. |
+- "I only changed one file, no ledger needed" → the one-file assumption is exactly the stale-state bug. Grep first, then decide.
+- "It's obviously just this constant" → constants get copied into copy, configs, seeds, and tests. Grep proves it; intuition doesn't.
+- "I'll note what's left in the commit message" → a buried caveat is not a Scope Ledger. Emit the three columns where the user sees them.
+- "The task is basically done" → "basically done" means REMAINING is non-empty. Say what remains.
+- "Grepping the whole repo is overkill" → one missed call site is a revert + a backfill. The grep is 5 seconds.
 
 ## When this gate applies
 
