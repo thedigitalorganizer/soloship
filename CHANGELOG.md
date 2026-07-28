@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.19.0] — 2026-07-28
+
 ### Added — Claude 5 adaptation (Tier 1)
 
 - **Two new cross-cutting concerns via the concern registry:
