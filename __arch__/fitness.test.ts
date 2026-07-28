@@ -37,6 +37,8 @@ const EXPECTED_RULES = [
   "deploy-from-main-only.md",
   "automation-registry.md",
   "component-reuse.md",
+  "delegation-discipline.md",
+  "verification-sufficiency.md",
 ];
 
 // The version files that must stay in sync every release (release-version-sync).
