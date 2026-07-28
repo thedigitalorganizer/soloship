@@ -240,6 +240,12 @@ After the plan is written to `docs/plans/YYYY-MM-DD-<slug>.md`, validate:
 **If any check fails:** Fix it before declaring the plan complete. Do not
 proceed to implementation with an incomplete plan.
 
+<!-- concern:verification-sufficiency -->
+This gate's named evidence, once produced for the current state, is sufficient —
+stacking further passes or reviewer dispatches on top is scope creep, not rigor.
+A changed state (post-fix, post-edit) still requires fresh evidence; see
+`references/verification-sufficiency.md`.
+
 ### Claim Verification (MANDATORY — do not skip)
 
 A plan is a set of assertions about a codebase that does not exist in your
@@ -405,6 +411,12 @@ Run these **in parallel** to gather local context — each is a general-purpose 
 
 - Dispatch a general-purpose subagent with the prompt in `references/agents/repo-research-analyst.md`, input: the feature description
 - Dispatch a general-purpose subagent with the prompt in `references/agents/learnings-researcher.md`, input: the feature description
+
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`.
 
 **What to look for:**
 - **Repo research:** existing patterns, CLAUDE.md guidance, technology familiarity, pattern consistency

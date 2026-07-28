@@ -335,6 +335,12 @@ Phases MUST execute in strict order: CEO → Design → Eng → DX.
 Each phase MUST complete fully before the next begins.
 NEVER run phases in parallel — each builds on the previous.
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`.
+
 Between each phase, emit a phase-transition summary and verify that all required
 outputs from the prior phase are written before starting the next.
 

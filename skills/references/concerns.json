@@ -38,7 +38,17 @@
     "marker": "concern:delegation-discipline",
     "keyPhrase": "ceiling, not the floor",
     "skills": [
+      "autoplan",
+      "ceo-review",
+      "cleanup",
+      "code-review",
+      "design-review",
+      "devex-review",
+      "eng-review",
       "implement",
+      "learn",
+      "office-hours",
+      "plan",
       "subagent-driven-development"
     ]
   },
@@ -48,6 +58,9 @@
     "keyPhrase": "scope creep, not rigor",
     "skills": [
       "implement",
+      "plan",
+      "shipfast",
+      "shipthorough",
       "verification-before-completion"
     ]
   }

@@ -642,6 +642,12 @@ On any Codex error, fall back to the Claude adversarial subagent.
 
 Dispatch via the Agent tool. The subagent has fresh context — genuine independence.
 
+<!-- concern:delegation-discipline -->
+This skill's mandated dispatches are the ceiling, not the floor — run the
+dispatches it names, and do not add discretionary subagents on top (no extra
+verification or review dispatches, no splitting one modest task across
+parallel workers); see `references/delegation-discipline.md`.
+
 Subagent prompt: same plan review prompt as above.
 
 Present findings under an `OUTSIDE VOICE (Claude subagent):` header.
