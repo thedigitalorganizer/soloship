@@ -262,6 +262,7 @@ Tests-first force edge case discovery before implementing. Tests-after verify yo
 - "I already manually tested it" → ad-hoc is not systematic: no record of what you tested, nothing to re-run when the code changes.
 - "Deleting X hours is wasteful / I'll keep it as reference" → sunk cost; kept code gets "adapted," which is testing after. Unverified code is technical debt.
 - "I need to explore first" → fine — throw the exploration away and start with TDD.
+- "The existing code has no tests, so mine doesn't need one" → you're improving it: add tests for the code you touch. The surrounding gap is not a license to widen it.
 - "The test is hard to write / TDD will slow me down" → hard to test means hard to use; listen to the test and simplify the design. TDD is faster than debugging after.
 
 ## Signs you're off the process

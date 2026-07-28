@@ -298,6 +298,7 @@ no shown query is `inferred`, not `confirmed` — label it so.
 - "The plan says X is already done, so I'll trust it" → the plan is an assertion, not evidence. `git grep` every load-bearing claim — a false "already done" sends the next agent to build on nothing. The grep is seconds; the rework is hours.
 - "The test suite covers this — that's the QA plan / I'll figure out QA during implementation" → tests prove units pass, not that the surface behaves, and improvised QA defaults to whatever is easiest. Every plan names at least one observed end-to-end verification of the real surface, chosen now from the QA method table.
 - "CE's workflow already produced a plan, so I'm done" → CE produces a solid plan but doesn't know the Soloship artifact contract. Verify the file location, frontmatter, Execution Strategy, and Handoff section before declaring done.
+- "The plan looks good — I'll skip the enforcement gate" → plans always look good to their author. Check the boxes; the gate exists because author confidence is not evidence.
 
 ---
 
