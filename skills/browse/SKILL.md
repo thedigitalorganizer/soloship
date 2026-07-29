@@ -161,6 +161,16 @@ Always flag anything that looks wrong — one sentence, what you noticed and its
 Persistent headless Chromium. First call auto-starts (~3s), then ~100ms per command.
 State persists between calls (cookies, tabs, login sessions).
 
+**Browser priority (per the `browser-tooling-priority` rule):** browse is the
+FIRST-choice browser surface for all QA and testing — ahead of Chrome MCP
+(`claude-in-chrome`) and any host app's built-in browser. Reach for Chrome MCP
+only when a flow needs the user's real logged-in Chrome or the 1Password
+credential autofill flow; fall back to the host browser only when neither
+exists. **Teardown:** when QA ends, leave this daemon running — its logins and
+cookies are shared across sessions by design (`browse disconnect` only for
+config changes). Cleanup obligations apply to the OTHER surfaces: close any
+Chrome MCP tabs you created and release credential grants before reporting done.
+
 ## SETUP (run this check BEFORE any browse command)
 
 ```bash

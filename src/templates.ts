@@ -128,7 +128,7 @@ This project follows: THINK -> PLAN -> WORK -> LEARN -> SHIP.
 
 ## Rules
 
-Coding conventions and workflow rules auto-load from \`.codex/rules/\`. The important project-wide rule is **browser-qa-gate**: no user-facing change is done until the affected flow has been exercised in a real browser, any issue found has been fixed, and the flow has been re-run successfully. If a flow needs login, use the default test account documented at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask to create a test account before claiming the flow is verified.
+Coding conventions and workflow rules auto-load from \`.codex/rules/\`. The important project-wide rule is **browser-qa-gate**: no user-facing change is done until the affected flow has been exercised in a real browser, any issue found has been fixed, and the flow has been re-run successfully. If a flow needs login, use the default test account documented at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask to create a test account before claiming the flow is verified. Browser selection and end-of-QA cleanup follow **browser-tooling-priority**: Soloship's \`/browse\` daemon first, Chrome MCP (with the 1Password credential flow) second, the host app's built-in browser last — and when QA ends, close the browser tabs/sessions you opened so the next session doesn't find the browser held by a dead one.
 
 Claude Code uses \`CLAUDE.md\`, \`.claude/rules/\`, and \`.claude/settings.local.json\`. Codex uses this file and \`.codex/rules/\`.
 

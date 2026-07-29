@@ -2,6 +2,36 @@
 
 ## [Unreleased]
 
+### Added — Browser tooling priority + QA session cleanup
+
+- **New installer rule `browser-tooling-priority.md` (18th rule).** Machine-wide
+  browser selection order for QA and all browser work: Soloship's `/browse`
+  daemon first, Chrome MCP (`claude-in-chrome`) second — with the 1Password
+  credential flow (`request_credentials` → `autofill_credential` →
+  `enter_verification_code`) named as the sanctioned way to complete
+  authenticated flows instead of refusing — and the host app's built-in browser
+  last. Also defines the busy-browser protocol (claim-liveness check, fall down
+  the list, never dead-end) and the end-of-QA cleanup contract.
+- **Browser claim/release hooks.** PostToolUse on browser MCP tools
+  (`mcp__claude-in-chrome__*`, `mcp__chrome-devtools__*`, `mcp__Claude_Browser__*`)
+  stamps `<git-common-dir>/soloship/browser/<session>.json` (mtime = heartbeat);
+  a new **SessionEnd** hook event releases the claim when the session ends.
+  Stale claims expire via `browser_claim_stale_min` (published in
+  `config.json`), so a session that died holding a browser no longer blocks the
+  next QA run with a phantom "another session is using it."
+
+### Changed
+
+- **`browser-qa-gate.md`** now references the priority rule for browser
+  selection and adds a teardown-when-QA-passes section.
+- **Teardown steps added to `/implement` (QA Gate), `/qa` (new Phase 12),
+  `/shipfast`, `/shipthorough`, and `/finish`:** close Chrome MCP tabs you
+  created, release credential grants, leave the `/browse` daemon running
+  (shared by design).
+- **`/browse` skill** now states it is the first-choice browser surface and
+  that the daemon must not be disconnected as cleanup.
+- **Codex AGENTS.md template** mentions the browser priority + cleanup contract.
+
 ## [0.19.0] — 2026-07-28
 
 ### Added — Claude 5 adaptation (Tier 1)

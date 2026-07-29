@@ -147,6 +147,13 @@ config / infra / non-UI migration) — state it explicitly and verify the outcom
 another way. "Tests pass" / "build is green" does NOT satisfy this gate. Do not
 proceed to Step 10 until it passes.
 
+**When the gate passes, tear down before proceeding** (per the auto-loaded
+`browser-tooling-priority` rule): close every Chrome MCP tab you created
+(`tabs_close_mcp`), release credential grants (`release_credentials`), close
+built-in-browser pages. Leave the `/soloship:browse` daemon running — it is
+shared state by design. Shipping while still holding the user's browser is what
+makes the next session's QA report a phantom "browser in use."
+
 ### Step 9.7: Live-Data Claim Gate (Soloship — required when applicable)
 
 If this change asserts or depends on any fact about live/production/CRM/financial

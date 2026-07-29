@@ -324,7 +324,7 @@ fix-and-re-verify loop below verifies a new state and remains mandatory.
 
 ### What "browser QA" means here
 
-Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows the change touches**, end to end, on the running app (local dev server or deployed preview):
+Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows the change touches**, end to end, on the running app (local dev server or deployed preview). Browser selection follows the auto-loaded `browser-tooling-priority` rule: `/soloship:browse` first, then Chrome MCP (`claude-in-chrome`, with the 1Password credential flow for logins), then the host app's built-in browser — and "the browser is in use by another session" means check the claim's liveness and fall down that list, never give up:
 
 1. **Identify the affected surface.** From the diff, list every page, route, component, and user flow this change can reach. That list is what must be exercised — not just the one page you were thinking about.
 2. **Exercise the real flow, not just page load.** Click through the happy path *and* the key states the change introduces or affects: empty state, error state, loading, validation failures, the specific interaction you built. Loading a page without interacting with it is not QA.
@@ -349,6 +349,10 @@ If executing ANY QA Plan row surfaces ANY issue — a visual break, broken inter
 - **A failure is genuinely unfixable right now** (external service down, needs the user's product decision, blocked on credentials). Then STOP, report the work as **NOT done** with the failing row and why, and ask the user. Never silently proceed, never call it done with a failing row.
 
 "Ran out of loop iterations" is not an exit. If you notice the same fix failing repeatedly, that's the signal to run `/soloship:debug` (find the root cause) rather than re-patching — then resume the loop.
+
+### QA teardown (both exits, before reporting)
+
+The moment QA reaches an exit — pass or blocked — release the browser surfaces you held (per `browser-tooling-priority`): close every Chrome MCP tab you created (`tabs_close_mcp`), release any 1Password credential grants (`release_credentials`), close built-in-browser or devtools pages you opened. **Leave the `/soloship:browse` daemon running** — its logins are shared state by design. A QA session that keeps holding the user's browser after finishing is exactly why the next session finds it "busy." The SessionEnd hook releases your claim file, but only you can close your tabs.
 
 ### The only valid exemption
 
