@@ -25,6 +25,16 @@ for `.claude/rules/` + `.codex/rules/`), `scaffold.ts`, `templates.ts`,
 - Rule count and skill count are asserted by
   `scripts/validate-plugin-metadata.js` — adding a rule in `rules.ts` or a
   skill dir requires bumping those constants.
+- `hooks.ts` also exports `BROWSER_CLAIM_STALE_MIN` and
+  `BROWSER_TEARDOWN_REMIND_MIN` (added 2026-07-29) — `BROWSER_CLAIM_STALE_MIN`
+  deliberately equals `SESSION_IDLE_MIN` rather than being its own number; when
+  adding new "presumed dead" staleness logic, check for an existing threshold
+  in `config.json` before inventing a new one. `SessionEnd` is now a supported
+  hook event (added to `HOOK_EVENTS` and the settings-merge machinery
+  alongside `PreToolUse`/`PostToolUse`/`Stop`/`SessionStart`) — it can only
+  ever run cleanup on graceful exit; anything that must also catch the
+  still-running-but-gone-quiet case needs a paired `Stop` hook (see the
+  browser-claim-teardown pitfall below).
 
 ## Key Files
 
@@ -61,6 +71,36 @@ fingerprint regex; extend it when adding a hook whose command lacks an existing
 signature. Test idempotency: run init 2–3× over a config with a foreign hook and
 assert no duplication + the foreign hook survives. See
 `docs/solutions/patterns/installer-own-and-merge-config-not-replace-20260715.md`.
+
+### Pitfall: Advisory teardown prose alone doesn't survive the collapse zone
+_Added by soloship-learn 2026-07-29_
+A "clean up X when done" instruction living only in skill markdown gets
+forgotten at the tail of long sessions, exactly where context is thinnest.
+`SessionEnd` alone isn't a full fix either — it only fires on a clean exit, so
+a session that goes quiet but keeps running (moved on to other work, still
+holding a browser claim) is invisible to it. The browser-claim system pairs
+`SessionEnd` (releases on clean exit) with a `Stop` hook
+(`buildBrowserTeardownReminderScript`) that checks the CURRENT session's own
+claim file age on every reply-end and nags with the exact release command once
+it has gone quiet past `BROWSER_TEARDOWN_REMIND_MIN` — mechanical, not
+probabilistic. Reuse this two-hook pattern (`SessionEnd` + `Stop`, not either
+alone) for any future "must release a shared resource, even if the session
+never exits cleanly" case. See
+`docs/solutions/workflow-issues/browser-qa-false-blockers-credential-refusal-and-stale-claims-20260729.md`.
+
+### Pitfall: Similar-looking MCP tool surfaces can be architecturally opposite
+_Added by soloship-learn 2026-07-29_
+Two MCP browser surfaces (Google's Chrome DevTools MCP and the Claude in
+Chrome extension) both present as "a Chrome window with automation attached,"
+but one launches its own fully isolated managed Chrome with no access to the
+user's data and the other IS the user's real, logged-in everyday Chrome. A
+first-draft rule conflated them under one label; the correction only happened
+because the maintainer could observe a second application window opening that
+clearly wasn't his daily browser. Before naming or ranking any browser/tool
+MCP surface in a rule, verify empirically what it actually connects to (e.g.
+`mcp__claude-in-chrome__list_connected_browsers`) rather than inferring from
+the tool name or how it visually presents. See
+`docs/solutions/workflow-issues/browser-qa-false-blockers-credential-refusal-and-stale-claims-20260729.md`.
 
 ### Pitfall: macOS git grep ERE has no `\b` — boundary regexes silently match nothing
 _Added by soloship-learn 2026-07-23_
