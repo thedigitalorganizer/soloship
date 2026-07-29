@@ -17,7 +17,13 @@ do not pass this gate. Watching the real flow happen does.
 ## What "browser QA" means
 
 Use `/soloship:browse` (Soloship's headless browser) against the running app
-(local dev server or deployed preview):
+(local dev server or deployed preview). Browser selection, credential
+escalation, and the busy-browser protocol are governed by the
+`browser-tooling-priority` rule: `/soloship:browse` first, then Claude in
+Chrome (the extension in the user's own Chrome, with the 1Password credential
+flow), then the host app's built-in browser —
+and neither a login wall nor a "browser in use by another session" report is
+ever grounds to skip the gate.
 
 1. **Identify the affected surface.** From the diff, list every page, route,
    component, and flow this change can reach. That whole list is what gets
@@ -38,7 +44,7 @@ the authenticated path.
    it exists, use the account it names as the default for QA (and read the
    credentials from the gitignored secrets file it points to). Use a different
    account only when the task specifically calls for one.
-2. **If no test account is documented and a flow needs auth, STOP and ask the
+2. **If no test account is documented and a flow needs auth, stop and ask the
    user:** *"This project has no documented test account and this flow needs a
    login. Want me to create a test account and document it so QA always uses it
    from now on (unless a specific account is needed)?"*
@@ -70,6 +76,14 @@ wrong behavior, regression on an adjacent flow):
 3. Repeat until every affected flow passes clean.
 
 Only then may the work proceed to finish/merge/ship.
+
+## Teardown when QA passes
+
+Passing QA ends with cleanup, not just a report: close every Claude in Chrome tab you
+created, release any credential grants, close built-in-browser pages — leave the
+`/soloship:browse` daemon running (shared by design). Full protocol in
+`browser-tooling-priority`. A QA session that keeps holding the user's browser
+after finishing is the reason the NEXT session finds it "busy."
 
 ## The only valid exemption
 

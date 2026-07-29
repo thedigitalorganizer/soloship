@@ -22,6 +22,12 @@
 
 ### Changed
 
+- **Browser surface terminology corrected across rules and skills** (maintainer
+  feedback, 2026-07-29): tier 2 is now named **Claude in Chrome** — the Claude
+  extension inside the user's own everyday Chrome — not "Chrome MCP," a label
+  users associate with the separate managed automation-banner Chrome window
+  that `chrome-devtools`-style tools launch. The rule now spells out that those
+  are two different surfaces.
 - **`browser-qa-gate.md`** now references the priority rule for browser
   selection and adds a teardown-when-QA-passes section.
 - **Teardown steps added to `/implement` (QA Gate), `/qa` (new Phase 12),

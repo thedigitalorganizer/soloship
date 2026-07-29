@@ -520,8 +520,9 @@ do not pass this gate. Watching the real flow happen does.
 Use \`/soloship:browse\` (Soloship's headless browser) against the running app
 (local dev server or deployed preview). Browser selection, credential
 escalation, and the busy-browser protocol are governed by the
-\`browser-tooling-priority\` rule: \`/soloship:browse\` first, then Chrome MCP
-(with the 1Password credential flow), then the host app's built-in browser —
+\`browser-tooling-priority\` rule: \`/soloship:browse\` first, then Claude in
+Chrome (the extension in the user's own Chrome, with the 1Password credential
+flow), then the host app's built-in browser —
 and neither a login wall nor a "browser in use by another session" report is
 ever grounds to skip the gate.
 
@@ -579,7 +580,7 @@ Only then may the work proceed to finish/merge/ship.
 
 ## Teardown when QA passes
 
-Passing QA ends with cleanup, not just a report: close every Chrome MCP tab you
+Passing QA ends with cleanup, not just a report: close every Claude in Chrome tab you
 created, release any credential grants, close built-in-browser pages — leave the
 \`/soloship:browse\` daemon running (shared by design). Full protocol in
 \`browser-tooling-priority\`. A QA session that keeps holding the user's browser
@@ -620,17 +621,23 @@ loaded first:
    all browser work. Fast (~100ms/command), persistent (cookies and logins
    survive between calls and between sessions), and never contended — it does
    not lock anything another session needs.
-2. **Chrome MCP** (\`mcp__claude-in-chrome__*\` — the user's real Chrome) — when
-   the flow needs the user's existing logged-in sessions, or when a login is
-   required and the 1Password credential flow is available (see below). These
-   tools are often DEFERRED: absent from your visible tool list until loaded
-   via ToolSearch. Not seeing them listed does not mean they are unavailable —
-   search before concluding anything.
+2. **Claude in Chrome** (\`mcp__claude-in-chrome__*\` — the Claude extension
+   running inside the user's OWN everyday Chrome) — when the flow needs the
+   user's existing logged-in sessions, or when a login is required and the
+   1Password credential flow is available (see below). You are acting inside
+   the browser the user actually lives in: open your own tabs, touch nothing
+   you didn't open, and clean up when done. These tools are often DEFERRED:
+   absent from your visible tool list until loaded via ToolSearch. Not seeing
+   them listed does not mean they are unavailable — search before concluding
+   anything.
 3. **The host app's built-in browser** (e.g. Claude Desktop's
    \`mcp__Claude_Browser__*\`) — fallback when neither of the above exists on
    this machine.
-4. \`mcp__chrome-devtools__*\` is NOT a QA browser — do not use it for browsing
-   or flow testing (performance tracing only, and only when explicitly asked).
+4. \`mcp__chrome-devtools__*\` is NOT a QA browser. It LAUNCHES ITS OWN managed
+   Chrome — the separate automation-banner window that pops open as a second
+   app; it is not the user's browser, and "Chrome MCP" loosely used for that
+   window is a different surface from Claude in Chrome above. Performance
+   tracing only, and only when explicitly asked.
 
 Before ever reporting "no browser available" or "can't test this," you must have
 actually enumerated the surfaces — including a ToolSearch for deferred browser
@@ -646,7 +653,7 @@ authenticated path blocked:
 1. **Documented test account** (\`docs/testing/test-accounts.md\` per
    browser-qa-gate) via \`/soloship:browse\` — non-production credentials from the
    gitignored secrets file are yours to use for QA.
-2. **1Password credential flow via Chrome MCP** — \`request_credentials\` (name
+2. **1Password credential flow via Claude in Chrome** — \`request_credentials\` (name
    everything the task needs up front) → \`autofill_credential\` →
    \`enter_verification_code\` for 2FA. The user approves each item in
    1Password's own prompt and the secret goes straight into the page; you never
@@ -679,9 +686,9 @@ browser surface reports busy/locked:
 The moment QA passes (before reporting done/finish/merge/ship — the same
 boundary as browser-qa-gate):
 
-- **Close every Chrome MCP tab you created** (\`tabs_close_mcp\`) and release
+- **Close every Claude in Chrome tab you created** (\`tabs_close_mcp\`) and release
   credential grants (\`release_credentials\`) if you requested any. Tabs in the
-  user's real Chrome can only be closed by the session that made them — no hook
+  user's own Chrome can only be closed by the session that made them — no hook
   can do it for you later.
 - **Close any built-in-browser or chrome-devtools pages you opened.**
 - **Leave the \`/soloship:browse\` daemon running.** Its persistence (logins,

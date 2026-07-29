@@ -975,7 +975,7 @@ If the repo has a `TODOS.md`:
 QA is not finished until the browser surfaces it held are released (per the
 auto-loaded `browser-tooling-priority` rule):
 
-1. **Chrome MCP** (`claude-in-chrome`): close every tab this session created
+1. **Claude in Chrome** (`claude-in-chrome` — the user's own Chrome): close every tab this session created
    (`tabs_close_mcp`) and release any 1Password credential grants
    (`release_credentials`). Only this session can close its tabs — no hook can
    do it later, and a held browser is what makes the next QA session report a

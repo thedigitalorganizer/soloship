@@ -148,7 +148,7 @@ another way. "Tests pass" / "build is green" does NOT satisfy this gate. Do not
 proceed to Step 10 until it passes.
 
 **When the gate passes, tear down before proceeding** (per the auto-loaded
-`browser-tooling-priority` rule): close every Chrome MCP tab you created
+`browser-tooling-priority` rule): close every Claude in Chrome tab you created
 (`tabs_close_mcp`), release credential grants (`release_credentials`), close
 built-in-browser pages. Leave the `/soloship:browse` daemon running — it is
 shared state by design. Shipping while still holding the user's browser is what

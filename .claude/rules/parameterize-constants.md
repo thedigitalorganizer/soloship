@@ -16,7 +16,7 @@ This rule has two beats — the silent fix, then the explicit ask:
 
 ## Why
 
-Named values are the line between maintainable software and software that decays. One definition to change beats hunting copies; a wrong copy left behind is a bug waiting to be found in production. The cost of naming a value now is seconds; the cost of fixing the wrong-copy bug later is hours. The maintainer has stated they always want the more thorough fix here — when uncertain, parameterize.
+Named values are the line between maintainable software and software that decays. One definition to change beats hunting copies; a wrong copy left behind is a bug waiting to be found in production. The cost of naming a value now is seconds; the cost of fixing the wrong-copy bug later is hours. The maintainer of a Soloship project has explicitly opted into the more thorough fix here — when uncertain, parameterize.
 
 ## Honest Limit
 
