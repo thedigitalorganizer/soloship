@@ -10,7 +10,15 @@ loaded first:
    all browser work. Fast (~100ms/command), persistent (cookies and logins
    survive between calls and between sessions), and never contended — it does
    not lock anything another session needs.
-2. **Claude in Chrome** (`mcp__claude-in-chrome__*` — the Claude extension
+2. **Chrome DevTools MCP** (`mcp__chrome-devtools__*` — Google's official
+   Chrome MCP) — when `/soloship:browse` can't handle the flow or you need a
+   real visible Chrome. It LAUNCHES ITS OWN managed Chrome — the separate
+   automation-banner window that opens as a second app — fully isolated from
+   the user's everyday browser, which is exactly why it outranks the surfaces
+   below: exhaust it before ever touching the browser the user lives in. It
+   has no access to the user's logins or the 1Password flow; for authenticated
+   flows that need those, escalate to tier 3.
+3. **Claude in Chrome** (`mcp__claude-in-chrome__*` — the Claude extension
    running inside the user's OWN everyday Chrome) — when the flow needs the
    user's existing logged-in sessions, or when a login is required and the
    1Password credential flow is available (see below). You are acting inside
@@ -19,14 +27,9 @@ loaded first:
    absent from your visible tool list until loaded via ToolSearch. Not seeing
    them listed does not mean they are unavailable — search before concluding
    anything.
-3. **The host app's built-in browser** (e.g. Claude Desktop's
-   `mcp__Claude_Browser__*`) — fallback when neither of the above exists on
+4. **The host app's built-in browser** (e.g. Claude Desktop's
+   `mcp__Claude_Browser__*`) — last resort when none of the above exists on
    this machine.
-4. `mcp__chrome-devtools__*` is NOT a QA browser. It LAUNCHES ITS OWN managed
-   Chrome — the separate automation-banner window that pops open as a second
-   app; it is not the user's browser, and "Chrome MCP" loosely used for that
-   window is a different surface from Claude in Chrome above. Performance
-   tracing only, and only when explicitly asked.
 
 Before ever reporting "no browser available" or "can't test this," you must have
 actually enumerated the surfaces — including a ToolSearch for deferred browser
@@ -79,7 +82,8 @@ boundary as browser-qa-gate):
   credential grants (`release_credentials`) if you requested any. Tabs in the
   user's own Chrome can only be closed by the session that made them — no hook
   can do it for you later.
-- **Close any built-in-browser or chrome-devtools pages you opened.**
+- **Close any Chrome DevTools MCP pages and built-in-browser pages you
+  opened** (the managed automation Chrome window should not linger after QA).
 - **Leave the `/soloship:browse` daemon running.** Its persistence (logins,
   cookies) is shared state by design; killing it (`browse disconnect`) punishes
   every other session. Only disconnect when a config change requires it.

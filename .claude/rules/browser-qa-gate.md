@@ -19,9 +19,10 @@ do not pass this gate. Watching the real flow happen does.
 Use `/soloship:browse` (Soloship's headless browser) against the running app
 (local dev server or deployed preview). Browser selection, credential
 escalation, and the busy-browser protocol are governed by the
-`browser-tooling-priority` rule: `/soloship:browse` first, then Claude in
-Chrome (the extension in the user's own Chrome, with the 1Password credential
-flow), then the host app's built-in browser —
+`browser-tooling-priority` rule: `/soloship:browse` first, then Google's
+Chrome DevTools MCP (its own managed Chrome), then Claude in Chrome (the
+extension in the user's own Chrome, with the 1Password credential flow), then
+the host app's built-in browser —
 and neither a login wall nor a "browser in use by another session" report is
 ever grounds to skip the gate.
 

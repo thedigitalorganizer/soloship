@@ -162,14 +162,16 @@ Persistent headless Chromium. First call auto-starts (~3s), then ~100ms per comm
 State persists between calls (cookies, tabs, login sessions).
 
 **Browser priority (per the `browser-tooling-priority` rule):** browse is the
-FIRST-choice browser surface for all QA and testing — ahead of Claude in Chrome
-(`claude-in-chrome`) and any host app's built-in browser. Reach for Claude in Chrome
-only when a flow needs the user's own logged-in Chrome or the 1Password
-credential autofill flow; fall back to the host browser only when neither
-exists. **Teardown:** when QA ends, leave this daemon running — its logins and
-cookies are shared across sessions by design (`browse disconnect` only for
-config changes). Cleanup obligations apply to the OTHER surfaces: close any
-Claude in Chrome tabs you created and release credential grants before reporting done.
+FIRST-choice browser surface for all QA and testing. If browse can't handle the
+flow, escalate in order: Google's Chrome DevTools MCP (`chrome-devtools` — its
+own managed Chrome, isolated from the user's), then Claude in Chrome
+(`claude-in-chrome` — only when a flow needs the user's own logged-in Chrome or
+the 1Password credential autofill flow), then the host app's built-in browser.
+**Teardown:** when QA ends, leave this daemon running — its logins and cookies
+are shared across sessions by design (`browse disconnect` only for config
+changes). Cleanup obligations apply to the OTHER surfaces: close Chrome DevTools
+MCP pages and any Claude in Chrome tabs you created, and release credential
+grants before reporting done.
 
 ## SETUP (run this check BEFORE any browse command)
 

@@ -22,12 +22,15 @@
 
 ### Changed
 
-- **Browser surface terminology corrected across rules and skills** (maintainer
-  feedback, 2026-07-29): tier 2 is now named **Claude in Chrome** — the Claude
-  extension inside the user's own everyday Chrome — not "Chrome MCP," a label
-  users associate with the separate managed automation-banner Chrome window
-  that `chrome-devtools`-style tools launch. The rule now spells out that those
-  are two different surfaces.
+- **Browser surface terminology corrected and priority reordered** (maintainer
+  feedback, 2026-07-29). The order is now: `/browse` → **Chrome DevTools MCP**
+  (Google's official Chrome MCP; launches its own managed automation-banner
+  Chrome, isolated from the user's browser) → **Claude in Chrome** (the Claude
+  extension inside the user's own everyday Chrome; the 1Password surface) →
+  host built-in browser. Isolation ranks above convenience: the user's personal
+  Chrome is only touched when a flow needs their logins or 1Password. Earlier
+  "Chrome MCP" naming conflated the DevTools-managed window with the extension;
+  the rule now spells out that they are different surfaces.
 - **`browser-qa-gate.md`** now references the priority rule for browser
   selection and adds a teardown-when-QA-passes section.
 - **Teardown steps added to `/implement` (QA Gate), `/qa` (new Phase 12),

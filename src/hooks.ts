@@ -24,8 +24,9 @@ export const BROWSER_CLAIM_STALE_MIN = SESSION_IDLE_MIN;
 export const BROWSER_CLAIMS_DIRNAME = "browser";
 
 // Tool-name matcher for every browser MCP surface Soloship knows about:
-// claude-in-chrome (the Claude extension in the user's own Chrome + 1Password autofill),
-// chrome-devtools (debugging), and Claude Desktop's built-in browser.
+// chrome-devtools (Google's Chrome MCP — launches its own managed Chrome),
+// claude-in-chrome (the Claude extension in the user's own Chrome + 1Password
+// autofill), and Claude Desktop's built-in browser.
 // The /browse daemon runs via Bash and is shared by design — it is not
 // claimed or cleaned per session, so it is deliberately absent here.
 export const BROWSER_MCP_TOOL_MATCHER =

@@ -980,7 +980,8 @@ auto-loaded `browser-tooling-priority` rule):
    (`release_credentials`). Only this session can close its tabs — no hook can
    do it later, and a held browser is what makes the next QA session report a
    phantom "another session is using it."
-2. **Host built-in browser / chrome-devtools pages:** close what you opened.
+2. **Chrome DevTools MCP / host built-in browser pages:** close what you
+   opened — the managed automation Chrome window should not linger after QA.
 3. **`/soloship:browse` daemon: leave it running.** Its cookies and logins are
    shared state by design — do NOT `browse disconnect` as cleanup.
 
