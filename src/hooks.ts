@@ -13,6 +13,24 @@ export const SESSION_ACTIVE_MIN = 15; // heartbeat younger than this = active
 export const SESSION_IDLE_MIN = 60; // heartbeat younger than this = idle; older = presumed dead
 export const DEPLOY_LOCK_STALE_MIN = 45; // deploy lock older than this = presumed stale (never auto-broken)
 
+// Browser-claim liveness. A claim file's mtime is refreshed on every browser
+// MCP tool call; a claim older than this is a dead session's leftovers, not a
+// browser actually in use. Deliberately the same number as SESSION_IDLE_MIN —
+// one "presumed dead" threshold to reason about.
+export const BROWSER_CLAIM_STALE_MIN = SESSION_IDLE_MIN;
+
+// Where browser claims live under <git-common-dir>/soloship/. Kept OUT of
+// claims/ — that glob is consumed by the plan-truth gate as plan claims.
+export const BROWSER_CLAIMS_DIRNAME = "browser";
+
+// Tool-name matcher for every browser MCP surface Soloship knows about:
+// claude-in-chrome (the user's real Chrome + 1Password autofill),
+// chrome-devtools (debugging), and Claude Desktop's built-in browser.
+// The /browse daemon runs via Bash and is shared by design — it is not
+// claimed or cleaned per session, so it is deliberately absent here.
+export const BROWSER_MCP_TOOL_MATCHER =
+  "mcp__claude-in-chrome__.*|mcp__chrome-devtools__.*|mcp__Claude_Browser__.*";
+
 // strftime format for the reply-timestamp Stop hook. Uses the machine's local
 // timezone (no TZ pin) since installed projects belong to users anywhere.
 export const REPLY_TIMESTAMP_FORMAT = "%-m/%-d/%Y %-I:%M:%S %p %Z";
@@ -71,6 +89,7 @@ interface HooksConfig {
     PostToolUse?: HookEntry[];
     Stop?: HookEntry[];
     SessionStart?: HookEntry[];
+    SessionEnd?: HookEntry[];
   };
 }
 
@@ -82,7 +101,13 @@ interface HookEntry {
   _soloshipManaged?: boolean;
 }
 
-const HOOK_EVENTS = ["PreToolUse", "PostToolUse", "Stop", "SessionStart"] as const;
+const HOOK_EVENTS = [
+  "PreToolUse",
+  "PostToolUse",
+  "Stop",
+  "SessionStart",
+  "SessionEnd",
+] as const;
 
 // Best-effort fingerprints for Soloship hooks installed BEFORE the _soloshipManaged
 // marker existed (one-time migration). Kept specific to avoid dropping a user's
@@ -366,6 +391,22 @@ export async function installHooks(
   });
   results.push("PostToolUse: session heartbeat (keeps this session's presence file fresh for other sessions)");
 
+  // Browser claim: every browser MCP tool call stamps a per-session claim file
+  // (mtime = heartbeat). Other sessions hitting "browser is busy" read these to
+  // tell a live QA session from yesterday's dead one. Mechanical floor for the
+  // browser-tooling-priority rule.
+  postToolUseHooks.push({
+    matcher: BROWSER_MCP_TOOL_MATCHER,
+    hooks: [
+      {
+        type: "command",
+        command: buildBrowserClaimScript(),
+        timeout: 5000,
+      },
+    ],
+  });
+  results.push("PostToolUse: browser claim (records which session is driving a browser MCP surface, heartbeat via file mtime)");
+
   if (postToolUseHooks.length > 0) {
     hooks.PostToolUse = postToolUseHooks;
   }
@@ -432,6 +473,22 @@ export async function installHooks(
   results.push("SessionStart: checkpoint commit before agent session");
   results.push("SessionStart: daily check for Soloship updates on npm");
   results.push("SessionStart: session presence (register this session, announce other live sessions in this repo)");
+
+  // SessionEnd: release this session's browser claim so the next QA session
+  // sees a free browser instead of a phantom "another session is using it".
+  hooks.SessionEnd = [
+    {
+      matcher: "",
+      hooks: [
+        {
+          type: "command",
+          command: buildBrowserReleaseScript(),
+          timeout: 5000,
+        },
+      ],
+    },
+  ];
+  results.push("SessionEnd: browser claim release (frees this session's browser MCP claim when the session ends)");
 
   // Merge Soloship's hooks into settings, preserving user-custom hooks (and
   // other settings keys). Soloship stamps its own entries so a re-init replaces
@@ -1693,7 +1750,7 @@ SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*
 
 # Rewrite thresholds every session start so upgrades propagate (atomic write).
 CFG_TMP="$COORD/config.json.tmp.$$"
-printf "{\\"session_prune_hours\\":${SESSION_PRUNE_HOURS},\\"session_active_min\\":${SESSION_ACTIVE_MIN},\\"session_idle_min\\":${SESSION_IDLE_MIN},\\"deploy_lock_stale_min\\":${DEPLOY_LOCK_STALE_MIN}}\\n" > "$CFG_TMP" 2>/dev/null && mv "$CFG_TMP" "$COORD/config.json" 2>/dev/null
+printf "{\\"session_prune_hours\\":${SESSION_PRUNE_HOURS},\\"session_active_min\\":${SESSION_ACTIVE_MIN},\\"session_idle_min\\":${SESSION_IDLE_MIN},\\"deploy_lock_stale_min\\":${DEPLOY_LOCK_STALE_MIN},\\"browser_claim_stale_min\\":${BROWSER_CLAIM_STALE_MIN}}\\n" > "$CFG_TMP" 2>/dev/null && mv "$CFG_TMP" "$COORD/config.json" 2>/dev/null
 
 # Prune session files old enough to be certainly dead.
 find "$COORD/sessions" -name "*.json" -mmin +${SESSION_PRUNE_HOURS * 60} -delete 2>/dev/null
@@ -1768,6 +1825,70 @@ STARTED=$(grep -oE "\\"started\\":\\"[^\\"]*\\"" "$SF" 2>/dev/null | head -1 | s
 [ -z "$STARTED" ] && STARTED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 SF_TMP="$SF.tmp.$$"
 printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"dir\\":\\"%s\\",\\"branch\\":\\"%s\\",\\"started\\":\\"%s\\"}\\n" "$SID" "$PPID" "$DIR" "$BR" "$STARTED" > "$SF_TMP" 2>/dev/null && mv "$SF_TMP" "$SF" 2>/dev/null
+exit 0
+'`;
+}
+
+function buildBrowserClaimScript(): string {
+  // Browser claim (PostToolUse, matcher = browser MCP tools only). Writes
+  // <git-common-dir>/soloship/${BROWSER_CLAIMS_DIRNAME}/<session>.json on every
+  // browser MCP tool call; the fresh mtime is the heartbeat. This is how the
+  // NEXT session distinguishes "a live QA run is driving Chrome right now"
+  // from "a session that died yesterday never let go" — the exact ambiguity
+  // that used to end QA runs with a false "browser is busy". Claims deliberately
+  // live outside claims/ (that glob belongs to the plan-truth gate). The
+  // "claimed" timestamp is preserved across rewrites, mirroring how the session
+  // heartbeat preserves "started". Guard-first: outside a git repo, exit 0.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+BDIR="$COMMON/soloship/${BROWSER_CLAIMS_DIRNAME}"
+mkdir -p "$BDIR" 2>/dev/null || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+TOOL=$(printf "%s" "$INPUT" | grep -oE "\\"tool_name\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+case "$TOOL" in
+  mcp__claude-in-chrome__*) SURFACE="chrome-mcp" ;;
+  mcp__chrome-devtools__*)  SURFACE="chrome-devtools" ;;
+  mcp__Claude_Browser__*)   SURFACE="desktop-browser" ;;
+  *)                        SURFACE="unknown" ;;
+esac
+
+CF="$BDIR/$SID.json"
+CLAIMED=$(grep -oE "\\"claimed\\":\\"[^\\"]*\\"" "$CF" 2>/dev/null | head -1 | sed -E "s/\\"claimed\\":\\"//; s/\\"$//")
+[ -z "$CLAIMED" ] && CLAIMED=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+CF_TMP="$CF.tmp.$$"
+printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"surface\\":\\"%s\\",\\"claimed\\":\\"%s\\"}\\n" "$SID" "$PPID" "$SURFACE" "$CLAIMED" > "$CF_TMP" 2>/dev/null && mv "$CF_TMP" "$CF" 2>/dev/null
+
+# Sweep claims old enough to be certainly dead (same window as session files).
+find "$BDIR" -name "*.json" -mmin +${SESSION_PRUNE_HOURS * 60} -delete 2>/dev/null
+exit 0
+'`;
+}
+
+function buildBrowserReleaseScript(): string {
+  // Browser claim release (SessionEnd). The dead-man's-switch complement to the
+  // claim script: when a session actually ends (clear, exit, close), its claim
+  // file is removed so the browser reads as free instantly instead of after the
+  // staleness window. Sessions that die WITHOUT a SessionEnd (crash, machine
+  // sleep, abandoned desktop conversation) are covered by the staleness
+  // threshold (browser_claim_stale_min in config.json) that readers apply to
+  // the claim mtime. Guard-first: outside a git repo, exit 0.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+BDIR="$COMMON/soloship/${BROWSER_CLAIMS_DIRNAME}"
+[ -d "$BDIR" ] || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+rm -f "$BDIR/$SID.json" "$BDIR/$SID.json.tmp."* 2>/dev/null
 exit 0
 '`;
 }

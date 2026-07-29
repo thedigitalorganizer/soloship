@@ -970,6 +970,25 @@ If the repo has a `TODOS.md`:
 
 ---
 
+## Phase 12: Browser Teardown (always runs, even on early exit)
+
+QA is not finished until the browser surfaces it held are released (per the
+auto-loaded `browser-tooling-priority` rule):
+
+1. **Chrome MCP** (`claude-in-chrome`): close every tab this session created
+   (`tabs_close_mcp`) and release any 1Password credential grants
+   (`release_credentials`). Only this session can close its tabs — no hook can
+   do it later, and a held browser is what makes the next QA session report a
+   phantom "another session is using it."
+2. **Host built-in browser / chrome-devtools pages:** close what you opened.
+3. **`/soloship:browse` daemon: leave it running.** Its cookies and logins are
+   shared state by design — do NOT `browse disconnect` as cleanup.
+
+The SessionEnd hook removes this session's browser claim file mechanically;
+this phase covers what hooks cannot reach (tabs in the user's real browser).
+
+---
+
 ## Additional Rules (qa-specific)
 
 11. **Clean working tree required.** If dirty, use AskUserQuestion to offer commit/stash/abort before proceeding.

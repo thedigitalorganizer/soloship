@@ -220,6 +220,13 @@ decision, exempt from freshness nagging.
 
 **Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
 
+**Browser teardown first (all options, per `browser-tooling-priority`):** if this
+session drove any browser during QA, release it now — close Chrome MCP tabs you
+created (`tabs_close_mcp`), release credential grants (`release_credentials`),
+close built-in-browser pages. Leave the `/soloship:browse` daemon running (its
+logins are shared by design). Finishing while still holding the user's browser
+is why the next session finds it "busy."
+
 ```bash
 GIT_DIR=$(cd "$(git rev-parse --git-dir)" 2>/dev/null && pwd -P)
 GIT_COMMON=$(cd "$(git rev-parse --git-common-dir)" 2>/dev/null && pwd -P)

@@ -33,6 +33,7 @@ const EXPECTED_RULES = [
   "recurrence-gate.md",
   "parameterize-constants.md",
   "browser-qa-gate.md",
+  "browser-tooling-priority.md",
   "qa-plan-in-plans.md",
   "deploy-from-main-only.md",
   "automation-registry.md",
