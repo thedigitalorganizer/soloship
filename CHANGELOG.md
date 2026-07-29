@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+### Added — QA test-account standard + teardown enforcement
+
+- **Test-account standard** (generalized from MAPS): `docs/testing/test-accounts.md`
+  is now built to a five-point contract — one account per role (including
+  absence fixtures like pending invites), plus-alias emails routed to ONE QA
+  inbox so email flows are verified by reading the inbox, a dedicated QA
+  tenant, secrets gitignored, idempotent provisioning with self-healing
+  fixtures. Full template in `skills/references/qa-test-accounts.md`; contract
+  inlined in the `browser-qa-gate` rule; `/plan` QA Plans must name the test
+  account for authenticated rows; `/implement` builds new docs to the standard.
+- **Teardown is now part of the QA Plan contract** (`qa-plan-in-plans` rule +
+  `/plan`): executing a QA Plan ends with browser teardown, and a new **Stop
+  hook** nags whenever a session still holds a browser claim that has been
+  quiet for 10+ minutes — printing the exact release command — so cleanup
+  survives the end-of-session collapse zone. Claims still auto-release at
+  SessionEnd and expire by staleness.
+
 ### Added — Browser tooling priority + QA session cleanup
 
 - **New installer rule `browser-tooling-priority.md` (18th rule).** Machine-wide

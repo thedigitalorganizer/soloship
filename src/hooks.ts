@@ -19,6 +19,14 @@ export const DEPLOY_LOCK_STALE_MIN = 45; // deploy lock older than this = presum
 // one "presumed dead" threshold to reason about.
 export const BROWSER_CLAIM_STALE_MIN = SESSION_IDLE_MIN;
 
+// Teardown reminder. When a session's own browser claim has gone quiet for
+// this many minutes but the session is still running, the Stop hook reminds
+// the agent to tear down (close tabs, release grants, release the claim).
+// Long enough that active QA (which refreshes the claim constantly) is never
+// nagged; short enough that "finished QA, moved on, still holding the
+// browser" gets surfaced within the same session.
+export const BROWSER_TEARDOWN_REMIND_MIN = 10;
+
 // Where browser claims live under <git-common-dir>/soloship/. Kept OUT of
 // claims/ — that glob is consumed by the plan-truth gate as plan claims.
 export const BROWSER_CLAIMS_DIRNAME = "browser";
@@ -435,8 +443,19 @@ export async function installHooks(
       ],
     },
   ];
+  hooks.Stop.push({
+    matcher: "",
+    hooks: [
+      {
+        type: "command",
+        command: buildBrowserTeardownReminderScript(),
+        timeout: 5000,
+      },
+    ],
+  });
   results.push("Stop: plan validation + workflow navigator + handoff reminder");
   results.push("Stop: reply timestamp (stamps each reply with local date/time so session logs can reconstruct when work actually happened)");
+  results.push("Stop: browser teardown reminder (nags when this session still holds a quiet browser claim — close tabs, release grants, release the claim)");
 
   // SessionStart: Checkpoint commit + Soloship update check
   hooks.SessionStart = [
@@ -1866,6 +1885,43 @@ printf "{\\"session_id\\":\\"%s\\",\\"pid\\":%s,\\"surface\\":\\"%s\\",\\"claime
 
 # Sweep claims old enough to be certainly dead (same window as session files).
 find "$BDIR" -name "*.json" -mmin +${SESSION_PRUNE_HOURS * 60} -delete 2>/dev/null
+exit 0
+'`;
+}
+
+function buildBrowserTeardownReminderScript(): string {
+  // Browser teardown reminder (Stop). The collapse-zone guard for cleanup:
+  // teardown lives at the tail of long QA sessions, exactly where skill
+  // instructions stop being followed. This hook cannot close tabs (only the
+  // owning session's MCP tools can), but it can make "you are still holding
+  // the browser" impossible to miss: if this session's own claim file exists
+  // and has been quiet for BROWSER_TEARDOWN_REMIND_MIN, every reply-end nags
+  // with the exact release command until teardown happens or the session ends
+  // (SessionEnd releases the claim mechanically). Active QA never sees this —
+  // its claim mtime refreshes on every browser call. Guard-first: exit 0
+  // outside a git repo or when no claim exists.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+BDIR="$COMMON/soloship/${BROWSER_CLAIMS_DIRNAME}"
+[ -d "$BDIR" ] || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+CF="$BDIR/$SID.json"
+[ -f "$CF" ] || exit 0
+
+NOW=$(date +%s)
+MT=$(stat -f %m "$CF" 2>/dev/null || stat -c %Y "$CF" 2>/dev/null || echo 0)
+AGE_MIN=$(( (NOW - MT) / 60 ))
+[ "$AGE_MIN" -lt ${BROWSER_TEARDOWN_REMIND_MIN} ] && exit 0
+
+SURFACE=$(grep -oE "\\"surface\\":\\"[^\\"]*\\"" "$CF" 2>/dev/null | head -1 | sed -E "s/\\"surface\\":\\"//; s/\\"$//")
+[ -z "$SURFACE" ] && SURFACE="browser"
+
+echo "{\\"systemMessage\\": \\"This session still holds a browser claim ($SURFACE — last browser call $AGE_MIN min ago). If browser QA is finished, tear down now per browser-tooling-priority: close the tabs/pages you opened, release credential grants, then release the claim: rm \\\\\\"$CF\\\\\\" (otherwise it releases at session end).\\"}"
 exit 0
 '`;
 }

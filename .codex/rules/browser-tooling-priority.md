@@ -87,8 +87,11 @@ boundary as browser-qa-gate):
 - **Leave the `/soloship:browse` daemon running.** Its persistence (logins,
   cookies) is shared state by design; killing it (`browse disconnect`) punishes
   every other session. Only disconnect when a config change requires it.
-- Your claim file is released mechanically (SessionEnd hook) and expires by
-  staleness even if the session dies — but the tabs are on you.
+- **Release your browser claim** when teardown is done. A Stop-hook reminder
+  fires whenever this session still holds a claim that has gone quiet — it
+  prints the exact `rm` command for your claim file; run it after closing
+  your tabs. The claim also releases mechanically at session end and expires
+  by staleness if the session dies — but the tabs are on you.
 
 ## Why
 

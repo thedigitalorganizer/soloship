@@ -25,6 +25,19 @@ alone never passes as a QA Plan.
 
 One row per touched surface — a UI + API + migration change needs three rows.
 
+Two standing requirements on the rows:
+
+- **Authenticated rows name their account.** Any row exercising a
+  login-gated flow states which documented test account it runs as (per the
+  browser-qa-gate test-account standard, `docs/testing/test-accounts.md`).
+  A row that sends email states that verification includes opening the QA
+  inbox and seeing the email.
+- **Executing a QA Plan always ends with browser teardown** (per
+  `browser-tooling-priority`): close the tabs/pages the session opened,
+  release credential grants, release the browser claim. Teardown is part of
+  executing the plan, not an optional courtesy — a QA run that leaves the
+  browser held has not finished its QA Plan.
+
 ## Choosing the method — match it to the work type
 
 | Work type / surface | Primary verification (in addition to automated tests) |

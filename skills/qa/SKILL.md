@@ -985,8 +985,10 @@ auto-loaded `browser-tooling-priority` rule):
 3. **`/soloship:browse` daemon: leave it running.** Its cookies and logins are
    shared state by design — do NOT `browse disconnect` as cleanup.
 
-The SessionEnd hook removes this session's browser claim file mechanically;
-this phase covers what hooks cannot reach (tabs in the user's real browser).
+4. **Release your browser claim** once tabs are closed — the Stop-hook
+   teardown reminder prints the exact `rm` command for this session's claim
+   file; run it. (SessionEnd also releases it mechanically; this phase covers
+   what hooks cannot reach — tabs in the user's own browser.)
 
 ---
 

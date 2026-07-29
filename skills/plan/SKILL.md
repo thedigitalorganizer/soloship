@@ -215,6 +215,15 @@ Rules for the section:
 - Multi-surface changes get **one row per surface** — a UI + API + migration
   change needs three rows, not one.
 - "Run the test suite" alone never passes as a QA Plan.
+- **Authenticated rows name their test account** — any row exercising a
+  login-gated flow states which documented account (`docs/testing/test-accounts.md`,
+  built to the standard in `references/qa-test-accounts.md`) it runs as. Rows
+  for email-sending flows include opening the QA inbox and seeing the email as
+  evidence.
+- **The QA Plan implicitly ends with browser teardown** (per the
+  `browser-tooling-priority` rule): close tabs/pages opened, release credential
+  grants, release the browser claim. `/soloship:implement` treats teardown as
+  part of executing the plan.
 - Each phase's success criteria should reference the QA Plan rows they satisfy.
 - `/soloship:implement` executes every row of this section at its QA gate
   (Step 2.6) before the work may be called done — and loops fix → re-execute

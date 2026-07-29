@@ -554,17 +554,37 @@ the authenticated path.
      signup flow via \`/soloship:browse\`, or a seed/admin script if one exists.
      If the account genuinely can't be self-served (manual provisioning,
      external IdP), ask the user to provision one and hand you the credentials.
-     Then **document it**: write \`docs/testing/test-accounts.md\` recording each
-     account, its role/purpose, the environment it works in, and which one is
-     the **default for QA**; store the actual secrets in a gitignored file
-     (\`.ai/test-credentials.json\`, or the project's existing secret mechanism —
-     never commit credentials) and reference that location from the doc. Use
-     **non-production, disposable** credentials only.
+     Then **document it** in \`docs/testing/test-accounts.md\` per the standard
+     below.
    - **From then on**, that documented default account is what QA uses unless the
      task names a specific one.
    - **If no:** the authenticated flow is untested — say so plainly and do not
      call the work done. "Couldn't test, it needs a login" is an unmet gate, not
      an exemption.
+
+### The test-account standard (what the doc must contain)
+
+\`docs/testing/test-accounts.md\` is built to a standard, not ad hoc (full
+template: the Soloship skill reference \`references/qa-test-accounts.md\`):
+
+1. **One account per role/permission level** the app actually has — including
+   fixtures defined by an *absence* (a pending invite, an unclaimed seat).
+   QA runs as the role the flow serves.
+2. **Plus-alias emails routed to ONE inbox** (\`qa+<role>@<domain>\`, all
+   aliases of a single service/QA address) so every email the app sends to any
+   test account lands in one place. The doc records which inbox and how QA
+   reads it — **email flows are verified by opening that inbox and seeing the
+   email**, not assumed from on-screen success.
+3. **A dedicated QA tenant/org/workspace** so QA never touches real customer
+   data.
+4. **Secrets out of the repo** — the doc lists emails/roles/purposes and the
+   QA default; passwords live in a gitignored file
+   (\`.ai/test-credentials.json\` or the project's secret store). One shared
+   password across the set is fine; non-production, disposable only.
+5. **Idempotent provisioning** — a re-runnable script or documented reset that
+   refreshes the set without duplicating, self-heals absence fixtures back to
+   pristine after QA claims them, and refuses to delete accounts holding real
+   work. Keep a "Verified working: <date>" line current.
 
 ## The fix-and-re-verify loop
 
@@ -699,8 +719,11 @@ boundary as browser-qa-gate):
 - **Leave the \`/soloship:browse\` daemon running.** Its persistence (logins,
   cookies) is shared state by design; killing it (\`browse disconnect\`) punishes
   every other session. Only disconnect when a config change requires it.
-- Your claim file is released mechanically (SessionEnd hook) and expires by
-  staleness even if the session dies — but the tabs are on you.
+- **Release your browser claim** when teardown is done. A Stop-hook reminder
+  fires whenever this session still holds a claim that has gone quiet — it
+  prints the exact \`rm\` command for your claim file; run it after closing
+  your tabs. The claim also releases mechanically at session end and expires
+  by staleness if the session dies — but the tabs are on you.
 
 ## Why
 
@@ -745,6 +768,19 @@ alone never passes as a QA Plan.
 \`\`\`
 
 One row per touched surface — a UI + API + migration change needs three rows.
+
+Two standing requirements on the rows:
+
+- **Authenticated rows name their account.** Any row exercising a
+  login-gated flow states which documented test account it runs as (per the
+  browser-qa-gate test-account standard, \`docs/testing/test-accounts.md\`).
+  A row that sends email states that verification includes opening the QA
+  inbox and seeing the email.
+- **Executing a QA Plan always ends with browser teardown** (per
+  \`browser-tooling-priority\`): close the tabs/pages the session opened,
+  release credential grants, release the browser claim. Teardown is part of
+  executing the plan, not an optional courtesy — a QA run that leaves the
+  browser held has not finished its QA Plan.
 
 ## Choosing the method — match it to the work type
 
