@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.20.0] — 2026-07-29
+
 ### Added — QA test-account standard + teardown enforcement
 
 - **Test-account standard** (generalized from MAPS): `docs/testing/test-accounts.md`
