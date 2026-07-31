@@ -2,6 +2,41 @@
 
 ## [Unreleased]
 
+## [0.21.0] — 2026-07-31
+
+### Fixed — every `/soloship:*` slash command was unreachable
+
+- **Deleted `commands/` (46 shim files).** Claude Code 2.1.219 resolves
+  `commands/` and `skills/` in **one namespace** — the component inventory no
+  longer has a separate `Commands (N)` line. Soloship shipped a command file and
+  a skill directory with the **same name for all 46 entries**, so
+  `claude plugin details soloship` reported `Skills (92)` with every name listed
+  twice. The command won every collision, so `/soloship:plan` (and all 45
+  others) returned a 4-line shim instead of the workflow — and the shim's
+  instruction to invoke the skill by bare name resolved back to the shim, a
+  self-referential loop with no exit. Skills register as user-typable slash
+  commands on their own; `commands/` was pure duplication.
+- **Always-on token cost cut** — 92 registrations became 46. Measured before:
+  ~10,902 tokens added to every session. For scale: compound-engineering 3.20.0
+  is ~2,948 and superpowers 4.1.1 is ~1,166. (Post-fix figure recorded below
+  once measured against the installed build.)
+- **Release gate added** (`scripts/validate-plugin-metadata.js`): the validator
+  now fails if any `commands/*.md` shares a name with a `skills/*/` directory.
+  Verified by injecting a real collision and confirming it fires, then confirming
+  a differently-named command file passes.
+- **Fixed a stale release gate.** `REQUIRED_RULE_COUNT` was still `17` after
+  0.20.0 added the 18th rule (`verification-sufficiency`), so
+  `npm run validate:plugins` had been failing on `main` since that release.
+
+### Changed — plugin format guidance corrected
+
+- **Gotcha 2 in the plugin-format solution doc is now obsolete.** It claimed
+  "plugin-loaded skills do NOT auto-expose as slash commands" — true when written
+  on 2026-05-12, false as of Claude Code 2.1.219. That belief is what put the
+  colliding shims there. Added **Gotcha 8** with the evidence, and updated
+  Pattern #1 in `critical-patterns.md`, which had been instructing agents to
+  place `commands/<name>.md` at plugin root.
+
 ## [0.20.0] — 2026-07-29
 
 ### Added — QA test-account standard + teardown enforcement

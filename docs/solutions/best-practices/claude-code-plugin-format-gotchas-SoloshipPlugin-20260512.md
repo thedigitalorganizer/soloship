@@ -1,7 +1,7 @@
 ---
 module: Soloship Plugin
 date: 2026-05-12
-updated: 2026-05-12
+updated: 2026-07-31
 problem_type: best_practice
 component: tooling
 symptoms:
@@ -12,7 +12,11 @@ symptoms:
   - "Skills load (visible in inventory) but slash commands don't"
   - "Plugin installs/updates clean but commands silently fail to register"
   - "Declaring commands as string path to directory suppresses default auto-discovery"
-tags: [claude-code, plugin, marketplace, plugin-json, slash-commands, commands-directory, namespacing, version-sync, manifest-schema, auto-discovery]
+  - "Slash command returns a 4-line shim instead of the real workflow"
+  - "Invoking the skill by bare name returns the same shim — self-referential loop"
+  - "claude plugin details lists every skill name TWICE"
+  - "Plugin always-on token cost is ~2x comparable plugins"
+tags: [claude-code, plugin, marketplace, plugin-json, slash-commands, commands-directory, namespacing, version-sync, manifest-schema, auto-discovery, unified-namespace, name-collision, token-cost]
 root_cause: incomplete_setup
 resolution_type: workflow_improvement
 severity: high
@@ -55,6 +59,8 @@ This was the deepest confusion. In Claude Code's model:
 
 - **Skills** (`skills/<name>/SKILL.md`) are tools the AGENT can invoke via the `Skill` tool, based on user intent matching the skill's description. Discovered via `"skills": "./skills"` in plugin.json.
 - **Slash commands** (`commands/<name>.md`) are USER-typed shortcuts. They appear in autocomplete and resolve directly when typed. Discovered via `"commands": "./commands"` in plugin.json.
+
+**⚠️ OBSOLETE as of Claude Code 2.1.219 — superseded by Gotcha 8.** Commands and skills were unified into ONE namespace. Skills now ARE user-typable slash commands, `commands/` is pure duplication, and shipping both causes a name collision. Everything in the rest of this section describes pre-unification behavior; read Gotcha 8 before acting on any of it.
 
 **Plugin-loaded skills do NOT auto-expose as slash commands.** Only commands files become slash commands. This is different from skills installed directly at `~/.claude/skills/<name>/` (e.g., via manual symlinks) which DO appear to function as slash commands.
 
@@ -159,6 +165,67 @@ The plugin installed without complaint, the manifest was structurally valid, the
 - Default to omitting component fields from plugin.json. Only declare them if you actively need a non-default path AND know to use the schema-correct value format.
 - Symmetric-looking field reasoning ("if `commands` is declared, `skills` should be too") is wrong — `skills` adds to defaults, `commands` replaces them. Same field-name style, different semantics. The two-letter difference between "adds to" and "replaces" controls whether your plugin works.
 
+### Gotcha 8 — Commands and skills are ONE namespace now; shipping both collides
+
+**Discovered 2026-07-31 on Claude Code 2.1.219.** Soloship 0.18.1 was installed via the
+plugin marketplace. Every `/soloship:<name>` slash command returned a 4-line shim instead
+of the workflow, and following the shim's instruction (invoke the skill by bare name)
+returned *the same shim* — a self-referential loop with no exit.
+
+**Root cause: Claude Code unified commands and skills into a single namespace.** There is
+no longer a separate `Commands (N)` line in the component inventory — command files are
+counted and resolved *as skills*. Soloship shipped `commands/<name>.md` and
+`skills/<name>/SKILL.md` with **identical names for all 46 entries**, so both claimed the
+same slot.
+
+The `claude plugin details` inventory is the smoking gun — every name appears twice:
+
+```
+$ claude plugin details soloship          # v0.18.1, Claude Code 2.1.219
+  Skills (92)  audit, audit, autoplan, autoplan, bootstrap, bootstrap, brainstorm,
+               brainstorm, browse, browse, ceo-review, ceo-review, ...
+  Always-on:   ~10,902 tok   added to every session
+```
+
+46 commands + 46 skills = 92 registrations under 46 names. The command won every
+collision, so the real workflow (3.5KB–95KB per SKILL.md) was unreachable.
+
+Two contemporary plugins confirm the unification and the correct shape:
+
+| Plugin | `commands/` | Inventory | Always-on |
+|---|---|---|---|
+| compound-engineering 3.20.0 | none | Skills (31) — all typable | ~2,948 tok |
+| superpowers 4.1.1 | 3 files | **Skills (17)** = 14 dirs + 3 command files, one list | ~1,166 tok |
+| soloship 0.18.1 | 46 files | Skills (92) — 46 dupes | **~10,902 tok** |
+
+superpowers is the clearest proof: its 3 command files (`brainstorm`, `execute-plan`,
+`write-plan`) appear in the *same* `Skills` list as its 14 skill directories, and it
+avoids collision only because it named them differently from the skills they wrap
+(`brainstorming`, `executing-plans`, `writing-plans`).
+
+**Fix: delete `commands/` entirely.** Skills register as user-typable slash commands on
+their own. This is not a workaround — it is the current supported shape, and
+compound-engineering ships zero command files as proof.
+
+**Secondary payoff — token cost.** Every registration's description loads into *every*
+session. Duplicate registration made Soloship cost ~10.9k always-on tokens, roughly 4x
+compound-engineering and 9x superpowers. Deleting `commands/` halves it. A plugin's
+always-on cost is a real budget line, and duplicate names spend it twice for nothing.
+
+**Prevention:**
+
+- **Never ship a command file and a skill directory with the same name.** If you need
+  both, they must have distinct names (the superpowers pattern).
+- Default to **skills only**. Reach for a command file only when you want a *different*
+  user-facing name than the skill's own.
+- `claude plugin details <name>` is the release gate. **Any name appearing twice in the
+  `Skills` list is a collision** — check this before publishing.
+- Watch the always-on token line. A number far above comparable plugins means duplicate
+  or bloated registrations.
+- A shim that says "invoke skill X" where X resolves back to the shim is unfalsifiable
+  from the inside. If a slash command returns instructions instead of doing work, suspect
+  a name collision immediately.
+
 ## The Final Working Configuration (Soloship 0.5.1)
 
 `.claude-plugin/plugin.json` (Soloship 0.5.1):
@@ -189,6 +256,23 @@ description: <prose description>
 ```
 
 The `name` field in frontmatter is NOT used for commands (only for skills). The slash command name is derived from the filename: `commands/soloship-bootstrap.md` → `/soloship:soloship-bootstrap`.
+
+### Superseding configuration (Soloship 0.21.0, Claude Code 2.1.219+)
+
+**There is no `commands/` directory.** It was deleted in 0.21.0 — see Gotcha 8. Commands
+and skills share one namespace, so 46 same-named command shims were shadowing the 46 real
+skills and doubling the plugin's always-on token cost.
+
+Current shape:
+
+- `skills/<name>/SKILL.md` — the whole user-facing surface. Each becomes both an
+  agent-invokable skill AND a user-typable `/soloship:<name>` slash command.
+- `agents/*.md` — auto-discovered.
+- `.claude-plugin/plugin.json` — still declares no `commands`, `skills`, or `agents`
+  fields (Gotcha 7 stands).
+
+Release gate: `claude plugin details soloship` must show **`Skills (46)` with no repeated
+name**. A doubled count means a collision has been reintroduced.
 
 ## How To Verify A Plugin Install Actually Works
 
@@ -235,4 +319,12 @@ If install itself fails: schema validation error (Gotcha 3 or related).
 ## Update Log
 
 - **2026-05-12 (initial publication):** Documented Gotchas 1-6. Recommended declaring `"commands": "./commands"` in plugin.json (Gotcha 2).
+- **2026-07-31 (Claude Code 2.1.219, Soloship 0.18.1 installed):** Added Gotcha 8 and
+  marked Gotcha 2 obsolete. Claude Code unified commands and skills into one namespace;
+  the inventory no longer has a `Commands (N)` line. Soloship's 46 command shims and 46
+  same-named skills collided, registering 92 entries under 46 names — the shim won every
+  time, so no real workflow was reachable via `/soloship:*`, and always-on token cost was
+  ~10.9k (4x compound-engineering). Fixed in 0.21.0 by deleting `commands/` outright.
+  **Gotcha 2's "skills are not slash commands" no longer holds** — that was the belief
+  that put the colliding shims there in the first place.
 - **2026-05-12 (later same day, after Mac mini v0.4.0/0.4.1 still failed):** Added Gotcha 7. The earlier recommendation about declaring `commands` was overturned. Plugin authors should NOT declare `commands` or `skills` in plugin.json when using the default `commands/` and `skills/` directories at plugin root — declaration is for non-default paths only, and `commands` declaration *replaces* the default scan. Corrected Final Working Configuration to show v0.5.1's minimal plugin.json with no component-path fields.
