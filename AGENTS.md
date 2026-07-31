@@ -186,3 +186,29 @@ Attribution archive lives at `skills/vendored/<source>/` (LICENSE / NOTICE / VER
 
 **Sync/drift:** Weekly cron against upstream commits (deferred — not yet built). See the vendoring plan for mechanics.
 
+## Pitfalls
+
+### Pitfall: Counts written in this file and README.md rot silently
+_Added by soloship-learn 2026-07-31_
+
+Numbers stated in prose ("46 skills", "18 rules", "25 hooks") have no mechanical
+link to the source they describe, so adding a rule or hook never prompts anyone
+to update them. On 2026-07-31 this file claimed 43 skills / 14 rules / 10 hooks
+against an actual 46 / 18 / 25, and README.md stated two *different* hook counts
+in one file while its own enumeration listed a third number. `DOC_COUNT_CHECKS`
+in `scripts/validate-plugin-metadata.js` now asserts these against live source at
+release time. If you reword a sentence containing one of these counts, the check
+fails on purpose — update the pattern, don't delete the check. Full writeup:
+`docs/solutions/workflow-issues/documented-counts-drift-when-nothing-asserts-them-20260731.md`.
+
+### Pitfall: There is deliberately no `commands/` directory
+_Added by soloship-learn 2026-07-31_
+
+Claude Code resolves `commands/` and `skills/` in one namespace — the plugin
+inventory has no separate `Commands (N)` line. A command file sharing a skill's
+name shadows the skill, and the workflow becomes unreachable. Soloship shipped 46
+such collisions through v0.20.0: every `/soloship:*` returned a 4-line shim and
+always-on token cost doubled. Removed in v0.21.0; the validator now blocks
+reintroduction. Skills are already user-typable as `/soloship:<name>` — add a
+command file only if you want a *different* name than the skill it wraps.
+

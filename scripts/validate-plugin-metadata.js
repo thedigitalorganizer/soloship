@@ -12,6 +12,25 @@ const REQUIRED_SKILL_COUNT = 46;
 const REQUIRED_AGENT_PROMPT_COUNT = 5;
 const SKILLS_DIR = "skills";
 const COMMANDS_DIR = "commands";
+const RULES_SOURCE = join("src", "rules.ts");
+const HOOKS_SOURCE = join("src", "hooks.ts");
+
+// Prose docs state counts ("25 hook protections", "18 workflow rules") that
+// nothing verified, so they drifted silently. On 2026-07-31 README.md claimed
+// 18 hook protections in one place and 17 in another while its own enumeration
+// listed 19 (actual: 25); AGENTS.md was at 43 skills / 14 rules / 10 hooks.
+// Each entry asserts every occurrence of `pattern` in `file` equals the live
+// count from source. Rewording a phrase fails this check by design — update the
+// pattern deliberately rather than letting the number rot.
+const DOC_COUNT_CHECKS = [
+  { file: "README.md", pattern: /(\d+) hook protections/g, truth: "hooks" },
+  { file: "README.md", pattern: /(\d+) always-on rules/g, truth: "rules" },
+  { file: "README.md", pattern: /(\d+) workflow rules/g, truth: "rules" },
+  { file: "README.md", pattern: /(\d+) workflow skills/g, truth: "skills" },
+  { file: "AGENTS.md", pattern: /(\d+) skills for audit/g, truth: "skills" },
+  { file: "AGENTS.md", pattern: /\((\d+) rules\)/g, truth: "rules" },
+  { file: "AGENTS.md", pattern: /\((\d+) hooks\)/g, truth: "hooks" },
+];
 
 const errors = [];
 
@@ -94,8 +113,45 @@ function countAgentPrompts() {
 // which is what installRules() actually writes into a project's .claude/rules/.
 // Reading the source (rather than a compiled import) keeps this runnable
 // pre-build, the same as every other check here.
+// One builder function per installed hook script. This is the same shape the
+// README enumerates, so it is the number the docs must agree with.
+function countHookScripts() {
+  const hooksSource = join(repoRoot, HOOKS_SOURCE);
+  if (!existsSync(hooksSource)) return 0;
+  const source = readFileSync(hooksSource, "utf-8");
+  const matches = source.match(/function build[A-Za-z]+Script/g);
+  return matches ? new Set(matches).size : 0;
+}
+
+function checkDocumentedCounts(truths) {
+  for (const { file, pattern, truth } of DOC_COUNT_CHECKS) {
+    const absolutePath = join(repoRoot, file);
+    if (!existsSync(absolutePath)) {
+      errors.push(`${file} is missing (documented-count check)`);
+      continue;
+    }
+    const contents = readFileSync(absolutePath, "utf-8");
+    const found = [...contents.matchAll(pattern)].map((m) => Number(m[1]));
+    if (found.length === 0) {
+      errors.push(
+        `${file}: no match for ${pattern} — the phrase moved or was reworded, so the ` +
+          `${truth} count is no longer verified. Update DOC_COUNT_CHECKS to match the new wording.`
+      );
+      continue;
+    }
+    const expected = truths[truth];
+    const wrong = found.filter((n) => n !== expected);
+    if (wrong.length > 0) {
+      errors.push(
+        `${file}: documented ${truth} count is stale — says ${[...new Set(wrong)].join("/")}, ` +
+          `actual is ${expected} (pattern ${pattern})`
+      );
+    }
+  }
+}
+
 function countRegisteredRules() {
-  const rulesSource = join(repoRoot, "src", "rules.ts");
+  const rulesSource = join(repoRoot, RULES_SOURCE);
   if (!existsSync(rulesSource)) return 0;
   const source = readFileSync(rulesSource, "utf-8");
   const matches = source.match(/^\s+"[a-z0-9-]+\.md":\s*RULE_/gm);
@@ -246,6 +302,12 @@ if (ruleCount !== REQUIRED_RULE_COUNT) {
     `expected ${REQUIRED_RULE_COUNT} rules registered in src/rules.ts, found ${ruleCount}`
   );
 }
+
+checkDocumentedCounts({
+  skills: skillCount,
+  rules: ruleCount,
+  hooks: countHookScripts(),
+});
 
 const collisions = findCommandSkillCollisions();
 if (collisions.length > 0) {
