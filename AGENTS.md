@@ -6,11 +6,11 @@
 >
 > Be brief — lead with the conclusion, cut preamble and recap, length should track the question's complexity. Frame problems and decisions in product or user-experience terms (what behavior changes, why it matters), not code. Never ask Shawn to review code, judge technical correctness, or decide implementation specifics like data models, database structure, or library choices — make those calls yourself and surface only choices that need his product judgment.
 >
-> **Conventions:** Coding rules auto-load from `.Codex/rules/` — including parameterizing meaningful values (no magic literals; refactor un-parameterized values you find in the section you're editing, then list other affected sites and ask).
+> **Conventions:** Coding rules auto-load from `.codex/rules/` — including parameterizing meaningful values (no magic literals; refactor un-parameterized values you find in the section you're editing, then list other affected sites and ask).
 
 **Two deliverables:**
 1. `npx soloship init` — npm CLI that installs mechanical enforcement + documentation infrastructure
-2. Soloship Codex plugin — 43 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
+2. Soloship Codex plugin — 46 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
 
 ## Status
 
@@ -43,13 +43,16 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── init.ts            # Main init orchestration
 │   ├── detect.ts          # Stack detection (language, framework, package manager)
 │   ├── scaffold.ts        # Folder structure + doc creation
-│   ├── hooks.ts           # Codex hook configuration (10 hooks)
-│   ├── rules.ts           # Workflow rule installation (14 rules)
+│   ├── hooks.ts           # Claude Code hook configuration (25 hooks)
+│   ├── rules.ts           # Workflow rule installation (18 rules)
 │   ├── ci.ts              # GitHub Actions CI + architecture fitness functions
-│   └── templates.ts       # AGENTS.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
+│   └── templates.ts       # CLAUDE.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
 ├── dist/                  # Compiled output (gitignored)
-├── skills/                # 43 Codex skills (16 Soloship-native + 27 vendored standalones)
-│   # Soloship-native workflow skills (16):
+├── skills/                # 46 skills (19 Soloship-native + 27 vendored standalones)
+│   # NOTE: there is NO commands/ directory. Claude Code resolves commands and
+│   # skills in ONE namespace, so a command file sharing a skill's name shadows
+│   # it. Removed in v0.21.0; validate-plugin-metadata.js now blocks reintroduction.
+│   # Soloship-native workflow skills (19):
 │   ├── audit/SKILL.md         # Deep 2-phase codebase investigation
 │   ├── bootstrap/SKILL.md     # Configure governance from audit or questions
 │   ├── brainstorm/SKILL.md    # Feature exploration (CE+SP methodologies merged)
@@ -66,6 +69,9 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── spec/SKILL.md          # Formal specification with acceptance criteria
 │   ├── onboard/SKILL.md       # Codebase orientation briefing
 │   ├── finish/SKILL.md        # Branch-completion discipline (vendored from Superpowers)
+│   ├── cron/SKILL.md          # Automation registry console — crons, workers, launchd, webhooks
+│   ├── status/SKILL.md        # Read-only dashboard: sessions, plan board, deploy state
+│   ├── component-inventory/SKILL.md # Regenerates docs/architecture/COMPONENTS.md
 │
 │   # Vendored standalones (27) — all source prefixes dropped as of v0.5.0:
 │   # — gstack: browse, cso, qa, autoplan, office-hours, context-save, context-restore,

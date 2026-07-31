@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (18 hook protections, 17 always-on rules, and CI checks, no judgment calls required), **46 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (25 hook protections, 18 always-on rules, and CI checks, no judgment calls required), **46 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -123,7 +123,7 @@ For both:
 npx soloship init --agent both
 ```
 
-`init` creates the documentation structure, 17 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+`init` creates the documentation structure, 18 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
 
 For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
 
@@ -205,8 +205,8 @@ All 45 are invoked the same way: `/soloship:<name>`. Source attribution lives in
 When you run `/soloship:bootstrap` (or `/soloship:audit` then `/soloship:bootstrap` on an existing project), it detects your language, framework, and package manager, then installs:
 
 - **Folder scaffolding**: `docs/plans/`, `docs/solutions/`, `docs/audit/`, `docs/automations/` (the automation registry), `AGENTS.md` stubs
-- **17 Claude Code hook protections** across four events. PreToolUse: dangerous command blocking, phone-a-friend warnings, Semgrep security scan on commits, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate, plan-completeness gate (every plan must declare an observable Goal + Done-When). PostToolUse: auto-lint, CHANGELOG check, recurrence audit, session heartbeat. Stop: plan validation, workflow navigator, handoff reminder, and a reply timestamp (so session logs can reconstruct when work actually happened). SessionStart: checkpoint commit, update check, session presence.
-- **17 workflow rules**: solution search, plan materialization, plan rationale, plan lifecycle, plan artifact lifecycle, claim verification, QA plan in plans, billing confirmation, live-data evidence, recurrence, parameterized constants, browser QA gate, deploy-from-main-only, automation registry, component reuse, delegation discipline, verification sufficiency
+- **25 Claude Code hook protections** across four events. **PreToolUse (11):** dangerous command blocking, phone-a-friend warnings, Semgrep security scan on commits, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate, plan-truth gate, plan-merge gate, plan-namespace gate, plan-completeness gate (every plan must declare an observable Goal + Done-When). **PostToolUse (7):** auto-lint, CHANGELOG check, recurrence audit, live-data evidence check, duplicate-component warning, session heartbeat, browser claim. **Stop (3):** plan validation + workflow navigator + handoff reminder, a reply timestamp (so session logs can reconstruct when work actually happened), and a browser-teardown reminder. **SessionStart (4):** checkpoint commit, update check, session presence, browser-claim release.
+- **18 workflow rules**: solution search, plan materialization, plan rationale, plan lifecycle, plan artifact lifecycle, claim verification, QA plan in plans, billing confirmation, live-data evidence, recurrence, parameterized constants, browser QA gate, browser tooling priority, deploy-from-main-only, automation registry, component reuse, delegation discipline, verification sufficiency
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs**: `CLAUDE.md`, `AGENTS.md`, `CHANGELOG`, `SOLUTION_GUIDE`, sized to your stack
 
@@ -214,12 +214,12 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 ### The skills
 
-**18 Soloship workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts. One of the 18 (`/finish`) is a faithful vendor of a Superpowers skill, renamed to fit the Soloship slash-command surface.
+**19 Soloship workflow skills** invoked as `/soloship:*` slash commands. Each one handles orchestration, enforcement, and artifact contracts. One of the 19 (`/finish`) is a faithful vendor of a Superpowers skill, renamed to fit the Soloship slash-command surface.
 
 **Setup & orientation**
 
 - `/soloship:audit`: Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 7 more to assess quality, entanglement, security, dependencies, gaps, leverage points, and the automation surface (every cron, webhook, and scheduled job plus its monitoring state). Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
-- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 17 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
+- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 18 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard`: Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. Fully self-contained.
 
 **Daily work**
@@ -344,13 +344,18 @@ src/                   # TypeScript source for the installer
   rules.ts             # Claude and Codex workflow rule installation
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
-skills/                # Shared Claude Code and Codex skills shipped by the plugins (45 total)
+skills/                # Shared Claude Code and Codex skills shipped by the plugins (46 total)
   # All skills are invoked as /soloship:<name>. Source attribution lives
   # in THIRD_PARTY_NOTICES.md; no source prefixes leak into command names.
+  #
+  # There is deliberately NO commands/ directory. Claude Code resolves commands
+  # and skills in ONE namespace, so a command file sharing a skill's name
+  # shadows it and the workflow becomes unreachable. Removed in v0.21.0;
+  # validate-plugin-metadata.js blocks reintroduction.
 
-  # Soloship-native workflow skills (18):
-  audit/ bootstrap/ brainstorm/ cleanup/ cron/ debug/ design-review/
-  finish/ grill-me/ implement/ learn/ onboard/ plan/ review/
+  # Soloship-native workflow skills (19):
+  audit/ bootstrap/ brainstorm/ cleanup/ component-inventory/ cron/ debug/
+  design-review/ finish/ grill-me/ implement/ learn/ onboard/ plan/ review/
   shipfast/ shipthorough/ spec/ status/
 
   # Plan-review skills, derived from gstack (5):
