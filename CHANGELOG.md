@@ -16,10 +16,10 @@
   instruction to invoke the skill by bare name resolved back to the shim, a
   self-referential loop with no exit. Skills register as user-typable slash
   commands on their own; `commands/` was pure duplication.
-- **Always-on token cost cut** — 92 registrations became 46. Measured before:
-  ~10,902 tokens added to every session. For scale: compound-engineering 3.20.0
-  is ~2,948 and superpowers 4.1.1 is ~1,166. (Post-fix figure recorded below
-  once measured against the installed build.)
+- **Always-on token cost cut 45%** — 92 registrations became 46. Measured with
+  `claude plugin details soloship` against the installed build: **~10,902 →
+  ~6,035 tokens** added to every session. For scale: compound-engineering 3.20.0
+  is ~2,948 and superpowers 4.1.1 is ~1,166.
 - **Release gate added** (`scripts/validate-plugin-metadata.js`): the validator
   now fails if any `commands/*.md` shares a name with a `skills/*/` directory.
   Verified by injecting a real collision and confirming it fires, then confirming
