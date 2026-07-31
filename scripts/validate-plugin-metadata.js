@@ -7,9 +7,11 @@ import { fileURLToPath } from "node:url";
 const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const SEMVER_RE =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
-const REQUIRED_RULE_COUNT = 17;
+const REQUIRED_RULE_COUNT = 18;
 const REQUIRED_SKILL_COUNT = 46;
 const REQUIRED_AGENT_PROMPT_COUNT = 5;
+const SKILLS_DIR = "skills";
+const COMMANDS_DIR = "commands";
 
 const errors = [];
 
@@ -47,15 +49,37 @@ function baseVersion(version) {
   return typeof version === "string" ? version.split("+")[0] : "";
 }
 
+function listSkillNames() {
+  const skillsRoot = join(repoRoot, SKILLS_DIR);
+  if (!existsSync(skillsRoot)) return [];
+  return readdirSync(skillsRoot, { withFileTypes: true })
+    .filter(
+      (entry) =>
+        entry.isDirectory() &&
+        existsSync(join(skillsRoot, entry.name, "SKILL.md"))
+    )
+    .map((entry) => entry.name);
+}
+
 function countSkillFiles() {
-  const skillsRoot = join(repoRoot, "skills");
-  if (!existsSync(skillsRoot)) return 0;
-  return readdirSync(skillsRoot, { withFileTypes: true }).filter((entry) => {
-    return (
-      entry.isDirectory() &&
-      existsSync(join(skillsRoot, entry.name, "SKILL.md"))
-    );
-  }).length;
+  return listSkillNames().length;
+}
+
+// Claude Code 2.1.219+ resolves commands/ and skills/ in ONE namespace — the
+// component inventory has no separate "Commands (N)" line. A command file whose
+// name matches a skill directory registers a second entry under the same name,
+// the command wins, and the real skill becomes unreachable. Soloship shipped 46
+// such collisions through v0.20.0: every /soloship:* returned a 4-line shim and
+// always-on token cost doubled (~10.9k). See Gotcha 8 in
+// docs/solutions/best-practices/claude-code-plugin-format-gotchas-SoloshipPlugin-20260512.md
+function findCommandSkillCollisions() {
+  const commandsRoot = join(repoRoot, COMMANDS_DIR);
+  if (!existsSync(commandsRoot)) return [];
+  const skillNames = new Set(listSkillNames());
+  return readdirSync(commandsRoot, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith(".md"))
+    .map((entry) => entry.name.replace(/\.md$/, ""))
+    .filter((name) => skillNames.has(name));
 }
 
 function countAgentPrompts() {
@@ -223,7 +247,16 @@ if (ruleCount !== REQUIRED_RULE_COUNT) {
   );
 }
 
-if (!existsSync(join(repoRoot, "skills", "references", "codex-compatibility.md"))) {
+const collisions = findCommandSkillCollisions();
+if (collisions.length > 0) {
+  errors.push(
+    `${collisions.length} command file(s) collide with skill directories of the same name ` +
+      `(commands/ and skills/ share one namespace — the command shadows the skill and the ` +
+      `workflow becomes unreachable): ${collisions.join(", ")}`
+  );
+}
+
+if (!existsSync(join(repoRoot, SKILLS_DIR, "references", "codex-compatibility.md"))) {
   errors.push("skills/references/codex-compatibility.md is missing");
 }
 

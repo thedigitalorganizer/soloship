@@ -39,11 +39,23 @@ The intuition is symmetric: directory exists, declare it in the manifest. The in
 
 Just metadata. Place files at the default locations and let auto-discovery do its job:
 
-- `commands/<name>.md` at plugin root
 - `skills/<name>/SKILL.md` at plugin root
+- `commands/<name>.md` at plugin root — **⚠️ see the name-collision warning below before adding any**
 - `agents/<name>.md` at plugin root
 - `hooks/hooks.json` at plugin root
 - `.mcp.json` at plugin root
+
+> **⚠️ Never give a command file the same name as a skill directory.** As of Claude Code
+> 2.1.219 commands and skills share ONE namespace — the inventory has no `Commands (N)`
+> line, command files are counted as skills. Same name = collision, the command wins, and
+> the real skill becomes unreachable. Soloship shipped 46 such collisions through v0.20.0:
+> every `/soloship:*` returned a 4-line shim, and always-on token cost was ~10.9k (4x
+> compound-engineering) because 92 entries registered under 46 names.
+>
+> **Default to skills only** — a skill is already user-typable as `/<plugin>:<name>`.
+> Add a command file only when you want a *different* name than the skill it wraps.
+> **Release gate:** `claude plugin details <name>` must show no repeated name in `Skills`.
+> See Gotcha 8.
 
 **Why:** Per [Claude Code's plugin manifest schema](https://code.claude.com/docs/en/plugins-reference#plugin-manifest-schema):
 
@@ -57,7 +69,7 @@ If you genuinely need a non-default location, use the array-of-file-paths form f
 
 **Placement/Context:** Any time you author or edit `.claude-plugin/plugin.json`. Especially when adding a new component type (commands, agents, hooks) and reaching for a `"x": "./x"` declaration. The failure mode is silent — install succeeds, files are on disk, but the loader registers nothing.
 
-**Documented in:** [`docs/solutions/best-practices/claude-code-plugin-format-gotchas-SoloshipPlugin-20260512.md`](../best-practices/claude-code-plugin-format-gotchas-SoloshipPlugin-20260512.md) (Gotcha 7)
+**Documented in:** [`docs/solutions/best-practices/claude-code-plugin-format-gotchas-SoloshipPlugin-20260512.md`](../best-practices/claude-code-plugin-format-gotchas-SoloshipPlugin-20260512.md) (Gotcha 7 for the manifest fields; **Gotcha 8** for the command/skill name collision)
 
 **Failure history:** Soloship hit this across v0.1.0 → v0.4.1 — five published plugin releases where slash commands silently didn't load for any marketplace user. Discovered on a fresh-install Mac mini in 2026-05-12 because Shawn's primary Mac used dev symlinks at `~/.claude/skills/soloship-*` that masked the plugin-loader path entirely. Fixed in v0.4.2 by removing both `commands` and `skills` from the manifest.
 
