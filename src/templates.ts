@@ -1,4 +1,14 @@
 import type { ProjectInfo } from "./detect.js";
+import {
+  ALWAYS_REQUIRED_FIELDS,
+  BUG_TRACK_PROBLEM_TYPES,
+  BUG_TRACK_REQUIRED_FIELDS,
+  EXAMPLE_CATEGORIES,
+  KNOWLEDGE_TRACK_PROBLEM_TYPES,
+  OPTIONAL_FIELDS,
+  RESOLUTION_TYPE_ENUM,
+  ROOT_CAUSE_ENUM,
+} from "./solution-schema.js";
 
 export function generateClaudeMd(project: ProjectInfo): string {
   const stackLine = [
@@ -150,6 +160,11 @@ All notable changes to this project will be documented in this file.
 }
 
 export function generateSolutionGuide(): string {
+  const bulletList = (values: readonly string[]) =>
+    values.map((value) => `- \`${value}\``).join("\n");
+  const inlineList = (values: readonly string[]) =>
+    values.map((value) => `\`${value}\``).join(", ");
+
   return `# Solution Guide
 
 ## What Goes Here
@@ -157,50 +172,101 @@ export function generateSolutionGuide(): string {
 Every non-obvious fix or significant feature produces a solution doc. These accumulate
 in \`docs/solutions/<category>/\` and are searched before every planning session.
 
-## Categories
+\`/soloship:learn\` writes these docs for you — this guide documents the schema it
+produces, so a validator or a human editing a doc by hand has one thing to follow.
 
-- api-issues
-- auth-bugs
-- infrastructure
-- integration-issues
-- pdf-issues
-- performance
-- refactoring
-- security
-- ui-bugs
+## Pick the track first
 
-Create new categories as needed.
+\`problem_type\` selects one of two tracks, and the track decides which fields are
+**required**.
 
-## Template
+**Bug track** — you fixed something broken (an error, failure, regression, or
+misbehavior):
+
+${bulletList(BUG_TRACK_PROBLEM_TYPES)}
+
+The bug track additionally requires ${inlineList(BUG_TRACK_REQUIRED_FIELDS)} — the
+doc is useless to a future searcher without the observable symptom and the
+underlying cause.
+
+**Knowledge track** — durable guidance, a pattern, or a convention, with no single
+broken thing:
+
+${bulletList(KNOWLEDGE_TRACK_PROBLEM_TYPES)}
+
+Here ${inlineList(BUG_TRACK_REQUIRED_FIELDS)} are **optional** — include them only
+if a specific cause genuinely applies.
+
+## Frontmatter
+
+Required on every doc, both tracks: ${inlineList(ALWAYS_REQUIRED_FIELDS)}.
+Optional: ${inlineList(OPTIONAL_FIELDS)}.
 
 \`\`\`markdown
 ---
 title: Short descriptive title
 date: YYYY-MM-DD
-category: one-of-the-above
+problem_type: <selects the track — see above>
+category: one-of-the-categories
 components: [list, of, affected, components]
 files: [list, of, key, files]
-symptoms: [what, the, user, sees]
+symptoms: [what, the, user, sees]       # required on the bug track
+root_cause: <enum below>                # required on the bug track
+resolution_type: <enum below>           # required on the bug track
 error_messages: [exact, error, strings]
 tags: [searchable, keywords]
 ---
+\`\`\`
 
+\`/soloship:learn\` also stamps \`producer\`, \`version\`, \`ttl_days\`, and a
+\`content_hash\` — you do not write those by hand.
+
+### \`root_cause\` enum
+
+Why it broke. Pick the closest value — this is the searchable index, and the prose
+in the body is what a reader actually needs.
+
+${inlineList(ROOT_CAUSE_ENUM)}
+
+### \`resolution_type\` enum
+
+How it was fixed. Pick the closest value.
+
+${inlineList(RESOLUTION_TYPE_ENUM)}
+
+## Categories
+
+Categories are an **open set** — they emerge from the solutions this project
+actually accumulates. A project's real categories are whatever directories exist
+under \`docs/solutions/\`. Create a new one whenever nothing fits.
+
+Common starting points: ${inlineList(EXAMPLE_CATEGORIES)}.
+
+> Anything that validates \`category\` must read the directories on disk rather
+> than hardcoding this list. A previous version of this guide shipped a closed
+> nine-item list; a downstream validator copied it verbatim and then rejected
+> five legitimate categories, producing 133 false errors and training everyone
+> to ignore it.
+
+## Body
+
+\`\`\`markdown
 ## Problem
 
-What went wrong. Include error messages, screenshots, or reproduction steps.
-
-## Root Cause
-
-Why it happened. Be specific — name the file, line, and mechanism.
+What went wrong. Include error messages or reproduction steps.
 
 ## Solution
 
-What was done to fix it. Include code snippets if helpful.
+What was done to fix it. Always present.
+
+## Why This Works
+
+Required on the bug track: the root cause in prose, and why the fix addresses it.
 
 ## Prevention
 
-How to prevent this from happening again. This is the most important section.
-Rules, tests, or checks that should be added.
+How to stop this recurring. The most important section — rules, tests, or checks
+that should be added.
 
 ## Related
 
