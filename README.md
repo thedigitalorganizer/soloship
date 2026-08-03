@@ -145,6 +145,18 @@ codex plugin add soloship@soloship
 /plugin update soloship@soloship
 ```
 
+#### Stale reference docs
+
+`docs/SOLUTION_GUIDE.md` is generated from the solution-doc schema and carries a
+version marker. When that schema changes, `init` and `upgrade` report your copy
+as `stale` rather than overwriting it — your project may have extended it. To
+take the new version (the previous copy is kept as `.bak`):
+
+```bash
+npx soloship init --refresh-guides
+npx soloship upgrade --refresh-guides
+```
+
 For local Codex dogfooding while developing this repo:
 
 ```bash

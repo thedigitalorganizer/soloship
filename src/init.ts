@@ -9,6 +9,7 @@ import {
 } from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
+import { actionIcon, printStaleNotice } from "./guide-freshness.js";
 import { installHooks } from "./hooks.js";
 import { installClaudeRules, installCodexRules } from "./rules.js";
 import { installCi } from "./ci.js";
@@ -91,40 +92,11 @@ export async function runInit(options: InitOptions): Promise<void> {
     refreshGuides: options.refreshGuides,
   });
   for (const result of scaffoldResults) {
-    const icon =
-      result.action === "created"
-        ? chalk.green("+")
-        : result.action === "skipped"
-          ? chalk.dim("-")
-          : result.action === "stale"
-            ? chalk.red("!")
-            : chalk.yellow("~");
-    console.log(`  ${icon} ${result.path} ${chalk.dim(`(${result.action})`)}`);
-  }
-
-  // A stale reference doc is the one result that needs an instruction, not just
-  // an icon. It was generated against an older schema and is now describing
-  // rules that no longer hold — the failure this reporting exists to end is a
-  // stale guide sitting unnoticed behind an "(exists)" line for months.
-  const staleDocs = scaffoldResults.filter((r) => r.action === "stale");
-  if (staleDocs.length > 0) {
-    console.log("");
     console.log(
-      chalk.red.bold("  Stale reference docs — generated against an older schema:")
-    );
-    for (const doc of staleDocs) {
-      console.log(`    ${doc.path}`);
-    }
-    console.log(
-      chalk.dim(
-        "  These are NOT overwritten automatically — your project may have extended them."
-      )
-    );
-    console.log(
-      chalk.dim("  To refresh (keeps a .bak of each): ") +
-        "npx soloship init --refresh-guides"
+      `  ${actionIcon(result.action)} ${result.path} ${chalk.dim(`(${result.action})`)}`
     );
   }
+  printStaleNotice(scaffoldResults, "npx soloship init --refresh-guides");
 
   // Step 4: Install Claude Code hooks
   if (agentSelection.claude) {

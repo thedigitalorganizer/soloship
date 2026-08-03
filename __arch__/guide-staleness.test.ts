@@ -12,11 +12,15 @@
 // stale by definition — every unmarked guide predates the two-track schema.
 
 import { describe, it, expect } from "vitest";
+import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import {
   readSchemaVersion,
   schemaVersionMarker,
   SOLUTION_SCHEMA_VERSION,
 } from "../src/solution-schema";
+import { syncSolutionGuide } from "../src/guide-freshness";
 import { generateSolutionGuide } from "../src/templates";
 
 describe("schema version marker", () => {
@@ -55,6 +59,67 @@ describe("schema version marker", () => {
   it("renders an explicit version when asked", () => {
     expect(schemaVersionMarker(1)).toContain("v1");
     expect(readSchemaVersion(schemaVersionMarker(1))).toBe(1);
+  });
+});
+
+describe("syncSolutionGuide — the reconciler init and upgrade share", () => {
+  // The first version of this feature lived inside scaffoldDocs(), which only
+  // `init` calls. Existing projects run `upgrade`, so the population that
+  // actually has stale guides never saw the report. These cover BOTH callers'
+  // contracts: init creates-if-missing, upgrade never does.
+  const project = (guide?: string) => {
+    const root = mkdtempSync(join(tmpdir(), "soloship-guide-"));
+    mkdirSync(join(root, "docs"));
+    if (guide !== undefined) {
+      writeFileSync(join(root, "docs", "SOLUTION_GUIDE.md"), guide);
+    }
+    return root;
+  };
+  const guidePath = (root: string) => join(root, "docs", "SOLUTION_GUIDE.md");
+  const LEGACY_GUIDE = "# Solution Guide\n\n## Categories\n\n- pdf-issues\n";
+
+  it("creates the guide when absent and asked to (the init contract)", () => {
+    const root = project();
+    const results = syncSolutionGuide(root, { createIfMissing: true });
+    expect(results).toEqual([
+      { path: "docs/SOLUTION_GUIDE.md", action: "created" },
+    ]);
+    expect(readSchemaVersion(readFileSync(guidePath(root), "utf8"))).toBe(
+      SOLUTION_SCHEMA_VERSION
+    );
+  });
+
+  it("reports nothing when absent and NOT asked to create (the upgrade contract)", () => {
+    // upgrade preserves project docs — it must never scaffold one into a
+    // project that was never initialized.
+    expect(syncSolutionGuide(project(), { createIfMissing: false })).toEqual([]);
+  });
+
+  it("reports a legacy guide as stale without touching it", () => {
+    const root = project(LEGACY_GUIDE);
+    const results = syncSolutionGuide(root, { createIfMissing: false });
+    expect(results).toEqual([
+      { path: "docs/SOLUTION_GUIDE.md", action: "stale" },
+    ]);
+    expect(readFileSync(guidePath(root), "utf8")).toBe(LEGACY_GUIDE);
+  });
+
+  it("rewrites a stale guide and backs up the original when refreshing", () => {
+    const root = project(LEGACY_GUIDE);
+    const results = syncSolutionGuide(root, { refresh: true });
+    expect(results.map((r) => r.action)).toEqual(["updated", "created"]);
+    expect(readSchemaVersion(readFileSync(guidePath(root), "utf8"))).toBe(
+      SOLUTION_SCHEMA_VERSION
+    );
+    expect(readFileSync(guidePath(root) + ".bak", "utf8")).toBe(LEGACY_GUIDE);
+  });
+
+  it("leaves a current guide alone even when refreshing", () => {
+    const root = project(generateSolutionGuide());
+    const results = syncSolutionGuide(root, { refresh: true });
+    expect(results).toEqual([
+      { path: "docs/SOLUTION_GUIDE.md", action: "exists" },
+    ]);
   });
 });
 

@@ -2,6 +2,53 @@
 
 ## [Unreleased]
 
+## [0.22.0] — 2026-08-02
+
+### Fixed — the generated solution guide documented a schema Soloship doesn't write
+
+- **`docs/SOLUTION_GUIDE.md` now renders from one source.** The guide generator
+  restated the solution-doc frontmatter schema in prose, independently of
+  `skills/learn/SKILL.md` — the skill that actually writes the docs. They
+  drifted, and the drift shipped: the generated guide never mentioned
+  `problem_type`, `root_cause`, or `resolution_type`, the three fields the learn
+  skill treats as the searchable index. Every `npx soloship init` wrote a
+  reference doc contradicting the docs the skill produces.
+- **New `src/solution-schema.ts`** holds the field sets, both track membership
+  lists, and both enums as named constants; the guide is rendered from them.
+- **Categories are now an explicitly open set.** The old closed nine-item list
+  was copied verbatim into a downstream validator, which then rejected five
+  legitimate categories — 133 false errors, in a validator reporting 421 total
+  across 317 docs, which is why nobody read its output. `performance` (unused —
+  projects use `performance-issues`) and `pdf-issues` (project-specific) are out
+  of the shipped examples.
+- **`__arch__/solution-schema-sync.test.ts`** extracts the enums and track
+  membership from `SKILL.md` at test time and asserts they equal the constants,
+  with no duplicated literals. CI already runs the `__arch__` suite, so schema
+  drift is now red on arrival.
+
+### Added — stale reference docs are reported instead of hidden
+
+- **Schema version marker.** The generated guide embeds
+  `<!-- soloship-solution-schema: v2 -->`. `init` and `upgrade` compare it and
+  report a `stale` result in red with the remedy, rather than the previous
+  `(exists)` — which was indistinguishable from up-to-date and is why one stale
+  template kept producing errors for months. An unmarked guide is stale by
+  definition; a *newer* marker counts as current, so an older CLI never offers
+  to downgrade a newer project's guide.
+- **`--refresh-guides` on both `init` and `upgrade`** rewrites stale guides,
+  moving the previous copy to `.bak` first. Opt-in, because the guide is a file
+  projects extend.
+- **`upgrade` checks reference docs too.** It preserves project docs by
+  contract, so it reports and never scaffolds — but existing projects run
+  `upgrade`, not `init`, so a check that only ran in `init` would never fire for
+  the population that actually has stale guides.
+
+### Fixed — housekeeping
+
+- `package-lock.json` version fields synced to `package.json` (0.20.0 → 0.21.0);
+  the four-file release-version-sync check does not cover the lockfile, which is
+  why it drifted unnoticed.
+
 ## [0.21.0] — 2026-07-31
 
 ### Fixed — every `/soloship:*` slash command was unreachable

@@ -9,6 +9,11 @@ import { detectProject, type ProjectInfo } from "./detect.js";
 import { installHooks } from "./hooks.js";
 import { installClaudeRules, installCodexRules } from "./rules.js";
 import { writeVersionStamp } from "./scaffold.js";
+import {
+  actionIcon,
+  printStaleNotice,
+  syncSolutionGuide,
+} from "./guide-freshness.js";
 import { getVersion } from "./pkg.js";
 
 /**
@@ -25,6 +30,7 @@ import { getVersion } from "./pkg.js";
  */
 interface UpgradeOptions {
   agent?: AgentTarget;
+  refreshGuides?: boolean;
 }
 
 export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
@@ -100,6 +106,29 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
           : chalk.yellow("~");
     console.log(`  ${icon} ${result.path} ${chalk.dim(`(${result.action})`)}`);
   }
+
+  // Generated reference docs — checked, not scaffolded. `upgrade` preserves
+  // project docs by contract, so this reports staleness and only rewrites when
+  // explicitly asked. Existing projects run `upgrade`, not `init`, so without
+  // this the staleness check would never fire for the population that has stale
+  // guides — the whole point of having it.
+  console.log("");
+  console.log(chalk.blue("Checking generated reference docs..."));
+  const guideResults = syncSolutionGuide(root, {
+    refresh: options.refreshGuides,
+    createIfMissing: false,
+  });
+  if (guideResults.length === 0) {
+    console.log(
+      chalk.dim("  No generated reference docs found (run `npx soloship init` first).")
+    );
+  }
+  for (const result of guideResults) {
+    console.log(
+      `  ${actionIcon(result.action)} ${result.path} ${chalk.dim(`(${result.action})`)}`
+    );
+  }
+  printStaleNotice(guideResults, "npx soloship upgrade --refresh-guides");
 
   console.log("");
   console.log(
