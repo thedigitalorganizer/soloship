@@ -1,7 +1,14 @@
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import type { ProjectInfo } from "./detect.js";
 import { getVersion } from "./pkg.js";
+import { readSchemaVersion, SOLUTION_SCHEMA_VERSION } from "./solution-schema.js";
 import {
   generateClaudeMd,
   generateAgentsMd,
@@ -13,7 +20,29 @@ import {
 
 interface ScaffoldResult {
   path: string;
-  action: "created" | "exists" | "updated" | "skipped";
+  // "stale" = the file exists but was generated against an older schema. It is
+  // reported, never silently replaced — the project may have hand-extended it.
+  action: "created" | "exists" | "updated" | "skipped" | "stale";
+}
+
+/** Suffix for the copy kept when --refresh-guides rewrites an existing guide. */
+const BACKUP_SUFFIX = ".bak";
+
+/**
+ * Decide what to do with an existing generated doc whose schema is versioned.
+ *
+ * Returns "exists" when the file is current, "stale" otherwise. Staleness is
+ * reported rather than auto-fixed because the file is one a project may have
+ * edited — MAPS grew its guide to 314 lines of tag registry on top of the
+ * generated base, and clobbering that is worse than a stale header.
+ */
+function classifyVersionedDoc(
+  absolutePath: string,
+  currentVersion: number
+): "exists" | "stale" {
+  const existing = readFileSync(absolutePath, "utf8");
+  const version = readSchemaVersion(existing);
+  return version !== null && version >= currentVersion ? "exists" : "stale";
 }
 
 // The document taxonomy. Each folder has exactly one kind of artifact and one
@@ -109,11 +138,16 @@ If a report produces work that should happen, that work becomes a plan in
 export async function scaffoldDocs(
   root: string,
   project: ProjectInfo,
-  options: { createClaudeMd?: boolean; createAgentsMd?: boolean } = {}
+  options: {
+    createClaudeMd?: boolean;
+    createAgentsMd?: boolean;
+    refreshGuides?: boolean;
+  } = {}
 ): Promise<ScaffoldResult[]> {
   const results: ScaffoldResult[] = [];
   const createClaudeMd = options.createClaudeMd ?? true;
   const createAgentsMd = options.createAgentsMd ?? true;
+  const refreshGuides = options.refreshGuides ?? false;
 
   // Create directory structure
   for (const dir of SCAFFOLD_DIRS) {
@@ -167,13 +201,34 @@ export async function scaffoldDocs(
     results.push({ path: "CHANGELOG.md", action: "exists" });
   }
 
-  // Solution Guide — always create (it's a reference doc)
+  // Solution Guide — always create (it's a reference doc).
+  //
+  // When it already exists, compare the embedded schema version rather than
+  // assuming it is current. Writing only-when-absent meant a project
+  // bootstrapped under an older schema kept its guide forever and saw
+  // "(exists)" every time — indistinguishable from up-to-date. That
+  // invisibility is what let one stale template keep producing errors for
+  // months. Refresh stays opt-in, and backs up first.
   const solutionGuidePath = join(root, "docs", "SOLUTION_GUIDE.md");
   if (!existsSync(solutionGuidePath)) {
     writeFileSync(solutionGuidePath, generateSolutionGuide());
     results.push({ path: "docs/SOLUTION_GUIDE.md", action: "created" });
   } else {
-    results.push({ path: "docs/SOLUTION_GUIDE.md", action: "exists" });
+    const state = classifyVersionedDoc(
+      solutionGuidePath,
+      SOLUTION_SCHEMA_VERSION
+    );
+    if (state === "stale" && refreshGuides) {
+      renameSync(solutionGuidePath, solutionGuidePath + BACKUP_SUFFIX);
+      writeFileSync(solutionGuidePath, generateSolutionGuide());
+      results.push({ path: "docs/SOLUTION_GUIDE.md", action: "updated" });
+      results.push({
+        path: `docs/SOLUTION_GUIDE.md${BACKUP_SUFFIX}`,
+        action: "created",
+      });
+    } else {
+      results.push({ path: "docs/SOLUTION_GUIDE.md", action: state });
+    }
   }
 
   // Automation registry — the single source of truth for every cron/webhook/

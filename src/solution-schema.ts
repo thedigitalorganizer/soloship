@@ -25,6 +25,34 @@
  */
 
 /**
+ * Bumped whenever the schema below changes in a way that makes an already-
+ * generated `docs/SOLUTION_GUIDE.md` wrong.
+ *
+ * `scaffoldDocs()` writes the guide only when it is absent, so a project
+ * bootstrapped under an older schema keeps its guide forever and `init` reports
+ * it as `(exists)` — indistinguishable from up-to-date. That invisibility is why
+ * one stale template kept producing errors months after the schema moved on.
+ * The generated guide embeds this version as `SCHEMA_VERSION_MARKER`; init
+ * compares it and reports a stale guide instead of silently keeping it.
+ *
+ * v1 was the pre-two-track schema (no `problem_type`, no `root_cause` or
+ * `resolution_type` enums) and was never marked — an unmarked guide is stale by
+ * definition, not version 0.
+ */
+export const SOLUTION_SCHEMA_VERSION = 2;
+
+/** Embedded in the generated guide. An HTML comment: greppable, renders invisibly. */
+export function schemaVersionMarker(version = SOLUTION_SCHEMA_VERSION): string {
+  return `<!-- soloship-solution-schema: v${version} -->`;
+}
+
+/** Reads the embedded schema version from an existing guide; null when unmarked. */
+export function readSchemaVersion(guideContents: string): number | null {
+  const match = guideContents.match(/<!--\s*soloship-solution-schema:\s*v(\d+)\s*-->/);
+  return match ? Number(match[1]) : null;
+}
+
+/**
  * Required on every solution doc, both tracks.
  * Mirrors the completion checklist in `skills/learn/SKILL.md`.
  */
