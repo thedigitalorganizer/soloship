@@ -61,3 +61,57 @@ Center. The moving `prod-*` tags from that plan tell you which targets exist.
 
 **Depends on / blocked by:** The deploy-discipline plan landing first (so the
 local system exists for the platform side to backstop).
+
+## BUG: `git tag -f prod` races concurrent merges — tags HEAD, not what shipped
+
+**What:** Step 5 of the deploy sequence runs `git tag -f "$PROD_TAG"` with no
+commit-ish, so it tags whatever HEAD is *at the moment it runs* rather than the
+commit that was actually deployed. Fix: pin the SHA before deploying and tag
+that value.
+
+```bash
+DEPLOY_SHA=$(git rev-parse HEAD)          # before the deploy
+# ... deploy ...
+git tag -f "$PROD_TAG" "$DEPLOY_SHA"      # after — never bare
+git push -f origin "$PROD_TAG"
+git rev-parse --short "refs/tags/$PROD_TAG"   # confirm it matches
+```
+
+**Why:** A production deploy takes minutes. With parallel sessions merging into
+a shared main checkout — the exact environment `deploy-from-main-only` exists to
+protect — `main` advances *during* the deploy, and the tag lands on a commit
+that was never shipped. This is the third member of the shared-`.git` family
+already documented for the index and the stash (`use-worktrees.md`); here the
+shared mutable thing is HEAD itself.
+
+The failure is silent and **directional**: the tag always drifts *forward*, so
+`git log prod..HEAD` under-reports. A session asking "what still needs
+deploying?" is told "nothing" while real changes sit unshipped. That is the
+dangerous direction for this error to run, and it defeats contract 2 (the
+manifest gate) as well as contract 1.
+
+**Confirmed, not theoretical.** Hit on 2026-08-02 during a Chloropal functions
+deploy: deployed `7050efd`, tag landed on `e8bb37b` (another session's merge
+that arrived mid-deploy). Caught only because the push output echoed a SHA that
+did not match. Full write-up in Chloropal:
+`docs/solutions/workflow-issues/prod-tag-races-concurrent-merges.md`.
+
+**Four places to fix (all currently carry the bare command):**
+- `skills/references/deploy-sequence.md:115` — Step 5. **Highest priority** —
+  this is the executable path `/shipfast` and `/shipthorough` run, so the race
+  is live in every Soloship-driven deploy in every project.
+- `src/rules.ts:878` — the generator that emits both rule files below; the
+  upstream fix.
+- `.claude/rules/deploy-from-main-only.md:35` and
+  `.codex/rules/deploy-from-main-only.md:35` — regenerate from `src/rules.ts`
+  rather than hand-editing.
+
+Chloropal's local copy of the rule was already corrected on 2026-08-02, but that
+fix is project-local and will be re-overwritten by the generated version.
+
+**Also worth adding while in there:** after tagging, echo
+`git rev-parse --short "refs/tags/$PROD_TAG"` and compare to `$DEPLOY_SHA`. One
+line, catches the whole class, and makes the failure loud instead of silent.
+
+**Depends on / blocked by:** nothing. Small, self-contained, and the deploy
+sequence is already the file being touched.
