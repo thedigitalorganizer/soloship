@@ -8,6 +8,7 @@ import {
   OPTIONAL_FIELDS,
   RESOLUTION_TYPE_ENUM,
   ROOT_CAUSE_ENUM,
+  schemaVersionMarker,
 } from "./solution-schema.js";
 
 export function generateClaudeMd(project: ProjectInfo): string {
@@ -165,7 +166,9 @@ export function generateSolutionGuide(): string {
   const inlineList = (values: readonly string[]) =>
     values.map((value) => `\`${value}\``).join(", ");
 
-  return `# Solution Guide
+  return `${schemaVersionMarker()}
+
+# Solution Guide
 
 ## What Goes Here
 

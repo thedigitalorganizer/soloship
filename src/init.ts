@@ -16,6 +16,7 @@ import { installCi } from "./ci.js";
 interface InitOptions {
   skipPrompts?: boolean;
   agent?: AgentTarget;
+  refreshGuides?: boolean;
 }
 
 export async function runInit(options: InitOptions): Promise<void> {
@@ -87,6 +88,7 @@ export async function runInit(options: InitOptions): Promise<void> {
   const scaffoldResults = await scaffoldDocs(root, projectInfo, {
     createClaudeMd: agentSelection.claude,
     createAgentsMd: true,
+    refreshGuides: options.refreshGuides,
   });
   for (const result of scaffoldResults) {
     const icon =
@@ -94,8 +96,34 @@ export async function runInit(options: InitOptions): Promise<void> {
         ? chalk.green("+")
         : result.action === "skipped"
           ? chalk.dim("-")
-          : chalk.yellow("~");
+          : result.action === "stale"
+            ? chalk.red("!")
+            : chalk.yellow("~");
     console.log(`  ${icon} ${result.path} ${chalk.dim(`(${result.action})`)}`);
+  }
+
+  // A stale reference doc is the one result that needs an instruction, not just
+  // an icon. It was generated against an older schema and is now describing
+  // rules that no longer hold — the failure this reporting exists to end is a
+  // stale guide sitting unnoticed behind an "(exists)" line for months.
+  const staleDocs = scaffoldResults.filter((r) => r.action === "stale");
+  if (staleDocs.length > 0) {
+    console.log("");
+    console.log(
+      chalk.red.bold("  Stale reference docs — generated against an older schema:")
+    );
+    for (const doc of staleDocs) {
+      console.log(`    ${doc.path}`);
+    }
+    console.log(
+      chalk.dim(
+        "  These are NOT overwritten automatically — your project may have extended them."
+      )
+    );
+    console.log(
+      chalk.dim("  To refresh (keeps a .bak of each): ") +
+        "npx soloship init --refresh-guides"
+    );
   }
 
   // Step 4: Install Claude Code hooks

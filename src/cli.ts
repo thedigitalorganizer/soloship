@@ -22,6 +22,10 @@ program
     "--agent <agent>",
     "Project guardrail target: claude, codex, or both"
   )
+  .option(
+    "--refresh-guides",
+    "Rewrite generated reference docs built against an older schema (keeps a .bak of each)"
+  )
   .action(async (options) => {
     console.log("");
     console.log(
