@@ -2,6 +2,49 @@
 
 ## [Unreleased]
 
+## [0.23.0] — 2026-08-06
+
+### Fixed — `/cleanup` was breaking the knowledge base it maintains
+
+A live cleanup run found 13 dead `AGENTS.md` references. Nine of them had been
+created by a *previous* `/cleanup` run: the merge step renames a solution doc and
+writes `aliases`/`merged_from` into the successor, but nothing rewrites the files
+citing the old name. Two of the docs it broke were ones the project's own
+protection doc names as protected. The rule existed; the skill never enforced it.
+
+- **The overlap detector now computes canonicality mechanically.** Every merge
+  candidate is checked for the two conditions that make a doc unsafe to merge —
+  living in `docs/solutions/patterns/`, or being cited by path from `CLAUDE.md`,
+  any `AGENTS.md`, or `.claude/rules/`. The detector returns `canonical`,
+  `canonicalReason`, and the actual `inboundRefs`, and collapses pairwise
+  candidates into connected components (the relationships are N-way; the detector
+  was emitting edges).
+- **Canonical groups can no longer be proposed as merges.** They are presented
+  first, as a hard no-merge, with the inbound references that blocked them shown
+  so the rejection is visible rather than silent. The substitute — wiring
+  `related_solutions` bidirectionally — is proposed in their place. On the run
+  that prompted this, *all 13* candidate groups were canonical; merging them would
+  have deleted 24+ live governance references.
+- **Any merge that does run must rewrite its referrers in the same step**, with a
+  verifying `git grep` that must come back empty. A merge whose referrer cannot be
+  rewritten correctly gets reverted rather than left dangling.
+
+### Fixed — the learnings rebuild destroyed intentional entries
+
+- **`learnings.jsonl` is now repaired surgically, never regenerated wholesale.**
+  One doc legitimately carries several entries — distinct insights filed against
+  it over time. The old one-entry-per-doc rebuild would have silently deleted 28
+  real insights on a 341-entry index, with nothing downstream reporting the loss.
+  An entry pointing at a real non-solution file is repointed if it moved, not
+  deleted to make the index tidy.
+
+### Fixed
+
+- The verification checklist said "All 5 audit agents" for a 6-agent audit, and
+  gained checks for canonicality, the post-merge referrer grep, and surgical
+  learnings repair.
+- The cleanup report template records dead-link and canonical-block counts.
+
 ## [0.22.0] — 2026-08-02
 
 ### Fixed — the generated solution guide documented a schema Soloship doesn't write

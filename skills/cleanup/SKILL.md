@@ -2,7 +2,7 @@
 name: cleanup
 description: |
   Knowledge system maintenance: deduplicate solutions, prune stale references,
-  enforce plan lifecycle, fix AGENTS.md drift, rebuild learnings index.
+  enforce plan lifecycle, fix AGENTS.md drift, repair the learnings index.
   The garbage collector, linker, and index rebuilder for a project's knowledge base.
   Use periodically or when docs/solutions/ has grown since the last cleanup.
 ---
@@ -98,6 +98,18 @@ Do the following:
    - Tag overlap (share 3+ tags)
    - Root cause phrase match (share a 3+ word phrase in root_cause)
    Only propose merges when at least 2 of these 3 signals are present.
+6. CANONICALITY — compute this for EVERY candidate doc. A doc is canonical if
+   EITHER is true:
+   a. It lives in `docs/solutions/patterns/`.
+   b. Anything cites it BY PATH. Check mechanically — grep its basename across
+      `CLAUDE.md`, every `AGENTS.md`, everything under `.claude/rules/`, and every
+      other solution doc's `related_solutions:` list. Exclude the doc itself, and
+      exclude copies living under worktree directories (`.worktrees/`,
+      `.claude/worktrees/`) — those are other checkouts, not real referrers.
+   Record `canonical`, `canonicalReason`, and the actual `inboundRefs` paths.
+7. Collapse the pairwise candidates into CONNECTED COMPONENTS before returning.
+   The detector emits edges; the real relationships are N-way. Two pairs sharing a
+   member are one 3-way group, not two independent merges.
 
 Return your findings as JSON:
 {
@@ -109,10 +121,19 @@ Return your findings as JSON:
         "sharedTags": [...],
         "sharedRootCausePhrases": [...]
       },
+      "canonical": true|false,
+      "canonicalDetail": [
+        {"path": "...", "canonical": true|false,
+         "canonicalReason": "in patterns/ | cited by path | not canonical",
+         "inboundRefs": ["CLAUDE.md", "src/hooks/AGENTS.md", ...]}
+      ],
       "proposedTitle": "Suggested merged title"
     }
   ]
 }
+
+A group is `canonical: true` if ANY member is canonical. Do NOT drop those groups
+— return them flagged. The orchestrator decides what to do with them.
 ```
 
 ### Agent 3: Plan Lifecycle Scanner + Status Reconciler
@@ -310,6 +331,11 @@ After all 6 agents complete, present a summary table to the user:
 ### Merge Candidates
 [List each group with shared evidence]
 
+### Canonical-Blocked (hard no-merge — cross-link instead)
+[Groups where any member is in patterns/ or cited by path. Show the actual inbound
+references that blocked each one. A silent rejection erodes trust in the audit —
+the user should see what was NOT proposed and why.]
+
 ### Stale Solutions
 [List with dead reference counts]
 
@@ -337,7 +363,20 @@ For each group, ask the user: **approve all, approve individually, or skip.**
 
 Present in this order (highest-impact first):
 
-1. **Merge candidates** — Show groups, shared evidence, proposed merged title
+0. **Canonical-blocked groups (present BEFORE merges, never as merges).** Every
+   group the detector returned with `canonical: true` is a **hard no-merge**.
+   Merging it deletes live by-path references from CLAUDE.md, AGENTS.md, or
+   `.claude/rules/` — this has really happened, more than once, and the dead links
+   outlive the run that made them. Do not offer these as merges, do not offer a
+   "merge and fix the links" variant. Propose the substitute: **wire
+   `related_solutions:` bidirectionally** across the group. Show the user which
+   groups were blocked and the actual inbound references that blocked them, so the
+   rejection is visible rather than silent. See
+   `docs/solutions/workflow-issues/cleanup-merge-protection-canonical-pattern-vs-incident-2026-05-19.md`
+   in projects that carry it.
+
+1. **Merge candidates** — ONLY groups with `canonical: false`. Show groups, shared
+   evidence, proposed merged title
 2. **Stale solutions** — Show dead reference counts, recommend stale-mark or delete
 3. **Plan cleanup** — Show plans with completion evidence, proposed action (delete/archive)
 4. **AGENTS.md fixes** — Stale references to remove, new files to create
@@ -406,6 +445,27 @@ The main agent never holds all source content simultaneously.
    ```
    After each subagent returns, `git rm` the original source files.
 
+1b. **Rewrite every inbound referrer — same step, not a follow-up.** A merge renames
+   a doc. Everything that cited the old filename is now broken, and nothing else in
+   this skill will notice. This is the single most common way `/cleanup` damages a
+   knowledge base: a later audit finds the dead links and cannot tell they were
+   self-inflicted.
+
+   For each merged group, before moving on:
+   ```bash
+   # Find every referrer of each retired filename. Exclude worktree copies.
+   git grep -l -F "<old-basename>" -- CLAUDE.md '*AGENTS.md' '.claude/*' 'docs/*' \
+     | grep -v '/worktrees/'
+   ```
+   Rewrite each hit to the merged doc's path. Where the citing prose describes what
+   the old doc said, read the merged doc and confirm the sentence still reads true —
+   a merged doc is a superset, so usually it does, but say so only after checking.
+
+   Then VERIFY, and report the result: re-grep every retired basename across those
+   same paths and confirm **zero** hits remain. A merge is not complete until that
+   grep is empty. If a referrer cannot be rewritten correctly, revert that merge
+   rather than leaving a dead link.
+
 2. **Mark stale solutions** — add `status: stale` to frontmatter (don't delete unless
    user explicitly approved deletion)
 
@@ -462,21 +522,35 @@ The main agent never holds all source content simultaneously.
    - Pitfalls: non-obvious gotchas inferred from the code
    ```
 
-8. **Rebuild learnings.jsonl** — dispatch a single subagent that reads all non-stale
-   solution frontmatter and regenerates `.ai/learnings.jsonl`. The main agent provides
-   the list of solution paths and stale-flagged paths to exclude. The subagent reads
-   each solution's frontmatter, generates entries, and overwrites the file.
+8. **Repair learnings.jsonl — SURGICALLY. Never regenerate it wholesale.**
+
+   One doc legitimately carries SEVERAL entries: distinct insights filed against the
+   same solution over time. A one-entry-per-doc regeneration silently deletes every
+   one of those extras. On a 2026-08-06 MAPS run the file held 341 entries across 313
+   distinct paths — a wholesale rebuild would have destroyed 28 real insights, and
+   nothing downstream would have reported the loss.
+
+   Dispatch a subagent to make only these changes, preserving every other line
+   byte-for-byte:
    ```
-   Prompt: You are rebuilding the learnings index from the current solution set.
+   Prompt: You are SURGICALLY repairing .ai/learnings.jsonl. Do NOT regenerate it.
+   Multiple entries per solution are INTENTIONAL — preserve them.
 
-   Solution paths to index: [list of paths]
-   Paths to EXCLUDE (stale): [list of stale paths]
+   Entries whose `solution` path is dead: [list, with the correct path where the
+     doc merely moved or was archived]
+   Solution docs with no entry at all: [list — add one entry each, reading the doc
+     to write an accurate insight]
+   Paths to EXCLUDE (stale): [list]
 
-   For each non-excluded solution, read its frontmatter and generate a JSONL entry:
+   Entry schema, matching existing lines exactly:
    {"date":"YYYY-MM-DD","key":"SHORT_KEY","type":"TYPE","insight":"ONE_LINE","solution":"PATH","components":["COMP1"]}
 
-   Overwrite .ai/learnings.jsonl with all entries.
+   VERIFY: every line parses as JSON, every `key` is unique, every `solution` path
+   resolves. Report the before/after line count and the exact diff.
    ```
+   An entry pointing at a real non-solution file (an AGENTS.md, an archived plan) is
+   NOT necessarily junk — it may be a real insight whose doc was never written.
+   Repoint it if the target moved; do not delete it to make the index tidy.
 
 9. **Regenerate README.md** — dispatch a single subagent that reads current solution
    frontmatter and regenerates `docs/solutions/README.md` hotspot analysis and
@@ -515,6 +589,9 @@ The main agent never holds all source content simultaneously.
     | Plans pending cleanup | N | N |
     | AGENTS.md coverage | N% | N% |
     | Stale solutions (>50% dead refs) | N | N |
+    | `related_solutions` links — total / dead | N / N | N / 0 |
+    | AGENTS.md dead references | N | 0 |
+    | Merge groups refused as canonical (cross-linked instead) | — | N |
 
     ## Actions Taken
     ### Merged
@@ -522,11 +599,12 @@ The main agent never holds all source content simultaneously.
     ### Plans Cleaned
     ### AGENTS.md Updated/Created
     ### Cross-references Wired
-    ### Learnings Rebuilt
+    ### Canonical-Blocked (merges refused, cross-linked instead)
+    ### Learnings Repaired
     ```
 
 11. **Single atomic commit** — all changes in one commit:
-    `chore(knowledge): cleanup — N merges, N stale-marks, N plan actions`
+    `chore(knowledge): cleanup — N merges, N cross-link groups, N stale-marks, N plan actions`
 
 ---
 
@@ -560,6 +638,9 @@ The main agent never holds all source content simultaneously.
 - "The knowledge base is small / I'll just fix what I know is broken" → you don't know what's broken until you audit, and stale AGENTS.md references hide behind healthy-looking files. The audit takes 2 minutes — run all the agents.
 - "I'll merge these solutions (or normalize frontmatter) inline without the subagent" → holding several solution bodies in main context degrades rewrite and orchestration quality. The subagent pattern exists to prevent this — use it.
 - "These solutions are similar but not really duplicates" → that's why the 2-of-3 signal threshold exists. If 2+ signals align, they're merge candidates — present them to the user, who decides.
+- "The user approved the merges, so the canonical block doesn't apply" → it does. The approval was given before the canonicality check ran, on incomplete information. A canonical group is a hard no-merge regardless of approval; go back to the user with what the check found and propose cross-linking. On a 2026-08-06 MAPS run, all 13 approved groups turned out to be canonical — merging them would have deleted 24+ live governance references.
+- "I'll merge and then fix the links afterward" → "afterward" is where this always fails. The referrer rewrite is step 1b, in the same breath as the merge, with a verifying grep. If you cannot rewrite a referrer correctly, revert the merge.
+- "Only `patterns/` docs are protected" → no. A doc cited by path from CLAUDE.md, any AGENTS.md, or `.claude/rules/` is equally protected wherever it lives. Most protected docs are NOT in `patterns/`.
 - "The user approved everything, I can batch the commit" → batching the commit is correct, but each merge still gets its own subagent. Batching the commit is not batching the content.
 - "This plan is probably completed but I can't find the commit" → "probably" is not evidence. If git log doesn't show implementation commits, the plan stays "keep", not "delete".
 - "I'll skip the learnings rebuild / cross-references aren't that important" → the index and cross-links are how future agents find solutions they didn't search for directly. Unindexed, unlinked solutions are invisible.
@@ -570,7 +651,10 @@ The main agent never holds all source content simultaneously.
 
 Cleanup is not complete until ALL of these are true:
 
-- [ ] All 5 audit agents ran (no agents skipped)
+- [ ] All 6 audit agents ran (no agents skipped)
+- [ ] Canonicality was computed for every merge candidate, and canonical groups were presented as cross-links rather than merges
+- [ ] For every merge that DID run, the retired basenames return zero hits from `git grep` across CLAUDE.md / AGENTS.md / `.claude/rules/` / docs — verified, not assumed
+- [ ] learnings.jsonl was repaired surgically; multi-entry docs still have all their entries (before/after line count reported)
 - [ ] Audit summary was presented to the user
 - [ ] User approved or rejected each proposal group
 - [ ] Only approved changes were executed
@@ -579,6 +663,6 @@ Cleanup is not complete until ALL of these are true:
 - [ ] Stale solutions have `status: stale` in frontmatter (not deleted unless user approved deletion)
 - [ ] Cross-references are bidirectional (A→B and B→A)
 - [ ] Plan cleanup follows plan-lifecycle rules (small=delete, large=archive)
-- [ ] learnings.jsonl was rebuilt excluding `status: stale` solutions
+- [ ] learnings.jsonl repair excluded `status: stale` solutions
 - [ ] Cleanup report written to `docs/audit/cleanup-YYYY-MM-DD.md` with before/after metrics
 - [ ] All changes in a single atomic commit
