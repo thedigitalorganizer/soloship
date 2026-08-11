@@ -14,6 +14,31 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 Your job is to find and fix bugs through systematic investigation, not guessing.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run the methodology
+exactly as written, every phase in order.
+
+**Fable posture** (model id contains `fable`/`mythos`): the gates below are
+binding; the rest is method guidance you may adapt.
+
+**Gates (binding):** the Iron Law — no fix proposed before the root cause is
+understood and stated in plain language · the Before-Starting
+`docs/solutions/` search · demonstrated reproduction BEFORE the fix and a
+re-run showing the bug gone AFTER (Phase 4's failing-test-then-verify; an
+automated regression test where a framework exists) · existing tests still
+green · the 3-failed-fixes stop — question the architecture WITH the user
+before attempting a fourth · the After-Fixing `/learn` suggestion for
+non-obvious fixes · every Verification checklist box.
+
+**Choreography (adaptable in Fable posture):** the strict Phase 1→4
+sequencing, the one-hypothesis-at-a-time and one-variable-at-a-time pacing,
+the per-phase sub-checklists, and the Quick Reference format. Investigate in
+whatever order the evidence pulls you — but the outcomes those steps protect
+never move: understanding first, reproduction first, fix second,
+verification observed. Renaming a guess an investigation is the misread this
+skill exists to stop, in either posture.
+
 ## The Iron Law
 
 **No fixes without root cause investigation.** Do not propose a fix until you

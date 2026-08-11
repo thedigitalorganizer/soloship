@@ -16,6 +16,32 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 Your job is to help the user think through what they're building before they
 plan how to build it.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run this skill
+exactly as written, every step in order.
+
+**Fable posture** (model id contains `fable`/`mythos`): the gates below are
+binding; the rest is method guidance you may adapt.
+
+**Gates (binding):** the Step 1/2 routing decision — demand questions go to
+`/soloship:office-hours`, not a lighter version of this flow · the Phase 1.1
+repo-research dispatch (its grounding is gate evidence; per
+delegation-discipline it is also the ceiling) · Phase 3's open-questions
+checkpoint — every open question put to the user before offering to plan ·
+the artifact contract — brainstorm output on disk in `docs/drafts/` with
+frontmatter · Step 3's design-first nudge, presented every time · Step 3.5's
+grill-me nudge whenever the work meets its triggers · Phase 4's handoff
+options put to the user · the scope lock and tangents parking lot, raised at
+the end · NEVER CODE · every Verification checklist box.
+
+**Choreography (adaptable in Fable posture):** the conversational pacing —
+one-question-at-a-time, the multiple-choice preference, 200–300-word
+sections with per-section validation — and the exact 2–3-approaches count.
+Phase 2's OUTCOME stays binding: genuine alternatives compared with honest
+trade-offs and a led recommendation, YAGNI applied. How the dialogue gets
+there is yours to shape around how the user actually answers.
+
 ## Step 1: Determine the Type of Question
 
 Ask yourself: is this a **demand** question or a **feature** question?

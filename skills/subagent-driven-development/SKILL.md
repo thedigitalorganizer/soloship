@@ -7,6 +7,16 @@ description: Use when executing implementation plans with independent tasks in t
 
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
+## Model posture (Soloship)
+
+See the auto-loaded `model-mode` rule. **Standard posture** (the default):
+execute this skill exactly as written. **Fable posture** (model id contains
+`fable`/`mythos`): every gate this skill names — evidence to produce,
+verifications to run, dispatches it mandates, user checkpoints — remains
+binding; its step ordering and procedural scaffolding are method guidance
+you may adapt when the work is better served. Never skip a step that
+produces evidence; when ambiguous, treat it as a gate.
+
 <!-- Vendored from superpowers v6.2.0 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. Superpowers namespace refs rewritten to Soloship's vendored skill names; finishing-a-development-branch -> /soloship:finish; the final whole-branch reviewer is Soloship's code-reviewer agent (agents/code-reviewer.md), not upstream's requesting-code-review skill; SDD workspace .superpowers/sdd -> .ai/sdd. Scripts (scripts/) and prompt files vendored alongside. -->
 
 # Subagent-Driven Development

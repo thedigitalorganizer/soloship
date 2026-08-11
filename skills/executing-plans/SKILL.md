@@ -7,6 +7,16 @@ description: Use when partner provides a complete implementation plan to execute
 
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
+## Model posture (Soloship)
+
+See the auto-loaded `model-mode` rule. **Standard posture** (the default):
+execute this skill exactly as written. **Fable posture** (model id contains
+`fable`/`mythos`): every gate this skill names — evidence to produce,
+verifications to run, dispatches it mandates, user checkpoints — remains
+binding; its step ordering and procedural scaffolding are method guidance
+you may adapt when the work is better served. Never skip a step that
+produces evidence; when ambiguous, treat it as a gate.
+
 <!-- Vendored from superpowers v4.1.1 (Jesse Vincent). See skills/vendored/superpowers/LICENSE. DELIBERATELY pinned at 4.1.1: upstream v6.0.3 removed the batch-execution-with-checkpoints model (execute-all-then-finish, steering to subagent-driven-development instead). Soloship keeps the batch+checkpoint model on purpose — it's the human-in-the-loop alternative to subagent-driven-development for a non-coder architect reviewing between batches. Only the "never start on main without consent" safety line was pulled forward from 6.0.3. -->
 
 # Executing Plans
