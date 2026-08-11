@@ -45,11 +45,16 @@ git diff --stat main...HEAD 2>/dev/null || git diff --stat
 ```
 Confirm: correct branch, changes look right, nothing unexpected staged.
 
-### Step 2: Merge base branch
+### Step 2: Conflict preview (integration itself happens at Step 10)
 ```bash
-git fetch origin main && git merge origin/main
+git fetch origin main && git merge-tree --write-tree HEAD origin/main >/dev/null 2>&1 || echo "conflicts likely — budget time to resolve at Step 10"
 ```
-If conflicts exist, resolve them before proceeding.
+**Why not merge here:** this skill used to integrate `origin/main` at Step 2
+and merge at Step 10 — ~8 steps later — so the QA evidence in between could be
+many merges stale by the time it merged. Integration now happens inside the
+shared merge sequence (Step 10), immediately before the merge, with re-verify
+on the integrated state. This step only *previews* whether conflicts are
+coming; it changes nothing.
 
 ### Step 3: Lint + Test
 ```bash
@@ -188,36 +193,18 @@ the change asserts no live-data fact, state that and skip.
 
 ### Step 10: Merge to Base Branch Locally (default)
 
-**Soloship default — no PR.** Soloship's user is a solo developer; the PR step adds latency without adding review value. Merge the feature branch into the base branch locally, push the base branch, delete the feature branch, clean up the worktree.
+**Soloship default — no PR.** Soloship's user is a solo developer; the PR step adds latency without adding review value.
 
-```bash
-# Detect base branch
-default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-[ -z "$default_branch" ] && default_branch=$(git rev-parse --verify origin/main >/dev/null 2>&1 && echo "main" || echo "master")
-
-# Capture feature branch name BEFORE switching
-feature_branch=$(git branch --show-current)
-
-# If we are inside a worktree, the merge happens in the main checkout
-toplevel=$(git rev-parse --show-toplevel)
-case "$toplevel" in
-  *.worktrees/*|*/superpowers/worktrees/*)
-    main_checkout=$(git worktree list --porcelain | awk '/^worktree / { print $2; exit }')
-    cd "$main_checkout"
-    ;;
-esac
-
-# Merge, push, clean up
-git checkout "$default_branch"
-git pull origin "$default_branch"
-git merge --no-ff "$feature_branch" -m "Merge $feature_branch into $default_branch"
-git push origin "$default_branch"
-git branch -d "$feature_branch"
-
-# Remove worktree if one existed
-git worktree list | grep -q ".worktrees/$feature_branch" && \
-  git worktree remove ".worktrees/$feature_branch"
-```
+Run the shared local merge sequence in `references/merge-sequence.md` — the
+single definition of this flow: integrate `origin/<base>` **in your worktree**
+and resolve any conflicts there, re-verify the integrated state **there** (if
+integration brought in changes, re-run Step 3's lint+test — changed state
+requires fresh evidence; if it said "Already up to date," the evidence from
+Steps 3-9.7 stands), then merge in a throwaway detached worktree and push.
+**The main checkout is never entered and no test command runs in it.** A
+rejected push means another session's merge landed first — loop: fetch,
+integrate, re-verify, push again. Cleanup (feature worktree, branch, throwaway
+worktree) is merge-sequence Step 4.
 
 **Merge conflicts:** stop immediately, report the conflicting files, ask the user how to proceed. Do not auto-resolve.
 
@@ -245,14 +232,14 @@ EOF
 
 See the project rule set (`.codex/rules/` or `.claude/rules/`) for the global rule that drives this default.
 
-### Step 11: Verification Gate
+### Step 11: Verification Gate (folded into Step 10)
 
-After the merge (or PR creation, if opt-in), re-run tests + build to verify nothing broke during review fixes / merge resolution:
-
-```bash
-npm test 2>&1
-npm run build 2>&1
-```
+The old post-merge re-run is redundant by construction: merge-sequence Step 2
+verifies the integrated state in the worktree, and the push either lands that
+exact state (byte-identical — nothing new to verify) or is rejected and the
+loop re-verifies. Only if review fixes landed commits AFTER the last test run
+(state changed since its evidence) does anything need re-running — do that in
+the worktree *before* Step 10, not after the merge.
 
 ### Step 12: Deploy (via the shared production deploy sequence)
 
