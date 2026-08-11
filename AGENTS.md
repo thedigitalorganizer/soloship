@@ -10,7 +10,7 @@
 
 **Two deliverables:**
 1. `npx soloship init` — npm CLI that installs mechanical enforcement + documentation infrastructure
-2. Soloship Codex plugin — 46 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
+2. Soloship Codex plugin — 47 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
 
 ## Status
 
@@ -44,11 +44,11 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── detect.ts          # Stack detection (language, framework, package manager)
 │   ├── scaffold.ts        # Folder structure + doc creation
 │   ├── hooks.ts           # Claude Code hook configuration (25 hooks)
-│   ├── rules.ts           # Workflow rule installation (18 rules)
+│   ├── rules.ts           # Workflow rule installation (19 rules)
 │   ├── ci.ts              # GitHub Actions CI + architecture fitness functions
 │   └── templates.ts       # CLAUDE.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
 ├── dist/                  # Compiled output (gitignored)
-├── skills/                # 46 skills (19 Soloship-native + 27 vendored standalones)
+├── skills/                # 47 skills (20 Soloship-native + 27 vendored standalones)
 │   # NOTE: there is NO commands/ directory. Claude Code resolves commands and
 │   # skills in ONE namespace, so a command file sharing a skill's name shadows
 │   # it. Removed in v0.21.0; validate-plugin-metadata.js now blocks reintroduction.
