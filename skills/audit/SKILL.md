@@ -20,6 +20,28 @@ then assess its quality, safety, and completeness.
 **IMPORTANT:** This is a two-phase process with a human checkpoint between phases.
 Do not skip the checkpoint. Do not rush through Phase 1 to get to Phase 2.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run both phases
+exactly as written.
+
+**Fable posture** (model id contains `fable`/`mythos`): binding — the full
+mandated agent dispatch set (every agent this skill defines, Phase 1 and
+Phase 2, none skipped — the floor and the ceiling per delegation-discipline)
+· the Comprehension Checkpoint: present the synthesis and WAIT for the
+user's confirmation or corrections before any Phase 2 assessment runs —
+checkpoint before assessment is causal ordering, not choreography · the two
+output artifacts complete per contract — `docs/audit/AUDIT-YYYY-MM-DD.md`
+with all 8 sections and frontmatter/content_hash, and valid
+`audit-findings.json` with scores and at least one finding · the
+Verification checklist in full.
+
+**Choreography (adaptable in Fable posture):** the verbatim agent prompt
+texts, the fixed summary/report presentation templates, and scheduling
+within a phase (which agents launch first, how findings are collated).
+Adapt the method — every agent's territory still gets covered with
+evidence, and both artifacts still land.
+
 ---
 
 ## Phase 1: Understand the System

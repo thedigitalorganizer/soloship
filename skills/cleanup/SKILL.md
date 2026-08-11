@@ -21,6 +21,33 @@ deleted directories. learnings.jsonl falls out of sync. You fix all of that.
 This is a 3-phase process: AUDIT → PROPOSE → EXECUTE.
 Never execute changes without user approval. Never skip the audit.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run all three phases
+exactly as written.
+
+**Fable posture** (model id contains `fable`/`mythos`): read this carefully —
+cleanup deletes files and rewrites knowledge-base docs, so it is nearly ALL
+gates. Binding: the full audit always runs, all 6 Phase 1 agents (a mandated
+set, whatever the subcommand) · the AUDIT → PROPOSE → EXECUTE boundary —
+nothing executes without per-group user approval, and only approved changes
+run · canonicality computed for EVERY merge candidate, and canonical groups
+a hard no-merge in BOTH postures — regardless of prior approval they get
+cross-links, never merges · Step 1b's referrer rewrite in the same step as
+each merge, verified by a zero-hit re-grep of every retired basename (revert
+the merge if a referrer can't be rewritten) · the surgical learnings.jsonl
+repair — never wholesale regeneration, before/after counts reported ·
+stale-marking rather than deleting unless deletion was explicitly approved ·
+append-only AGENTS.md fixes, never rewrites · the reconciler's never-guess
+rule on ambiguous plan evidence · Phase 3's subagent isolation for multi-doc
+reads and rewrites · the cleanup report and single atomic commit · the
+Verification checklist in full. The canonicality and referrer-rewrite
+protections are the point of this skill — no posture relaxes them.
+
+**Choreography (adaptable in Fable posture):** the verbatim subagent prompt
+texts, the fixed presentation templates, and ordering among Phase 3
+execution steps that are causally independent. That is the whole list.
+
 ---
 
 ## Subcommand Routing

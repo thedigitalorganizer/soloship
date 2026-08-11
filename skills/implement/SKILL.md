@@ -30,7 +30,9 @@ Step 1.7 branch/worktree discipline · Step 1.8 claiming the plan (status flip
 to `in-progress`) · Step 2.0 Scope Lock ledger, and resolving every ledger
 row before done · Step 2.5 finishing/merge mechanics · Step 2.6 QA Gate —
 every QA Plan row executed with evidence, the fix-and-re-verify loop, and QA
-teardown · plan status flip on completion.
+teardown · the methodology's "Prepare Operational Validation Plan (REQUIRED)"
+step (it produces a required artifact — gate, wherever in the phases it
+lives) · plan status flip on completion.
 
 **Choreography (adaptable in Fable posture):** the embedded execution
 methodology under "Implementation Methodology" (Phases 1–4, swarm mode, the

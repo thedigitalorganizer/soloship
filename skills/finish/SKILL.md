@@ -11,6 +11,30 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 # Finishing a Development Branch
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run the process
+exactly as written.
+
+**Fable posture** (model id contains `fable`/`mythos`): this skill sits at
+the merge/delete boundary, so it is mostly gates. Binding: Step 1's test
+verification before any option is offered, and re-verifying tests on the
+merged result in Option 1 · Step 4's menu as a real user checkpoint — wait
+for the user's pick, never auto-select, PR only when the user explicitly
+chooses Option 2 · Option 4's typed "discard" confirmation before anything
+is deleted · the plan status flip (`done`/`abandoned`) and claim-file clear
+BEFORE the merge · the artifact sweep (consumed handoffs/drafts removed in
+the same commit) · Step 6's browser teardown and the worktree provenance
+check — never remove a worktree you didn't create, and Options 2/3 always
+keep theirs.
+
+**Choreography (adaptable in Fable posture):** Step 2/3's exact detection
+commands, the announce line, and the menus' fixed wording — the binding part
+is that the choice is the user's, not the template. Sequence the detection
+and base-branch checks however the situation calls for; every gate above
+still happens, in the order its dependencies require (tests before menu,
+status flip before merge, merge before cleanup).
+
 ## Overview
 
 Guide completion of development work by presenting clear options and handling chosen workflow.
