@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+### Added — multi-session git discipline (station-only main)
+
+Every documented multi-session git incident traced back to sessions operating
+inside the shared main checkout. This release makes the finishing paths stop
+touching it, fixes a confirmed deploy-tag race, and adds the guard rail:
+
+- **`skills/references/merge-sequence.md`** — the single definition of the
+  local merge flow (finish, implement, and shipthorough now reference it
+  instead of carrying three divergent copies). Integration and verification
+  happen in YOUR worktree; the merge itself runs in a throwaway detached
+  worktree and the remote's atomic push rejection arbitrates concurrent
+  merges — no lock file, no staleness threshold, nothing to leak. The main
+  checkout is never entered (its local `main` lagging origin is normal and
+  self-heals at the next deploy).
+- **SHA-pinned `prod` tag** — the deploy sequence pins `DEPLOY_SHA` before
+  deploying and tags that SHA, never bare HEAD (confirmed live race:
+  Chloropal 2026-08-02 tagged a commit that was never shipped, silently
+  under-reporting undeployed work). Tag is echo-verified after push.
+- **Main-checkout authoring warn hook** (hook builders 25 -> 26, warn-only):
+  `git commit` in the main checkout while other worktrees are active names
+  the active worktrees and the worktree remedy, then lets the commit
+  proceed. Mutation-tested behavioral fixtures in
+  `__arch__/main-checkout-warn-hook.test.ts`.
+- `/soloship:status` flags a session authoring in the main checkout while
+  worktrees are active.
+- shipthorough Step 2 becomes a conflict *preview* (`git merge-tree`);
+  integration moved next to the merge so QA evidence cannot go stale across
+  the review steps.
+
 ## [0.25.0] — 2026-08-11
 
 ### Added — mechanical release enforcement (no more missed details)
