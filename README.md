@@ -196,6 +196,15 @@ Three layers, from most mechanical to most guided:
 
 **Skills** are guided workflows. Claude Code exposes them as `/soloship:*` commands; Codex exposes them through the installed Soloship plugin. Each adds enforcement gates (checklists the agent must complete) and anti-rationalization tables (preemptive counters to the ways agents cut corners).
 
+### Dual-model postures (the Fable-era edition)
+
+Soloship runs the same skill set under two postures, decided by the session's model (the auto-loaded `model-mode` rule):
+
+- **Standard posture** — Opus/Sonnet-class Claude models and GPT models under Codex. Skills execute exactly as written. This is unchanged Soloship.
+- **Fable posture** — Fable/Mythos-class models. A skill's **gates stay binding** (evidence, QA rows, status flips, billing/deploy/browser gates, mandated review dispatches) while its **choreography relaxes** to method guidance (step ordering, mandated re-reads, per-edit suite reruns, fixed report formats). Measured basis: on identical tasks, scripted choreography cost a Fable-class model ~1.9× the tool calls and ~43% more wall-clock for identical acceptance-test results (`docs/reports/2026-08-11-fable-brief-ab-experiment.md`).
+
+Heavy skills carry an explicit "Model posture" section naming their own gates; every other skill inherits the rule's generic definitions. Hooks are mechanical and identical in both postures. `/soloship:fable` is the entry point for launching Fable-shaped work: it qualifies the task (routing routine work back to Opus — the budget gate), builds the goal brief, launches, and harvests lessons.
+
 ### Skill architecture
 
 Every one of the 46 skills ships inside the Soloship plugin. Earlier versions routed to external plugins (Superpowers, Compound Engineering, gstack) when they were installed; that design was retired in v0.5.0. The curated set is now vendored directly into Soloship, so there are no external plugin dependencies and no broken dispatches for users who only install Soloship.

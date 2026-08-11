@@ -2,6 +2,33 @@
 
 ## [Unreleased]
 
+### Added — the Fable-era edition: two postures, one skill set
+
+Soloship now serves Opus-class and Fable-class models from the same skills,
+rules, and hooks — no forks. The mechanism is one new always-on rule,
+`model-mode` (installed to `.claude/rules/` and `.codex/rules/` like every
+rule): in the **standard posture** (Opus/Sonnet/Codex — the default) nothing
+changes; in the **Fable posture** (model id contains `fable`/`mythos`) a
+skill's gates stay binding while its choreography becomes advisory, with the
+burden of proof on "choreography" — ambiguous steps are gates.
+
+- **23 skills carry an explicit "Model posture" section**: hand-tuned
+  gate-vs-choreography classifications in the heavy native skills
+  (`implement`, `shipthorough`, `shipfast`, `plan`, `debug`, `brainstorm`,
+  `grill-me`, `finish`, `learn`, `audit`, `cleanup`), and a standard
+  insertion-only block in 18 vendored skills (gstack / Superpowers /
+  Compound Engineering / Impeccable bodies untouched, attribution clean).
+- **Two rules re-scoped for dual-model reality**: `delegation-discipline`'s
+  dispatch ceiling now binds the standard posture only (Fable-class models
+  are dependable parallel delegators; mandated sets remain the floor in both
+  postures), and `verification-sufficiency` recognizes a Fable brief's named
+  self-verification cadence as named evidence, not stacking.
+- **Hooks audited, unchanged**: all 25 are pattern-triggered mechanical
+  floors (danger blocks, plan gates, billing tripwire, deploy discipline,
+  advisory warns) — identical in both postures by design.
+- Codex sessions sit in the standard posture by construction (GPT model ids
+  never match `fable`/`mythos`), so the rule installs there harmlessly.
+
 ### Added — `/soloship:fable`: budget-gated launch brief for Fable-class runs
 
 Fable-class models (Claude Fable 5) do their best work launched as a **goal

@@ -16,6 +16,30 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 Your job is to execute an existing plan. Do NOT start implementing without a plan
 file in `docs/plans/`. If no plan exists, tell the user to run `/plan` first.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): execute this skill
+exactly as written, every step in order.
+
+**Fable posture** (model id contains `fable`/`mythos`): the gates below are
+binding; the rest is method guidance you may adapt.
+
+**Gates (binding):** Step 1 reading the plan in full · Step 1.5 pre-execution
+state verification (every concrete claim grepped, deltas documented) ·
+Step 1.7 branch/worktree discipline · Step 1.8 claiming the plan (status flip
+to `in-progress`) · Step 2.0 Scope Lock ledger, and resolving every ledger
+row before done · Step 2.5 finishing/merge mechanics · Step 2.6 QA Gate —
+every QA Plan row executed with evidence, the fix-and-re-verify loop, and QA
+teardown · plan status flip on completion.
+
+**Choreography (adaptable in Fable posture):** the embedded execution
+methodology under "Implementation Methodology" (Phases 1–4, swarm mode, the
+quality checklist, fixed report formats) describes HOW to move between those
+gates — treat it as a completion checklist, not a script. Order your own
+work; batch edits when safe; run the suite when it informs you, not
+ritually after every edit. The plan's phases and the gates above still
+happen — with evidence — whatever path you take between them.
+
 ## Step 1: Find the Plan (with Freshness Check)
 
 Look for the most recent plan file in `docs/plans/` that isn't archived.

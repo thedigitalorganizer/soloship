@@ -2,7 +2,9 @@
 
 ## The Rule
 
-**A skill's mandated dispatches are the ceiling, not the floor.**
+**A skill's mandated dispatches are the ceiling, not the floor.** (This is
+the standard-posture contract; the Fable posture modifies it — see "Posture
+scoping" below and the model-mode rule.)
 
 Current-generation models (the Claude 5 family onward) reach for subagents far
 more readily than the models these workflows were tuned on. Every dispatch
@@ -34,6 +36,22 @@ for the same assurance.
 The only exemption is a skill whose explicit purpose is unbounded, dynamic
 fan-out (maximum-coverage skills like `/soloship:deepen-plan`) — there,
 breadth is the product and no ceiling exists by design.
+
+## Posture scoping (model-mode)
+
+The ceiling above is written for models whose eagerness to delegate outruns
+their judgment. In the **Fable posture** (model-mode rule: model id contains
+`fable`/`mythos`), the ceiling lifts — but the floor does not:
+
+- Mandated dispatch sets still run in full. Never collapse them, in either
+  posture.
+- Additional delegation is allowed where tracks are genuinely independent
+  and sizeable — Fable-class models are dependable at dispatching and
+  sustaining parallel subagents, and blocking on each one serially wastes
+  the capability. Prefer long-lived subagents over re-briefing new ones.
+- The universal keeps bind in both postures: never redo a subagent's work or
+  re-derive its findings, never split one modest task across parallel
+  workers, brief precisely the first time.
 
 ## A capping rule is not a skipping license (counter-pressure)
 

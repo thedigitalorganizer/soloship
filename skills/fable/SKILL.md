@@ -115,9 +115,13 @@ session if they prefer a clean context.
 > provide — otherwise finish, then report.
 
 Do not bolt the full step choreography of other skills onto the launch. The
-always-on rules (QA gates, plan lifecycle, evidence gates) still apply — they
-are floors, and Fable handles floors well. What it doesn't need is a script
-for the middle. Measured, not assumed: on identical tasks, step-choreographed
+run inherits the **Fable posture** automatically (auto-loaded `model-mode`
+rule): every Soloship skill it invokes mid-run keeps its gates binding while
+its choreography relaxes to method guidance — so the run can use `/implement`,
+`/shipthorough`, etc. without paying the scripted-step overhead. The always-on
+rules (QA gates, plan lifecycle, evidence gates) still apply — they are
+floors, and Fable handles floors well. What it doesn't need is a script for
+the middle. Measured, not assumed: on identical tasks, step-choreographed
 launches used ~1.9× the tool calls and ~43% more wall-clock than goal-brief
 launches for identical acceptance-test scores — and the brief arms wrote
 *more* regression tests, unprompted
