@@ -117,7 +117,13 @@ session if they prefer a clean context.
 Do not bolt the full step choreography of other skills onto the launch. The
 always-on rules (QA gates, plan lifecycle, evidence gates) still apply — they
 are floors, and Fable handles floors well. What it doesn't need is a script
-for the middle.
+for the middle. Measured, not assumed: on identical tasks, step-choreographed
+launches used ~1.9× the tool calls and ~43% more wall-clock than goal-brief
+launches for identical acceptance-test scores — and the brief arms wrote
+*more* regression tests, unprompted
+(`docs/reports/2026-08-11-fable-brief-ab-experiment.md`). Choreography
+overhead compounds with run length; on a multi-hour run it is the difference
+between finishing on budget and not.
 
 ## Stage 4 — Harvest
 
