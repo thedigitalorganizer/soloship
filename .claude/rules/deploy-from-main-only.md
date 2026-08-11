@@ -31,8 +31,11 @@ now," and never deploy around the queue because another session is mid-deploy.
 
 ## The Contracts
 
-1. **The `prod` tag marks what is live.** After every successful production
-   deploy: `git tag -f prod && git push -f origin prod`. Repos that deploy
+1. **The `prod` tag marks what is live.** Pin the SHA before deploying
+   (`DEPLOY_SHA=$(git rev-parse HEAD)`), then after every successful
+   production deploy: `git tag -f prod "$DEPLOY_SHA" && git push -f origin
+   prod` — never a bare `git tag -f prod`, which tags whatever HEAD is at
+   that moment and races concurrent merges. Repos that deploy
    multiple targets use `prod-<target>` per target. If a repo already uses a
    `prod` tag for something else, fall back to `soloship-prod`. The tag
    answers "what's live" for every session and machine; it marks what was

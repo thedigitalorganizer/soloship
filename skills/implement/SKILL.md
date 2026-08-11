@@ -282,38 +282,9 @@ for five-minute changes.
 
 The CE methodology below ends Phase 4 ("Ship It") with `git push -u origin <branch>` followed by `gh pr create`. **Soloship overrides this final step: do not create a PR automatically.** Soloship is a solo-developer tool — there's no reviewer waiting on GitHub, and the PR step is pure latency between "done" and "live." The default finishing behavior is a **local merge into the base branch**, then push the base branch.
 
-**When you reach CE's Phase 4 step 3 ("Create Pull Request"), run this instead of `gh pr create`:**
+**When you reach CE's Phase 4 step 3 ("Create Pull Request"), run the shared local merge sequence in `references/merge-sequence.md` instead of `gh pr create`.** It is the single definition of the merge flow: integrate `origin/<base>` **in your worktree**, verify the integrated state **there** (Step 2.6's QA evidence counts, if nothing changed since), then merge in a throwaway detached worktree and push — **the main checkout is never entered and no test command runs in it**. The remote's push rejection is the concurrency arbiter: rejected push = another session's merge landed first; fetch, integrate, re-verify, push again.
 
-```bash
-# Detect base branch
-default_branch=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@')
-[ -z "$default_branch" ] && default_branch=$(git rev-parse --verify origin/main >/dev/null 2>&1 && echo "main" || echo "master")
-
-# Capture feature branch name BEFORE switching
-feature_branch=$(git branch --show-current)
-
-# If we are inside a worktree, the merge must happen in the main checkout
-toplevel=$(git rev-parse --show-toplevel)
-case "$toplevel" in
-  *.worktrees/*|*/superpowers/worktrees/*)
-    main_checkout=$(git worktree list --porcelain | awk '/^worktree / { print $2; exit }')
-    cd "$main_checkout"
-    ;;
-esac
-
-# Merge, push, clean up
-git checkout "$default_branch"
-git pull origin "$default_branch"
-git merge --no-ff "$feature_branch" -m "Merge $feature_branch into $default_branch"
-git push origin "$default_branch"
-git branch -d "$feature_branch"
-
-# Remove worktree if one existed
-git worktree list | grep -q ".worktrees/$feature_branch" && \
-  git worktree remove ".worktrees/$feature_branch"
-```
-
-Report the merge target, the commit hash that's now on the base branch, and confirmation that the feature branch and worktree were cleaned up.
+Report the merge target, the commit hash that's now on the base branch, and confirmation that the feature branch and worktree were cleaned up (merge-sequence Step 4).
 
 **Merge conflicts:** stop immediately, report the conflicting files, ask the user how to proceed. Do not auto-resolve.
 

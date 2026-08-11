@@ -122,7 +122,7 @@ const HOOK_EVENTS = [
 // marker existed (one-time migration). Kept specific to avoid dropping a user's
 // genuinely custom hook that merely mentions a common word.
 const LEGACY_SOLOSHIP_HOOK_RE =
-  /billing-confirmation-gate|live-data-evidence-gate|\.ai\/learnings\.jsonl|deploy-from-main|plan-truth|plan-namespace|plan-merge|Key Decisions|"systemMessage": "%-m|soloship\/(sessions|claims)|Soloship update|BLOCKED: (Dangerous|Direct|Force)|phone-a-friend|recurrence/i;
+  /billing-confirmation-gate|live-data-evidence-gate|\.ai\/learnings\.jsonl|deploy-from-main|plan-truth|plan-namespace|plan-merge|Key Decisions|"systemMessage": "%-m|soloship\/(sessions|claims)|Soloship update|BLOCKED: (Dangerous|Direct|Force)|phone-a-friend|recurrence|main-checkout-authoring/i;
 
 function isLegacySoloshipHook(entry: HookEntry): boolean {
   const cmd = (entry.hooks || []).map((h) => h.command || "").join("\n");
@@ -276,6 +276,18 @@ export async function installHooks(
         },
       ],
     },
+    // Main-checkout authoring warn: committing in the main checkout while
+    // other worktrees are active (warn-only, never blocks).
+    {
+      matcher: "Bash",
+      hooks: [
+        {
+          type: "command",
+          command: buildMainCheckoutAuthorWarnScript(),
+          timeout: 5000,
+        },
+      ],
+    },
     // Plan-namespace gate: docs/plans/ holds plans only.
     {
       matcher: "Edit|Write|MultiEdit",
@@ -303,6 +315,7 @@ export async function installHooks(
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
   results.push("PreToolUse: plan-truth gate (blocks code commits whose plan still says 'planned')");
   results.push("PreToolUse: plan-merge gate (blocks merging a branch whose plan is still open)");
+  results.push("PreToolUse: main-checkout authoring warn (commit in main checkout while worktrees active; warn-only)");
   results.push("PreToolUse: plan-namespace gate (docs/plans/ holds plans only; routes drafts/handoffs/reports)");
   results.push("PreToolUse: plan-completeness gate (a plan must declare ## Goal + ## Done-When)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
@@ -856,6 +869,38 @@ If the work is genuinely NOT complete and you are merging partial work on purpos
 Escape hatch (requires a real reason): mkdir -p .ai && echo \\"reason\\" > ${PLAN_STATUS_ACK}" >&2
   exit 2
 done
+exit 0
+'`;
+}
+
+export function buildMainCheckoutAuthorWarnScript(): string {
+  // Main-checkout authoring warn (PreToolUse/Bash). WARN-ONLY, never blocks:
+  // measured on Soloship main (14 days to 2026-08-02), 17 of 22 landings were
+  // direct commits authored in the main checkout — a hard block would fire
+  // constantly against current habit and risks locking the operator out
+  // mid-task. The main checkout is the one contested directory in a
+  // multi-session repo (see references/merge-sequence.md); authoring there is
+  // the root behavior every documented git incident traces back to.
+  //
+  // Fires only when ALL hold: the command is a git commit (authoring — NOT
+  // git merge, which merge-sequence handles without entering the main
+  // checkout, and not tag ops, which are the deploy sequence's job), the
+  // session is in the main checkout (GIT_DIR == GIT_COMMON), and other
+  // worktrees exist (alone in the repo there is nobody to collide with).
+  // Fail-safe: any internal error exits 0 silently.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+echo "$TI" | grep -qE "git[[:space:]]+commit" || exit 0
+GIT_DIR=$(cd "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null && pwd -P)
+GIT_COMMON=$(cd "$(git rev-parse --git-common-dir 2>/dev/null)" 2>/dev/null && pwd -P)
+[ -n "$GIT_DIR" ] && [ -n "$GIT_COMMON" ] || exit 0
+[ "$GIT_DIR" = "$GIT_COMMON" ] || exit 0
+WT_COUNT=$(git worktree list --porcelain 2>/dev/null | grep -c "^worktree ")
+[ "$WT_COUNT" -gt 1 ] 2>/dev/null || exit 0
+WT_LIST=$(git worktree list 2>/dev/null | sed "s/^/  /")
+MSG="WARN (main-checkout-authoring): you are committing in the MAIN CHECKOUT while \${WT_COUNT} worktrees are active - this directory is shared with every session that touches the default branch, and concurrent operations here scramble commits (index, working tree, and HEAD are all contested). Active worktrees:\\n\${WT_LIST}\\nRemedy: do this work in a worktree (soloship:using-git-worktrees) and land it via the shared merge sequence (references/merge-sequence.md), which never enters the main checkout. This is a warning only - the commit proceeds."
+${emitSystemMessage("MSG", true)}
 exit 0
 '`;
 }

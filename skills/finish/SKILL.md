@@ -128,27 +128,16 @@ Which option?
 
 #### Option 1: Merge Locally
 
-```bash
-# Get main repo root for CWD safety
-MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
-cd "$MAIN_ROOT"
+Run the shared local merge sequence in `references/merge-sequence.md` — the
+single definition of this flow. In brief: integrate `origin/<base>` **in your
+worktree**, verify the integrated state **there** (tests + QA), then merge in
+a throwaway detached worktree and push; the remote's push rejection is the
+concurrency arbiter. **The main checkout is never entered and no test command
+runs in it.** A rejected push means another session's merge landed first —
+loop: fetch, integrate, re-verify, push again.
 
-# Merge first — verify success before removing anything
-git checkout <base-branch>
-git pull
-git merge <feature-branch>
-
-# Verify tests on merged result
-<test command>
-
-# Only after merge succeeds: cleanup worktree (Step 6), then delete branch
-```
-
-Then: Cleanup worktree (Step 6), then delete branch:
-
-```bash
-git branch -d <feature-branch>
-```
+Worktree/branch cleanup is Step 4 of that sequence (it replaces this skill's
+Step 6 for Option 1; Step 6 still governs Option 4 and the provenance rules).
 
 **Plan status (Soloship):** if a plan file in `docs/plans/` drove this work,
 update its frontmatter — `status: done`, `progress: "<total>/<total>"`,
@@ -313,7 +302,10 @@ git worktree prune  # Self-healing: clean up any stale registrations
 
 **Never:**
 - Proceed with failing tests
-- Merge without verifying tests on result
+- Merge without first integrating `origin/<base>` into the branch and
+  verifying the integrated state **in the worktree** (merge-sequence Steps 1-2)
+- Enter the main checkout to merge, test, or resolve conflicts — the merge
+  runs in a throwaway detached worktree (merge-sequence Step 3)
 - Delete work without confirmation
 - Force-push without explicit request
 - Auto-create a PR — Option 2 only runs when the user explicitly picks it
@@ -326,8 +318,10 @@ git worktree prune  # Self-healing: clean up any stale registrations
 - Detect environment before presenting menu
 - Present exactly 4 options (or 3 for detached HEAD)
 - Get typed confirmation for Option 4
+- Treat a rejected push as the concurrency mechanism working: fetch,
+  integrate, re-verify, push again (merge-sequence recovery loop)
 - Clean up worktree for Options 1 & 4 only
-- `cd` to main repo root before worktree removal
+- `cd` to a directory outside the worktree before `git worktree remove`
 - Run `git worktree prune` after removal
 
 ## Integration
