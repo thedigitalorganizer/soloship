@@ -202,7 +202,7 @@ Every one of the 46 skills ships inside the Soloship plugin. Earlier versions ro
 
 Skills come in three kinds:
 
-**Soloship-native (18)**: the logic was written for Soloship. `audit`, `bootstrap`, `brainstorm`, `cleanup`, `cron`, `debug`, `design-review`, `finish`, `grill-me`, `implement`, `learn`, `onboard`, `plan`, `review`, `shipfast`, `shipthorough`, `spec`, `status`. Several of these embed methodology adapted from the upstream projects (for example, `plan` runs a Compound-Engineering-derived plan-writing flow and `debug` runs the Superpowers 4-phase discipline), with Soloship's enforcement gates layered on top.
+**Soloship-native (19)**: the logic was written for Soloship. `audit`, `bootstrap`, `brainstorm`, `cleanup`, `cron`, `debug`, `design-review`, `fable`, `finish`, `grill-me`, `implement`, `learn`, `onboard`, `plan`, `review`, `shipfast`, `shipthorough`, `spec`, `status`. Several of these embed methodology adapted from the upstream projects (for example, `plan` runs a Compound-Engineering-derived plan-writing flow and `debug` runs the Superpowers 4-phase discipline), with Soloship's enforcement gates layered on top.
 
 **Vendored review and design (15)**: the gstack plan-review set (`ceo-review`, `eng-review`, `devex-review`, `plan-design-review`, `autoplan`), the Compound Engineering review set (`code-review`, `deepen-plan`, `document-review`), the Impeccable design set (`clarify`, `critique`, `polish`, `simplify`, `frontend-design`, `ui-audit`), and `ui-ux-pro-max`.
 
@@ -365,10 +365,10 @@ skills/                # Shared Claude Code and Codex skills shipped by the plug
   # shadows it and the workflow becomes unreachable. Removed in v0.21.0;
   # validate-plugin-metadata.js blocks reintroduction.
 
-  # Soloship-native workflow skills (19):
+  # Soloship-native workflow skills (20):
   audit/ bootstrap/ brainstorm/ cleanup/ component-inventory/ cron/ debug/
-  design-review/ finish/ grill-me/ implement/ learn/ onboard/ plan/ review/
-  shipfast/ shipthorough/ spec/ status/
+  design-review/ fable/ finish/ grill-me/ implement/ learn/ onboard/ plan/
+  review/ shipfast/ shipthorough/ spec/ status/
 
   # Plan-review skills, derived from gstack (5):
   ceo-review/ eng-review/ devex-review/ plan-design-review/ autoplan/

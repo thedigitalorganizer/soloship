@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+### Added — `/soloship:fable`: budget-gated launch brief for Fable-class runs
+
+Fable-class models (Claude Fable 5) do their best work launched as a **goal
+with a completion condition**, not a supervised step list — and they burn
+Max-plan budget fast enough that most tasks shouldn't run on them at all. The
+new skill walks through four stages: **qualify** (is this task actually
+Fable-shaped? if not, route to Opus + the standard harness — that's the budget
+gate), **brief** (goal + why, 4-part completion condition, boundaries, effort,
+memory pointers, check-in shape), **launch** (brief written to `docs/plans/`
+so every plan gate applies, plus a standard Fable-mode preamble), and
+**harvest** (lessons into `docs/solutions/`, which is what compounds across
+runs). Backed by an A/B experiment comparing harness-style vs goal-brief
+launches on identical tasks; results in `docs/reports/`.
+
 ## [0.23.0] — 2026-08-06
 
 ### Fixed — `/cleanup` was breaking the knowledge base it maintains
