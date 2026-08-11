@@ -26,6 +26,24 @@ or `/autoplan`. The interview transcript becomes the rationale doc the plan
 references — so a fresh agent after `/clear` can understand WHY each decision
 was made.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run the interview
+exactly as written, every phase in order.
+
+**Fable posture** (model id contains `fable`/`mythos`): the gates are the
+alignment checkpoints. Binding: Step 0's tier decision when ambiguous (ask
+the user, don't assume) · each phase's explicit "Aligned?" gate in Step 2 —
+a yes from the user before moving on · Step 4's refusal to write a plan or
+code before final alignment · Step 5's rationale artifact written to
+`docs/drafts/` · Step 6's no-auto-invoke of `/plan`.
+
+**Choreography (adaptable in Fable posture):** Step 1's exact reading list,
+the six-phase ordering and per-phase question scripts, and Step 3's question
+quotas (one-at-a-time, the 5-question cap). Probe in whatever order the
+topic demands — but every phase's ground gets covered, and every alignment
+gate gets its explicit yes.
+
 ## Plain-English Frame (for non-coders)
 
 Grilling is the part where I ask you a lot of questions before we build

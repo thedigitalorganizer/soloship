@@ -17,6 +17,35 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 Your job is to create a thorough implementation plan that a fresh agent with
 zero context can execute correctly.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): execute this skill
+exactly as written, every step in order.
+
+**Fable posture** (model id contains `fable`/`mythos`): the gates below are
+binding; the rest is method guidance you may adapt.
+
+**Gates (binding):** Step 0's grill-me offer (an ask-the-user checkpoint —
+never silently skipped) · Step 1 solution search with results noted, even "no
+matches" · the Artifact Contract — the plan lands at
+`docs/plans/YYYY-MM-DD-<slug>.md` with valid frontmatter and `status: planned`,
+drafts `git rm`'d on promotion · Goal + Done-When sections (hook-enforced) ·
+the QA Plan section, one row per touched surface, method matched to work
+type · Step 4's Enforcement Gate checklist, including Claim Verification —
+every factual claim grepped against the live repo, Claims Table emitted — and
+the evidence loop for any live-data claim · the methodology's mandated
+research dispatches (their findings are gate evidence; per
+delegation-discipline they are also the ceiling) · the Step 5 /
+Post-Generation handoff put to the user · NEVER CODE.
+
+**Choreography (adaptable in Fable posture):** the vendored plan-writing
+methodology's sequencing — the idea-refinement question flow, research-phase
+ordering, detail-level selection, formatting checklists, and the fixed
+templates. Step 2's architecture/component reads are method, but their
+OUTCOME is binding when the plan touches UI: cite the component-inventory
+match (or its verified absence) per component-reuse. Reach every gate with
+its evidence by whatever route the work needs.
+
 ## Step 0: Check for Grill-Me Rationale (and offer if missing)
 
 Look for a sibling rationale doc at `docs/drafts/YYYY-MM-DD-<slug>-grill.md` or

@@ -12,6 +12,27 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 # Soloship Ship Thorough
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run the pipeline
+exactly as written.
+
+**Fable posture** (model id contains `fable`/`mythos`): read this carefully —
+this pipeline is nearly ALL gates. Every one of these remains binding:
+pre-flight, base merge, lint+test evidence, the inline quality gate's
+findings, coverage audit, the mandated code-review dispatch, registry update,
+CHANGELOG, plan lifecycle flips, the Scope Ledger Gate, the Browser QA Gate
+with fix-and-re-verify and teardown, the Live-Data Claim Gate, merge
+mechanics, the Verification Gate, the deploy sequence, and Verify Live.
+
+What the Fable posture buys you here is narrow: ordering flexibility where
+steps are causally independent (e.g. CHANGELOG and registry can happen while
+tests run), delegating independent gate-evidence production to subagents in
+parallel, and freedom in the *method* behind Step 9 — the binding outcome is
+that commits land reviewable and bisectable, not the specific re-staging
+ritual. A shipping pipeline is where gates earn their keep; if you feel this
+skill "slowing you down," that is the gate working.
+
 This is the full pipeline. You've done real work — make sure it's solid before
 it goes live.
 

@@ -15,6 +15,30 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 This is the emergency path. Use when something is broken in production and the
 fix needs to go live immediately.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): run the pipeline
+exactly as written, stopping on first failure.
+
+**Fable posture** (model id contains `fable`/`mythos`): read this carefully —
+this pipeline ships to production and is nearly ALL gates. Every one of these
+remains binding: Steps 1–3 lint, test, and build evidence · Step 4's Scope
+Ledger Gate — the ledger, the Touch Map, and the repo-wide grep of the
+changed value with every hit resolved · the CHANGELOG check · specific
+staging (no `git add -A`) · Step 5 push · Step 6's shared deploy sequence in
+full — clean synced default branch, deploy lock, manifest, the one go/no-go
+question, `prod` tag moved and pushed, lock released on failure paths too ·
+Step 7 Verify Live in full — live URL fetched, the exact broken flow
+browser-QA'd on the live site, the evidence loop for any live-data claim,
+browser teardown · every Verification checklist box.
+
+What the Fable posture buys you here is narrow: Steps 1–3 may run
+concurrently (all must pass before Step 4 commits anything), and platform
+detection is method — how you find the deploy command is yours; that the
+shared deploy sequence wraps it is not. Emergency pressure is exactly when
+these gates earn their keep — "it's a hotfix" is never grounds to thin them,
+and if the pipeline feels slow, that is the gate working.
+
 ## The Pipeline
 
 Run these steps sequentially. Stop on first failure.

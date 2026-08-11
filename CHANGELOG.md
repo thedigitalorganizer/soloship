@@ -2,6 +2,64 @@
 
 ## [Unreleased]
 
+## [0.24.0] — 2026-08-11
+
+### Added — cloud sessions get the plugin: repo-scoped enablement
+
+`npx soloship init` and `npx soloship upgrade` now write repo-scoped plugin
+enablement (`extraKnownMarketplaces` + `enabledPlugins`) into the project's
+checked-in `.claude/settings.json`. User-scoped `/plugin install` never
+carries over to Claude Code on the web; the checked-in keys are the
+documented mechanism that makes cloud sessions auto-install the Soloship
+plugin at session start. Merge-writing preserves every existing key, is
+idempotent, and leaves invalid JSON untouched with a manual instruction.
+Hooks stay in gitignored `.claude/settings.local.json` as before. The
+Soloship repo itself now carries the enablement (dogfood). README documents
+the mechanism, the coexistence-with-laptop-install semantics, and the
+migration path off the standalone Superpowers / gstack / Compound
+Engineering plugins that Soloship vendors.
+
+### Added — the Fable-era edition: two postures, one skill set
+
+Soloship now serves Opus-class and Fable-class models from the same skills,
+rules, and hooks — no forks. The mechanism is one new always-on rule,
+`model-mode` (installed to `.claude/rules/` and `.codex/rules/` like every
+rule): in the **standard posture** (Opus/Sonnet/Codex — the default) nothing
+changes; in the **Fable posture** (model id contains `fable`/`mythos`) a
+skill's gates stay binding while its choreography becomes advisory, with the
+burden of proof on "choreography" — ambiguous steps are gates.
+
+- **23 skills carry an explicit "Model posture" section**: hand-tuned
+  gate-vs-choreography classifications in the heavy native skills
+  (`implement`, `shipthorough`, `shipfast`, `plan`, `debug`, `brainstorm`,
+  `grill-me`, `finish`, `learn`, `audit`, `cleanup`), and a standard
+  insertion-only block in 18 vendored skills (gstack / Superpowers /
+  Compound Engineering / Impeccable bodies untouched, attribution clean).
+- **Two rules re-scoped for dual-model reality**: `delegation-discipline`'s
+  dispatch ceiling now binds the standard posture only (Fable-class models
+  are dependable parallel delegators; mandated sets remain the floor in both
+  postures), and `verification-sufficiency` recognizes a Fable brief's named
+  self-verification cadence as named evidence, not stacking.
+- **Hooks audited, unchanged**: all 25 are pattern-triggered mechanical
+  floors (danger blocks, plan gates, billing tripwire, deploy discipline,
+  advisory warns) — identical in both postures by design.
+- Codex sessions sit in the standard posture by construction (GPT model ids
+  never match `fable`/`mythos`), so the rule installs there harmlessly.
+
+### Added — `/soloship:fable`: budget-gated launch brief for Fable-class runs
+
+Fable-class models (Claude Fable 5) do their best work launched as a **goal
+with a completion condition**, not a supervised step list — and they burn
+Max-plan budget fast enough that most tasks shouldn't run on them at all. The
+new skill walks through four stages: **qualify** (is this task actually
+Fable-shaped? if not, route to Opus + the standard harness — that's the budget
+gate), **brief** (goal + why, 4-part completion condition, boundaries, effort,
+memory pointers, check-in shape), **launch** (brief written to `docs/plans/`
+so every plan gate applies, plus a standard Fable-mode preamble), and
+**harvest** (lessons into `docs/solutions/`, which is what compounds across
+runs). Backed by an A/B experiment comparing harness-style vs goal-brief
+launches on identical tasks; results in `docs/reports/`.
+
 ## [0.23.0] — 2026-08-06
 
 ### Fixed — `/cleanup` was breaking the knowledge base it maintains

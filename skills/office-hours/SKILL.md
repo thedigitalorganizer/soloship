@@ -34,6 +34,16 @@ triggers:
 
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
+## Model posture (Soloship)
+
+See the auto-loaded `model-mode` rule. **Standard posture** (the default):
+execute this skill exactly as written. **Fable posture** (model id contains
+`fable`/`mythos`): every gate this skill names — evidence to produce,
+verifications to run, dispatches it mandates, user checkpoints — remains
+binding; its step ordering and procedural scaffolding are method guidance
+you may adapt when the work is better served. Never skip a step that
+produces evidence; when ambiguous, treat it as a gate.
+
 <!-- Vendored from gstack v1.32.0.0 (Garry Tan). See skills/vendored/gstack/LICENSE. -->
 <!-- Soloship modifications: rendering-rule sections (AskUserQuestion Format, Voice, Writing Style, etc.) re-introduced 2026-05-11 after v0.1.1 over-stripped them. See docs/plans/2026-05-11-revendor-gstack-skills-cleanly.md. -->
 

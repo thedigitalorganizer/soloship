@@ -40,6 +40,7 @@ const EXPECTED_RULES = [
   "component-reuse.md",
   "delegation-discipline.md",
   "verification-sufficiency.md",
+  "model-mode.md",
 ];
 
 // The version files that must stay in sync every release (release-version-sync).

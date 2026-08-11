@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "soloship": {
+      "source": {
+        "source": "github",
+        "repo": "thedigitalorganizer/soloship"
+      }
+    }
+  },
+  "enabledPlugins": {
+    "soloship@soloship": true
+  }
+}

@@ -17,6 +17,27 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 Your job is to capture what was learned from non-obvious work so future sessions
 don't have to re-investigate.
 
+## Model posture (see .claude/rules/model-mode.md)
+
+**Standard posture** (Opus/Sonnet/Codex — the default): execute exactly as
+written.
+
+**Fable posture** (model id contains `fable`/`mythos`): the gates are the
+artifacts and their contracts. Binding: Step 1's solution doc with the
+track-correct required frontmatter (bug track: `symptoms`/`root_cause`/
+`resolution_type`) and its Solution + Why This Works sections · Step 2's
+learnings.jsonl entry · Step 3's registry/COMPONENTS drift checks (or
+confirmed absent) · Step 4's append-only AGENTS.md discipline — add, never
+overwrite existing content · Step 5's no-stubs rule · Step 5.5's commit of
+exactly the knowledge artifacts, verified with `git show --stat HEAD` · the
+Verification checklist in full.
+
+**Choreography (adaptable in Fable posture):** the vendored two-phase
+orchestration at the bottom (five parallel research subagents, the
+wait-then-assemble sequencing, the fixed success-output format) is method —
+producing the same doc to the same contract without the fan-out satisfies
+it. Step 1's schema governs over the vendored prose in either posture.
+
 ## Step 1: Capture Solution Doc
 
 Apply the compound-knowledge methodology below (vendored from Compound Engineering). It guides you through documenting:

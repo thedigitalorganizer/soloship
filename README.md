@@ -101,6 +101,49 @@ Inside Claude Code, run these one at a time:
 
 Once installed, every `/soloship:*` slash command is available in Claude Code.
 
+### Cloud sessions (claude.ai/code)
+
+A laptop `/plugin install` is **user-scoped and never carries over to Claude
+Code on the web** — that's [documented behavior](https://code.claude.com/docs/en/cloud-environments#what-carries-over-from-your-setup),
+not a bug. The fix is repo-scoped enablement: as of v0.24.0, `npx soloship
+init` and `npx soloship upgrade` write `extraKnownMarketplaces` +
+`enabledPlugins` into the project's checked-in `.claude/settings.json`. Commit
+that file and every cloud session on the repo auto-installs the Soloship
+plugin at session start (network access to github.com required in the
+environment). Keep your laptop install too — the scopes coexist cleanly, and
+anyone who wants out on one machine sets `"soloship@soloship": false` in their
+gitignored `.claude/settings.local.json`.
+
+For projects you don't want to re-run the CLI in, the snippet is:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "soloship": { "source": { "source": "github", "repo": "thedigitalorganizer/soloship" } }
+  },
+  "enabledPlugins": { "soloship@soloship": true }
+}
+```
+
+### Replacing the upstream plugins
+
+If you previously installed Superpowers, gstack, or Compound Engineering as
+separate plugins: Soloship vendors the curated set from each (see
+[Skill architecture](#skill-architecture)), so they can be removed once
+Soloship is installed — fewer plugins to update, one namespace, no dispatch
+collisions. On each machine:
+
+```text
+/plugin uninstall superpowers
+/plugin uninstall gstack
+/plugin uninstall compound-engineering
+```
+
+then remove their marketplaces from `/plugin marketplace list` if no other
+plugin uses them. Anything you miss from the full upstream sets can be
+reinstalled side-by-side later — Soloship's commands are namespaced and won't
+collide.
+
 ### Project Guardrails
 
 Open the project you want to use Soloship in and run one setup path.
@@ -196,13 +239,22 @@ Three layers, from most mechanical to most guided:
 
 **Skills** are guided workflows. Claude Code exposes them as `/soloship:*` commands; Codex exposes them through the installed Soloship plugin. Each adds enforcement gates (checklists the agent must complete) and anti-rationalization tables (preemptive counters to the ways agents cut corners).
 
+### Dual-model postures (the Fable-era edition)
+
+Soloship runs the same skill set under two postures, decided by the session's model (the auto-loaded `model-mode` rule):
+
+- **Standard posture** — Opus/Sonnet-class Claude models and GPT models under Codex. Skills execute exactly as written. This is unchanged Soloship.
+- **Fable posture** — Fable/Mythos-class models. A skill's **gates stay binding** (evidence, QA rows, status flips, billing/deploy/browser gates, mandated review dispatches) while its **choreography relaxes** to method guidance (step ordering, mandated re-reads, per-edit suite reruns, fixed report formats). Measured basis: on identical tasks, scripted choreography cost a Fable-class model ~1.9× the tool calls and ~43% more wall-clock for identical acceptance-test results (`docs/reports/2026-08-11-fable-brief-ab-experiment.md`).
+
+Heavy skills carry an explicit "Model posture" section naming their own gates; every other skill inherits the rule's generic definitions. Hooks are mechanical and identical in both postures. `/soloship:fable` is the entry point for launching Fable-shaped work: it qualifies the task (routing routine work back to Opus — the budget gate), builds the goal brief, launches, and harvests lessons.
+
 ### Skill architecture
 
 Every one of the 46 skills ships inside the Soloship plugin. Earlier versions routed to external plugins (Superpowers, Compound Engineering, gstack) when they were installed; that design was retired in v0.5.0. The curated set is now vendored directly into Soloship, so there are no external plugin dependencies and no broken dispatches for users who only install Soloship.
 
 Skills come in three kinds:
 
-**Soloship-native (18)**: the logic was written for Soloship. `audit`, `bootstrap`, `brainstorm`, `cleanup`, `cron`, `debug`, `design-review`, `finish`, `grill-me`, `implement`, `learn`, `onboard`, `plan`, `review`, `shipfast`, `shipthorough`, `spec`, `status`. Several of these embed methodology adapted from the upstream projects (for example, `plan` runs a Compound-Engineering-derived plan-writing flow and `debug` runs the Superpowers 4-phase discipline), with Soloship's enforcement gates layered on top.
+**Soloship-native (19)**: the logic was written for Soloship. `audit`, `bootstrap`, `brainstorm`, `cleanup`, `cron`, `debug`, `design-review`, `fable`, `finish`, `grill-me`, `implement`, `learn`, `onboard`, `plan`, `review`, `shipfast`, `shipthorough`, `spec`, `status`. Several of these embed methodology adapted from the upstream projects (for example, `plan` runs a Compound-Engineering-derived plan-writing flow and `debug` runs the Superpowers 4-phase discipline), with Soloship's enforcement gates layered on top.
 
 **Vendored review and design (15)**: the gstack plan-review set (`ceo-review`, `eng-review`, `devex-review`, `plan-design-review`, `autoplan`), the Compound Engineering review set (`code-review`, `deepen-plan`, `document-review`), the Impeccable design set (`clarify`, `critique`, `polish`, `simplify`, `frontend-design`, `ui-audit`), and `ui-ux-pro-max`.
 
@@ -365,10 +417,10 @@ skills/                # Shared Claude Code and Codex skills shipped by the plug
   # shadows it and the workflow becomes unreachable. Removed in v0.21.0;
   # validate-plugin-metadata.js blocks reintroduction.
 
-  # Soloship-native workflow skills (19):
+  # Soloship-native workflow skills (20):
   audit/ bootstrap/ brainstorm/ cleanup/ component-inventory/ cron/ debug/
-  design-review/ finish/ grill-me/ implement/ learn/ onboard/ plan/ review/
-  shipfast/ shipthorough/ spec/ status/
+  design-review/ fable/ finish/ grill-me/ implement/ learn/ onboard/ plan/
+  review/ shipfast/ shipthorough/ spec/ status/
 
   # Plan-review skills, derived from gstack (5):
   ceo-review/ eng-review/ devex-review/ plan-design-review/ autoplan/
