@@ -27,6 +27,15 @@ export const BROWSER_CLAIM_STALE_MIN = SESSION_IDLE_MIN;
 // browser" gets surfaced within the same session.
 export const BROWSER_TEARDOWN_REMIND_MIN = 10;
 
+// Deploy-lock teardown reminder. Same job as BROWSER_TEARDOWN_REMIND_MIN for
+// the other shared resource a session can walk away still holding, so it is
+// deliberately the same number rather than a new one (the
+// BROWSER_CLAIM_STALE_MIN = SESSION_IDLE_MIN precedent). A live deploy
+// refreshes the lock (`touch "$LOCK"` between steps per deploy-sequence.md),
+// so an in-flight deploy is never nagged; a forgotten lock is surfaced long
+// before DEPLOY_LOCK_STALE_MIN, when it would start blocking other sessions.
+export const DEPLOY_LOCK_REMIND_MIN = BROWSER_TEARDOWN_REMIND_MIN;
+
 // Where browser claims live under <git-common-dir>/soloship/. Kept OUT of
 // claims/ — that glob is consumed by the plan-truth gate as plan claims.
 export const BROWSER_CLAIMS_DIRNAME = "browser";
@@ -122,7 +131,7 @@ const HOOK_EVENTS = [
 // marker existed (one-time migration). Kept specific to avoid dropping a user's
 // genuinely custom hook that merely mentions a common word.
 const LEGACY_SOLOSHIP_HOOK_RE =
-  /billing-confirmation-gate|live-data-evidence-gate|\.ai\/learnings\.jsonl|deploy-from-main|plan-truth|plan-namespace|plan-merge|Key Decisions|"systemMessage": "%-m|soloship\/(sessions|claims)|Soloship update|BLOCKED: (Dangerous|Direct|Force)|phone-a-friend|recurrence|main-checkout-authoring/i;
+  /billing-confirmation-gate|live-data-evidence-gate|\.ai\/learnings\.jsonl|deploy-from-main|plan-truth|plan-namespace|plan-merge|Key Decisions|"systemMessage": "%-m|soloship\/(sessions|claims)|Soloship update|BLOCKED: (Dangerous|Direct|Force)|phone-a-friend|recurrence|main-checkout-authoring|soloship\/deploy\.lock/i;
 
 function isLegacySoloshipHook(entry: HookEntry): boolean {
   const cmd = (entry.hooks || []).map((h) => h.command || "").join("\n");
@@ -466,9 +475,20 @@ export async function installHooks(
       },
     ],
   });
+  hooks.Stop.push({
+    matcher: "",
+    hooks: [
+      {
+        type: "command",
+        command: buildDeployLockReminderScript(),
+        timeout: 5000,
+      },
+    ],
+  });
   results.push("Stop: plan validation + workflow navigator + handoff reminder");
   results.push("Stop: reply timestamp (stamps each reply with local date/time so session logs can reconstruct when work actually happened)");
   results.push("Stop: browser teardown reminder (nags when this session still holds a quiet browser claim — close tabs, release grants, release the claim)");
+  results.push("Stop: deploy lock reminder (nags when this session still holds a quiet deploy lock that is blocking every other session)");
 
   // SessionStart: Checkpoint commit + Soloship update check
   hooks.SessionStart = [
@@ -507,8 +527,8 @@ export async function installHooks(
   results.push("SessionStart: daily check for Soloship updates on npm");
   results.push("SessionStart: session presence (register this session, announce other live sessions in this repo)");
 
-  // SessionEnd: release this session's browser claim so the next QA session
-  // sees a free browser instead of a phantom "another session is using it".
+  // SessionEnd: release this session's shared-resource holds so the next
+  // session sees them free instead of a phantom "someone else is using it".
   hooks.SessionEnd = [
     {
       matcher: "",
@@ -518,10 +538,16 @@ export async function installHooks(
           command: buildBrowserReleaseScript(),
           timeout: 5000,
         },
+        {
+          type: "command",
+          command: buildDeployLockReleaseScript(),
+          timeout: 5000,
+        },
       ],
     },
   ];
   results.push("SessionEnd: browser claim release (frees this session's browser MCP claim when the session ends)");
+  results.push("SessionEnd: deploy lock release (frees the deploy lock when the session that acquired it ends)");
 
   // Merge Soloship's hooks into settings, preserving user-custom hooks (and
   // other settings keys). Soloship stamps its own entries so a re-init replaces
@@ -1967,6 +1993,69 @@ SURFACE=$(grep -oE "\\"surface\\":\\"[^\\"]*\\"" "$CF" 2>/dev/null | head -1 | s
 [ -z "$SURFACE" ] && SURFACE="browser"
 
 echo "{\\"systemMessage\\": \\"This session still holds a browser claim ($SURFACE — last browser call $AGE_MIN min ago). If browser QA is finished, tear down now per browser-tooling-priority: close the tabs/pages you opened, release credential grants, then release the claim: rm \\\\\\"$CF\\\\\\" (otherwise it releases at session end).\\"}"
+exit 0
+'`;
+}
+
+export function buildDeployLockReminderScript(): string {
+  // Deploy-lock teardown reminder (Stop). The collapse-zone guard for the
+  // OTHER shared resource a session can walk away still holding. Unlike a
+  // browser claim (one file per session), deploy.lock is a single shared file,
+  // so this only ever speaks about a lock THIS session owns: it parses
+  // session_id out of the lock JSON and exits silently unless it matches.
+  // A live deploy refreshes the lock, so in-flight deploys are never nagged.
+  // Guard-first: exit 0 outside a git repo or with no lock present.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+LOCK="$COMMON/soloship/deploy.lock"
+[ -f "$LOCK" ] || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 | sed -E "s/\\"session_id\\":\\"//; s/\\"$//")
+[ "$LSID" = "$SID" ] || exit 0
+
+NOW=$(date +%s)
+MT=$(stat -f %m "$LOCK" 2>/dev/null || stat -c %Y "$LOCK" 2>/dev/null || echo 0)
+AGE_MIN=$(( (NOW - MT) / 60 ))
+[ "$AGE_MIN" -lt ${DEPLOY_LOCK_REMIND_MIN} ] && exit 0
+
+echo "{\\"systemMessage\\": \\"This session still holds the deploy lock (untouched for \${AGE_MIN} min). Every other session is blocked from deploying until it is released. If the deploy finished or was abandoned, release it now per deploy-sequence.md Step 6: rm \\\\\\"\${LOCK}\\\\\\" (it also releases at session end). If a deploy is genuinely still running, touch the lock to keep it fresh.\\"}"
+exit 0
+'`;
+}
+
+export function buildDeployLockReleaseScript(): string {
+  // Deploy-lock release (SessionEnd). The dead-man's-switch complement to the
+  // reminder above: deploy.lock previously had NO mechanical release at all —
+  // a session that ended mid-deploy (or forgot Step 6) blocked every other
+  // session's deploy until a human noticed and cleared it by hand.
+  //
+  // deploy.lock is a SHARED file, not a per-session one, so ownership is
+  // checked before removal: the lock's session_id must equal this session's.
+  // Removing another session's lock would break an in-flight deploy — the
+  // exact failure the lock exists to prevent. Sessions that die without a
+  // SessionEnd stay covered by DEPLOY_LOCK_STALE_MIN (never auto-broken; the
+  // user decides). Guard-first: outside a git repo, exit 0.
+  return `bash -c '
+COMMON=$(git rev-parse --git-common-dir 2>/dev/null)
+[ -z "$COMMON" ] && exit 0
+COMMON=$(cd "$COMMON" 2>/dev/null && pwd -P)
+LOCK="$COMMON/soloship/deploy.lock"
+[ -f "$LOCK" ] || exit 0
+
+INPUT=$(cat 2>/dev/null || true)
+SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$SID" ] && SID="pid-$PPID"
+
+LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 | sed -E "s/\\"session_id\\":\\"//; s/\\"$//")
+[ "$LSID" = "$SID" ] || exit 0
+
+rm -f "$LOCK" 2>/dev/null
 exit 0
 '`;
 }

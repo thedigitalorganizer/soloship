@@ -104,7 +104,13 @@ The CE methodology below offers three branch-setup options at the start of Phase
 **How to apply when reaching CE's Setup Environment step:**
 
 1. **If on the default branch and starting new work:** invoke the `soloship:using-git-worktrees` skill instead of running `git checkout -b` directly. The skill handles directory selection, `.gitignore` safety, and clean baseline tests.
-2. **If already on a feature branch:** check whether you are inside an existing worktree (`git rev-parse --show-toplevel` will be a path under `.worktrees/` or `~/.config/superpowers/worktrees/`). If yes, continue there. If no, ask the user before continuing — they may have been mid-task in the main checkout.
+2. **If already on a feature branch:** check whether you are inside an existing worktree — **mechanically, never by path pattern**, since worktrees live under several roots (`.worktrees/`, `.claude/worktrees/`, `~/.superconductor/worktrees/`, harness-specific paths) and a glob silently misses most of them:
+
+   ```bash
+   [ "$(cd "$(git rev-parse --git-dir)" && pwd -P)" != "$(cd "$(git rev-parse --git-common-dir)" && pwd -P)" ] && echo "in a worktree"
+   ```
+
+   If yes, continue there. If no, ask the user before continuing — they may have been mid-task in the main checkout.
 3. **Skip the worktree only if** the user explicitly says "use a branch in this checkout" or the work is the trivial 1-2 step exception documented in Step 2 below.
 
 When CE's Phase 1 step 2 lists Options A / B / C, treat Option B as the default. Do not present the three-option menu to the user unless they push back — the menu is a CE-era artifact and the worktree default is what Soloship wants.

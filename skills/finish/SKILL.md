@@ -250,6 +250,13 @@ WORKTREE_PATH=$(git rev-parse --show-toplevel)
 
 **If worktree path is under `.worktrees/` or `worktrees/`:** This skill (via using-git-worktrees) created this worktree — we own cleanup.
 
+> This path check is **provenance** (may we delete it?), not detection (are we
+> in a worktree?) — detection is the `GIT_DIR == GIT_COMMON` test above, which
+> is root-agnostic. Do not "generalize" this glob to other worktree roots:
+> `.claude/worktrees/` and `~/.superconductor/worktrees/` are harness-created,
+> and the narrow match is exactly what stops this skill deleting a workspace it
+> does not own.
+
 ```bash
 MAIN_ROOT=$(git -C "$(git rev-parse --git-common-dir)/.." rev-parse --show-toplevel)
 cd "$MAIN_ROOT"
