@@ -58,6 +58,13 @@ SESSIONS
 
 Mark which one is the current session (its `pid` equals this shell's `$PPID`).
 
+**Soft flag — main-checkout session with worktrees active:** if any session's
+location is "main checkout" while other worktrees exist, append
+`(!) authoring in the main checkout while N worktrees are active` to its line.
+The main checkout is the contested directory every session shares; work
+belongs in worktrees, landed via `references/merge-sequence.md`. Informational
+only — never block, never mutate.
+
 ## Section 2: Plan Board
 
 List every `docs/plans/*.md` (excluding `archive/`), read each frontmatter,
