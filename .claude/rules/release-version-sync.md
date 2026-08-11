@@ -1,5 +1,24 @@
 # Release Version Sync (Auto-Loaded)
 
+## The One Command (agents: use this, never hand-run the sequence)
+
+```bash
+npm run release -- patch|minor|major
+```
+
+`scripts/release.js` runs the entire sequence below mechanically: bump, sync
+all manifests, amend, retag, preflight, push main + tag (with the tag push
+*verified* against origin, not assumed — v0.23.0 and v0.24.0 both silently
+never reached GitHub when this was manual). `npm publish` is then the only
+remaining step, and its `prepublishOnly` re-runs
+`scripts/release-preflight.js` as a hard gate: version sync across all five
+files (the four below + package-lock), a CHANGELOG section for the version,
+the plugin-metadata validator, clean tree, on main, tag exists. CI runs the
+same invariants on every push (`release-preflight.js --ci`), so drift can no
+longer land on main silently. Hand-running `npm version` directly is the
+deviation now — the prose below is kept as the explanation of what the
+script enforces and why.
+
 ## The Rule
 
 Every Soloship release must bump **four** version files to the same value, in the same commit:

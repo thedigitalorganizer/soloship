@@ -16,6 +16,12 @@ State the choice and the reasoning in chat before running the command, so Shawn 
 
 ## The Publish Sequence
 
+**Mechanical path (use this):** `npm run release -- patch|minor|major`, then
+`npm publish`. The release script runs every step below plus the four-file
+version sync, and `prepublishOnly` hard-gates the publish on
+`scripts/release-preflight.js`. The manual sequence is kept for
+understanding, not for running:
+
 ```bash
 # 1. Make sure working tree is clean and on main with latest
 git status

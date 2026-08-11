@@ -2,6 +2,31 @@
 
 ## [Unreleased]
 
+### Added — mechanical release enforcement (no more missed details)
+
+Releases had a recurring failure class: every prose-only step got missed at
+least once (plugin.json stuck at 0.1.0, marketplace.json stuck across three
+releases, package-lock drift at 0.21.0, git tags for v0.23.0/v0.24.0 never
+reaching GitHub). Per the recurrence-gate philosophy, the fix is mechanical,
+not more prose:
+
+- **`npm run release -- patch|minor|major`** (`scripts/release.js`) runs the
+  entire sequence: precondition checks (main, clean, synced), bump, sync of
+  all four manifests, amend, retag, preflight, push — with the tag push
+  **verified against origin** instead of assumed, and a clear instruction
+  when a sandbox proxy blocks it. `--dry-run` validates preconditions only.
+- **`scripts/release-preflight.js`** is the hard gate, wired into
+  `prepublishOnly`: five-file version sync, a CHANGELOG section for the
+  version, the plugin-metadata validator, clean tree, on main, tag exists,
+  best-effort remote-tag verification. `npm publish` physically refuses when
+  any check fails.
+- **CI now runs the invariants on every push/PR**
+  (`release-preflight.js --ci`): version sync, CHANGELOG, and plugin
+  metadata (incl. documented-counts drift) can no longer land on main
+  silently — previously the validator only ran when someone remembered.
+- Both release rules now name `npm run release` as the path; the manual
+  sequence remains as documentation of what the script enforces.
+
 ## [0.24.0] — 2026-08-11
 
 ### Added — cloud sessions get the plugin: repo-scoped enablement

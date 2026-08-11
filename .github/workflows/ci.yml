@@ -27,6 +27,9 @@ jobs:
       - name: Test
         run: npm test
 
+      - name: Release invariants (version sync, CHANGELOG, plugin metadata)
+        run: node scripts/release-preflight.js --ci
+
       - name: Build
         run: npm run build
 
