@@ -16,7 +16,9 @@
     "codex:validate-plugin": "node scripts/validate-plugin-metadata.js",
     "validate:plugins": "node scripts/validate-plugin-metadata.js",
     "prepare": "tsc",
-    "prepublishOnly": "node scripts/check-version.js",
+    "release": "node scripts/release.js",
+    "release:check": "node scripts/release-preflight.js",
+    "prepublishOnly": "node scripts/check-version.js && node scripts/release-preflight.js",
     "test": "vitest run __arch__/"
   },
   "keywords": [
