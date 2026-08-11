@@ -27,6 +27,19 @@ touching it, fixes a confirmed deploy-tag race, and adds the guard rail:
   `__arch__/main-checkout-warn-hook.test.ts`.
 - `/soloship:status` flags a session authoring in the main checkout while
   worktrees are active.
+- **The deploy lock now releases mechanically** (hook builders 26 -> 28): a
+  `Stop` hook nags once your own lock has gone quiet, and `SessionEnd`
+  releases it if the session ends still holding it. Previously the lock had
+  no mechanical release at all, so a session that ended mid-deploy blocked
+  every other session's deploy until a human cleared it by hand. Both hooks
+  match the lock's `session_id` before acting — an in-flight deploy owned by
+  another session is never touched.
+- **Worktree detection is now root-agnostic.** "Am I in a worktree?" was
+  tested by path glob (`*.worktrees/*`), which silently missed
+  `.claude/worktrees/` and `~/.superconductor/worktrees/` — most worktrees in
+  practice. It now compares `git rev-parse --git-dir` against
+  `--git-common-dir`. (`finish`'s path check is unchanged: that one is
+  provenance — which worktrees the skill may delete — not detection.)
 - shipthorough Step 2 becomes a conflict *preview* (`git merge-tree`);
   integration moved next to the merge so QA evidence cannot go stale across
   the review steps.

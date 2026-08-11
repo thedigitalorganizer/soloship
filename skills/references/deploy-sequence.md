@@ -142,6 +142,14 @@ On any failure path (deploy error, no-go, verification failure that aborts):
 release the lock **before** stopping to report. A dead session's lock must
 never queue the next deploy behind a ghost.
 
+**Mechanical backstop (added 2026-08-11).** Releasing no longer depends only
+on this instruction being remembered at the tail of a long session: a `Stop`
+hook nags once your own lock has gone quiet for `DEPLOY_LOCK_REMIND_MIN`, and
+`SessionEnd` releases it if the session ends while still holding it. Both
+check the lock's `session_id` first and act only on your own — an in-flight
+deploy owned by another session is never touched. The backstop is a safety
+net, not a substitute: still release explicitly here.
+
 ## Failure ordering
 
 1. Deploy failed → do NOT move the tag → release lock → report.

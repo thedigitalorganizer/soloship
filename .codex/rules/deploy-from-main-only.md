@@ -52,6 +52,10 @@ now," and never deploy around the queue because another session is mid-deploy.
    never proceed. A stale lock (older than the `deploy_lock_stale_min`
    threshold in `<git-common-dir>/soloship/config.json`) is *presumed*
    abandoned but never auto-broken — surface it and let the user decide.
+   Releasing is also mechanical, not just prose: a `Stop` hook nags once
+   your own lock has gone quiet, and `SessionEnd` releases it if the session
+   ends still holding it. Both act only on a lock whose `session_id` is
+   yours — nothing ever breaks another session's in-flight deploy.
 
 The full step-by-step sequence lives in the Soloship skill reference
 `references/deploy-sequence.md` and is what `/soloship:shipfast` and
