@@ -101,6 +101,49 @@ Inside Claude Code, run these one at a time:
 
 Once installed, every `/soloship:*` slash command is available in Claude Code.
 
+### Cloud sessions (claude.ai/code)
+
+A laptop `/plugin install` is **user-scoped and never carries over to Claude
+Code on the web** — that's [documented behavior](https://code.claude.com/docs/en/cloud-environments#what-carries-over-from-your-setup),
+not a bug. The fix is repo-scoped enablement: as of v0.24.0, `npx soloship
+init` and `npx soloship upgrade` write `extraKnownMarketplaces` +
+`enabledPlugins` into the project's checked-in `.claude/settings.json`. Commit
+that file and every cloud session on the repo auto-installs the Soloship
+plugin at session start (network access to github.com required in the
+environment). Keep your laptop install too — the scopes coexist cleanly, and
+anyone who wants out on one machine sets `"soloship@soloship": false` in their
+gitignored `.claude/settings.local.json`.
+
+For projects you don't want to re-run the CLI in, the snippet is:
+
+```json
+{
+  "extraKnownMarketplaces": {
+    "soloship": { "source": { "source": "github", "repo": "thedigitalorganizer/soloship" } }
+  },
+  "enabledPlugins": { "soloship@soloship": true }
+}
+```
+
+### Replacing the upstream plugins
+
+If you previously installed Superpowers, gstack, or Compound Engineering as
+separate plugins: Soloship vendors the curated set from each (see
+[Skill architecture](#skill-architecture)), so they can be removed once
+Soloship is installed — fewer plugins to update, one namespace, no dispatch
+collisions. On each machine:
+
+```text
+/plugin uninstall superpowers
+/plugin uninstall gstack
+/plugin uninstall compound-engineering
+```
+
+then remove their marketplaces from `/plugin marketplace list` if no other
+plugin uses them. Anything you miss from the full upstream sets can be
+reinstalled side-by-side later — Soloship's commands are namespaced and won't
+collide.
+
 ### Project Guardrails
 
 Open the project you want to use Soloship in and run one setup path.

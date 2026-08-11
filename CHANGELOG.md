@@ -2,6 +2,23 @@
 
 ## [Unreleased]
 
+## [0.24.0] — 2026-08-11
+
+### Added — cloud sessions get the plugin: repo-scoped enablement
+
+`npx soloship init` and `npx soloship upgrade` now write repo-scoped plugin
+enablement (`extraKnownMarketplaces` + `enabledPlugins`) into the project's
+checked-in `.claude/settings.json`. User-scoped `/plugin install` never
+carries over to Claude Code on the web; the checked-in keys are the
+documented mechanism that makes cloud sessions auto-install the Soloship
+plugin at session start. Merge-writing preserves every existing key, is
+idempotent, and leaves invalid JSON untouched with a manual instruction.
+Hooks stay in gitignored `.claude/settings.local.json` as before. The
+Soloship repo itself now carries the enablement (dogfood). README documents
+the mechanism, the coexistence-with-laptop-install semantics, and the
+migration path off the standalone Superpowers / gstack / Compound
+Engineering plugins that Soloship vendors.
+
 ### Added — the Fable-era edition: two postures, one skill set
 
 Soloship now serves Opus-class and Fable-class models from the same skills,

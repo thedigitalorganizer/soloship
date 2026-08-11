@@ -11,6 +11,7 @@ import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
 import { actionIcon, printStaleNotice } from "./guide-freshness.js";
 import { installHooks } from "./hooks.js";
+import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import { installClaudeRules, installCodexRules } from "./rules.js";
 import { installCi } from "./ci.js";
 
@@ -104,6 +105,9 @@ export async function runInit(options: InitOptions): Promise<void> {
     console.log(chalk.blue("Configuring Claude Code hooks..."));
     const hookResults = await installHooks(root, projectInfo);
     for (const result of hookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+    for (const result of installCloudPluginEnablement(root)) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
   } else {

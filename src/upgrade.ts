@@ -7,6 +7,7 @@ import {
 } from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { installHooks } from "./hooks.js";
+import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import { installClaudeRules, installCodexRules } from "./rules.js";
 import { writeVersionStamp } from "./scaffold.js";
 import {
@@ -62,6 +63,9 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     console.log(chalk.blue("Refreshing Claude Code hooks..."));
     const hookResults = await installHooks(root, projectInfo);
     for (const result of hookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+    for (const result of installCloudPluginEnablement(root)) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
   } else {
