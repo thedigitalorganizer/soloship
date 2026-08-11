@@ -90,6 +90,11 @@ if git rev-parse -q --verify "refs/tags/$PROD_TAG" >/dev/null; then
 else
   echo "FIRST DEPLOY: no $PROD_TAG tag yet - this deploy creates it"
 fi
+
+# Pin what this deploy ships BEFORE deploying. A deploy takes minutes; with
+# parallel sessions merging into main, HEAD can advance mid-deploy, and a bare
+# tag command in Step 5 would tag a commit that was never shipped.
+DEPLOY_SHA=$(git rev-parse HEAD)
 ```
 
 Present the manifest to the user via AskUserQuestion and get an explicit
@@ -112,8 +117,16 @@ then migrations) so the lock never looks abandoned mid-deploy.
 ## Step 5 — On success: move the prod tag
 
 ```bash
-git tag -f "$PROD_TAG" && git push -f origin "$PROD_TAG"
+git tag -f "$PROD_TAG" "$DEPLOY_SHA" && git push -f origin "$PROD_TAG"
+git rev-parse --short "refs/tags/$PROD_TAG"   # must match ${DEPLOY_SHA} (short) — if not, STOP and report
 ```
+
+**Never tag bare.** The commit-ish is `$DEPLOY_SHA` from Step 3 — tagging
+whatever HEAD happens to be now races concurrent merges (confirmed live,
+Chloropal 2026-08-02: deployed `7050efd`, bare tag landed on `e8bb37b`). The
+drift is always forward, so `git log prod..HEAD` under-reports and a later
+session is told "nothing to deploy" while real work sits unshipped. The echo
+line makes a mismatch loud instead of silent.
 
 The tag moves **only after the deploy command succeeded**. It marks what was
 *deployed*; observable-liveness verification (curl + browser QA per the
