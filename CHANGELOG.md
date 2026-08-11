@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.25.0] — 2026-08-11
+
 ### Added — mechanical release enforcement (no more missed details)
 
 Releases had a recurring failure class: every prose-only step got missed at
