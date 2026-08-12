@@ -222,6 +222,46 @@ Produce an **overclaim count per arm** and report it beside the quality score.
 A model that reports verification it did not perform is dangerous exactly in
 the unattended case being evaluated.
 
+### Part 2 — the retrospective (questions 17–22)
+
+Ask these **after** the factual questions, so opinions cannot colour the record
+of what happened. Questions and full guidance are in the same reference.
+
+This part grades **the harness, not the models**, and its answers must never
+feed the quality score. Three things to hold on to while running it:
+
+- **Ask what cost before asking what helped.** The friction questions come
+  first for a reason: an arm walked through its wins first will minimise its
+  complaints.
+- **Every arm has Soloship's rules in its context, complete with the sections
+  explaining why those rules matter.** It has been primed by the thing it is
+  being asked to evaluate. Treat any unsupported praise as worthless, and
+  demand specifics: "name the rule and say what you would have done otherwise"
+  is checkable against the diff; a rating is not.
+- **State that "I don't know" is acceptable.** Arms C and E were never told
+  which rules were loaded and may genuinely be unable to separate a rule's
+  instruction from their own judgement.
+
+Two readings to produce:
+
+1. **Corroborated attribution (Q19).** For each claimed influence, check the
+   branch. "The verification rule made me write tests" with no tests in the
+   diff is narration, and it discounts that arm's other answers. A claimed
+   influence that *does* show up is evidence the harness worked, obtained
+   without any judge.
+2. **Convergent friction (Q17, Q18) — the most actionable output of this whole
+   exercise.** One arm calling a rule wasteful is an opinion. Independent arms
+   in separate worktrees, which never saw each other's work, naming the *same*
+   rule is neither sycophancy nor noise. List every rule named by two or more
+   arms, and cross it with the Phase 4.5 token numbers: "four of six arms
+   called the browser-QA rules irrelevant to a database task, and those rules
+   cost N tokens in every session" is a concrete change proposal.
+
+Q22 ("what would be different with no rules loaded") is **speculation** and
+must be labelled as such wherever it appears. The behavioural comparison —
+C vs D and E vs F — is the real answer. Where self-report and behaviour
+disagree, behaviour wins.
+
 ---
 
 ## Phase 4.5 — Cost and speed accounting
@@ -288,6 +328,12 @@ Required contents, in this order:
 6. **The two clean within-vendor comparisons**: C vs D and E vs F. State
    whether invoking the skills changed the outcome, and be willing to conclude
    "no detectable difference at n=1" — that is a real finding, not a failure.
+6a. **Harness feedback**, in its own section, clearly separated from the model
+    scoring. Convergent friction first (rules two or more arms independently
+    called wasteful or irrelevant, priced with the token numbers), then
+    corroborated attributions, then what arms said they wanted and lacked.
+    This section's audience is whoever maintains the rules, not the bake-off.
+    Do not convert it into a number.
 7. **Validity limits**, in plain language: n=1, one task, no blinding, the
    cross-vendor confound, and anything Phase 0 turned up.
 8. **Merge candidates** — branch names with your recommendation and reasons.

@@ -81,6 +81,107 @@ Question 14 earns its place on any task touching a merge, a migration, or a
 delete. It is the question whose honest answer is worth the most and whose
 dishonest answer is easiest to catch in the diff.
 
+## Part 2 — The retrospective
+
+Everything above asks *what happened*. This part asks *was it any good* — and
+in particular whether the tools, rules, and hooks helped or got in the way.
+
+It is the only channel through which the harness's actual users report on it.
+It is also the easiest part of an interview to get worthless answers from, for
+three reasons worth designing around.
+
+### Why naive versions of these questions fail
+
+**Sycophancy.** Ask "did the rules help?" and an agent that has those rules in
+its context — complete with the "Why This Exists" sections explaining how
+valuable they are — will say yes. It has been primed by the thing it is being
+asked to evaluate. This is not fixable by asking nicely.
+
+**Post-hoc narrative.** "Would you do it the same way?" invites a tidy story
+constructed after the fact rather than a recollection. Agents are good at
+producing plausible reasoning for decisions they made for other reasons.
+
+**Confidence does not track correctness.** An arm's self-assessment is a poor
+predictor of its actual quality. These answers must never feed the quality
+score.
+
+### The three countermeasures
+
+1. **Ask for checkable specifics, not ratings.** "Name the rule and say what
+   you would have done otherwise" can be verified against the diff. "Rate the
+   rules 1–5" cannot be verified against anything.
+2. **Ask what cost before asking what helped.** Anchoring is real: an agent
+   walked through its wins first will minimise its complaints. Put the friction
+   questions first and the benefit questions second.
+3. **Run Part 2 after Part 1.** Record the facts before opinions can colour
+   them.
+
+### The questions
+
+Same rules as Part 1: fixed wording, fixed order, no follow-ups. "I don't know"
+is an acceptable answer to all of these and should be stated as acceptable —
+an arm that was never told which rules were loaded genuinely may not be able to
+tell a rule's instruction from its own judgement.
+
+17. Which loaded rules, skills, or hooks cost you time or turns without
+    changing your final result? Name them specifically.
+18. Was any of the context loaded into this session irrelevant to this task?
+    Which parts?
+19. Which loaded rules, skills, or hooks changed a decision you made? For each,
+    name it and state what you would have done instead.
+20. What did you want — a tool, a piece of information, an access — that you
+    did not have?
+21. If you did this task again from the start, what would you do differently?
+    Be specific enough that someone else could check whether you did it.
+22. If you did it again with no rules or skills loaded at all, what would be
+    different about your result? Mark this as speculation; you are guessing.
+
+```json
+{
+  "frictionNamed": [],
+  "irrelevantContext": [],
+  "decisionsChanged": [{ "source": "", "actualDecision": "", "counterfactual": "" }],
+  "wantedButLacked": [],
+  "wouldDoDifferently": [],
+  "counterfactualNoHarness": ""
+}
+```
+
+### Reading the answers
+
+**Do not score these into quality.** They are a separate axis with two useful
+readings and one trap.
+
+**Corroborated attribution (Q19).** For each claimed influence, check the
+branch. An arm that says "the verification rule made me write tests" and left
+no tests behind is narrating, not reporting — and that finding discounts its
+other answers. An arm whose claimed influence shows up in the diff is real
+evidence the harness did something, obtained without a judge.
+
+**Convergent friction (Q17, Q18) — the strongest signal in the interview.**
+A single arm calling a rule wasteful is an opinion. *Independent arms, in
+separate worktrees, that never saw each other's work, naming the same rule* is
+not sycophancy and is not noise. That convergence is the most actionable output
+of the whole exercise, because it points at a specific rule to cut or make
+conditional.
+
+Pair Q18 with the token accounting above: irrelevant context has a measurable
+price. "Four of six arms said the browser-QA rules were irrelevant to a
+database task, and those rules cost 3k tokens in every session" is a concrete
+change proposal. "The rules feel bloated" is not.
+
+**The trap: Q22 is speculation and must be labelled as such wherever it
+appears.** An agent cannot actually know what it would have done without its
+context. The behavioural comparison — arms that had the rules but never invoked
+the skills, against arms that did — is the real answer to that question. Where
+the self-report and the behaviour disagree, the behaviour wins, every time.
+
+### Who this part is for
+
+Part 1 grades the models. **Part 2 grades the harness**, and its audience is
+whoever maintains the rules — not the model bake-off. Report it in its own
+section, and resist the pull to convert it into a number.
+
 ## Structured answers
 
 Ask for JSON so the answers tabulate instead of needing re-reading:
