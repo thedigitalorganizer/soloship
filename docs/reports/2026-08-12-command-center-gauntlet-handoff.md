@@ -224,6 +224,49 @@ the unattended case being evaluated.
 
 ---
 
+## Phase 4.5 — Cost and speed accounting
+
+**Do not ask the arms how many tokens they used.** It is the most
+confabulate-able number in the interview, and asking turns a guess into
+something that looks reported. Read it from the session logs.
+
+Recover per arm, using the commands in `references/self-report.md`:
+
+| Measure | Source |
+|---|---|
+| Input / cache-write / cache-read / output tokens | `usage` objects in the session JSONL, summed |
+| Turns | count of assistant messages carrying usage |
+| Wall-clock | last timestamp minus first, same file |
+| Cost | tokens × that model's published rates, cache tiers applied separately |
+
+Claude Code: `~/.claude/projects/<encoded-project-path>/<session-id>.jsonl`.
+Codex: `~/.codex/sessions/`. If a session file is missing, record
+**unavailable** — never zero, never an estimate.
+
+Reporting rules:
+
+- **Break tokens out by type.** Cache reads cost a fraction of fresh input; a
+  single "total tokens" figure misrepresents spend badly.
+- **Across vendors compare dollars, not tokens.** Different tokenizers make
+  token counts incommensurable between OpenAI and Anthropic.
+- **Wall-clock includes queueing and rate-limit backoff.** Note the time of day
+  each arm ran; do not call a vendor slower on one sample.
+
+Two things this phase is well placed to answer, both of which Shawn has asked
+about directly:
+
+1. **What do arms D and F cost over C and E?** Same model, same task, skills
+   invoked vs not. That delta is the price of the workflow ceremony, in dollars
+   and minutes, and it belongs directly beside whatever quality difference the
+   fixture found. If the skills changed nothing and cost 2×, that is the
+   finding.
+2. **What do the always-on rules cost per session?** They load in all six arms
+   regardless. The rule text sits at the head of each transcript — measure it
+   once. That number is the standing overhead of the harness and the
+   denominator for any claim that it earns its keep.
+
+---
+
 ## Phase 5 — Report
 
 Write to `docs/reports/2026-08-12-command-center-model-gauntlet.md`.
@@ -239,6 +282,9 @@ Required contents, in this order:
 4. **The cross-test matrix**, with the two readings (robust implementation vs
    effective tests) called out.
 5. **Verification profiles and overclaim counts** from the interviews.
+5a. **Cost and speed per arm** — tokens broken out by type, wall-clock, dollars.
+    Include the skills-vs-no-skills cost delta (D vs C, F vs E) and the
+    measured standing cost of the always-on rules.
 6. **The two clean within-vendor comparisons**: C vs D and E vs F. State
    whether invoking the skills changed the outcome, and be willing to conclude
    "no detectable difference at n=1" — that is a real finding, not a failure.
@@ -258,6 +304,8 @@ evidence underneath.
 - Phase 3 complete, or an explicit statement of why the fixture was not
   feasible.
 - Phase 4 complete for all six arms with corroboration verdicts.
+- Phase 4.5 complete: tokens, wall-clock, and cost per arm from session logs —
+  or `unavailable` where a session file could not be found.
 - Report written.
 - Nothing deployed. Nothing merged. No real record touched. Arm branches
   unmodified — verify with `git log` on each before you finish.

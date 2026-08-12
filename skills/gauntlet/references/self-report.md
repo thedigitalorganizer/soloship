@@ -113,6 +113,64 @@ Ask for JSON so the answers tabulate instead of needing re-reading:
 }
 ```
 
+## Never ask an arm what it cost
+
+Token counts, wall-clock, and turn counts are **not interview questions**. An
+agent's sense of its own consumption is a guess, and asking makes a fabricated
+number look like a reported one. Read them from the session logs instead.
+
+For arms the gauntlet ran itself this is automatic — the adapters capture it.
+For arms run by hand, recover it afterwards:
+
+**Claude Code** writes a JSONL transcript per session under
+`~/.claude/projects/<encoded-project-path>/<session-id>.jsonl`. Every assistant
+message carries a `usage` object. Sum it:
+
+```bash
+jq -s '
+  [.[] | select(.message.usage) | .message.usage] as $u
+  | { input:        ([$u[].input_tokens // 0]                | add),
+      cache_write:  ([$u[].cache_creation_input_tokens // 0] | add),
+      cache_read:   ([$u[].cache_read_input_tokens // 0]     | add),
+      output:       ([$u[].output_tokens // 0]               | add),
+      turns:        ($u | length) }
+' <session>.jsonl
+```
+
+Wall-clock comes from the same file — last timestamp minus first:
+
+```bash
+jq -s 'map(.timestamp // empty) | [first, last]' <session>.jsonl
+```
+
+**Codex** keeps equivalent rollout files under `~/.codex/sessions/`; the field
+names differ but the approach is the same.
+
+If a session file cannot be found, record the cost as **unavailable**. Never
+zero, and never an estimate — a made-up number in a cost column is worse than
+a blank one, because the blank is honest.
+
+### Reporting it without misleading anyone
+
+- **Break tokens out by type.** Cache reads cost a fraction of fresh input, so
+  a single "total tokens" number badly misrepresents actual spend. An arm that
+  read 400k cached tokens is not four times more expensive than one that wrote
+  100k fresh.
+- **Compare cost across vendors, not tokens.** Different tokenizers means token
+  counts are not commensurable between OpenAI and Anthropic. Dollars are.
+- **Wall-clock includes queueing and rate-limit backoff.** Re-check at a
+  different time of day before calling one vendor slower.
+- **Report cost per arm next to quality per arm.** The interesting question is
+  almost never "which is best" — it is "was the expensive one worth it".
+
+### The measurement worth taking while you are in there
+
+Always-on rules are paid for in **every** session, whether or not any skill is
+invoked. Their size is measurable: the loaded rule text appears at the head of
+each transcript. Sum it once and you have the standing cost of the harness —
+which is the denominator for any claim that it earns its keep, and a number
+most projects have never actually looked at.
+
 ## Corroboration
 
 Every claim below is checkable from the branch. Run all of them; do not spot-check.
