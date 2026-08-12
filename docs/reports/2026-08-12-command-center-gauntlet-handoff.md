@@ -14,6 +14,18 @@ starting.
 > lives on an unmerged Soloship branch and is not installed anywhere. Nothing
 > outside this file is required.
 
+> **Two different things are called "phases" in this project. Do not mix them.**
+>
+> | Numbering | Belongs to | Looks like |
+> |---|---|---|
+> | **Grading Phases 0–5** | *This document.* What you are executing. | Grading Phase 0, 1, 1.5, 2, 3, 4, 4.5, 5 |
+> | **Merge-plan phases 1–4D** | *Command Center's own person-merge plan.* What the six arms were working through. You are not executing these — you are measuring how far each arm got through them. | Phase 1, 2, 3, 4A, 4B, 4C, 4D |
+>
+> If you find yourself implementing a merge-plan phase, stop: that is the arms'
+> job, already done, and doing it yourself would contaminate the evidence you
+> are supposed to be grading. Whenever you report progress, say which numbering
+> you mean.
+
 ---
 
 ## Hard constraints — read first
@@ -77,8 +89,8 @@ manipulated variable is whether the workflow skills were explicitly invoked.
 
 ## What this experiment turned out to be
 
-**The task was far larger than intended.** It resolved into a multi-phase plan
-(1, 2, 3, 4A, 4B, 4C, 4D), and **no arm completed it**. One ran 1 hour 10
+**The task was far larger than intended.** It resolved into a multi-phase plan — the **merge-plan phases** 1, 2, 3, 4A, 4B, 4C, 4D — and
+**no arm completed it**. One ran 1 hour 10
 minutes and finished only phases 1, 4A and 4B. Every arm reached a different
 distance.
 
@@ -106,11 +118,11 @@ what the run can support instead.
 
 **Shawn's hand-recorded start/end times are unreliable** — they do not
 correspond to equal amounts of completed work, so they cannot be compared
-directly. Derive wall-clock from the session logs in Phase 4.5 and normalise by
+directly. Derive wall-clock from the session logs in Grading Phase 4.5 and normalise by
 coverage.
 
 **No human was in the loop.** The arms reached these stopping points without
-asking Shawn anything, which resolves the Phase 0 confound in the run's favour:
+asking Shawn anything, which resolves the Grading Phase 0 confound in the run's favour:
 arms D and F did not get extra information, only extra process.
 
 ---
@@ -139,7 +151,7 @@ on mechanical results; treat any judged/subjective scoring as commentary.
 
 ---
 
-## Phase 0 — Establish the facts (do this before anything else)
+## Grading Phase 0 — Establish the facts (do this before anything else)
 
 Report these before proceeding. If any is unknowable, say so rather than
 guessing.
@@ -156,13 +168,13 @@ guessing.
    C and E did not, they received more *information*, not just more *process* —
    a confound that would masquerade as "the skills helped." Report per arm.
 4. **How do this project's tests reach a database?** Real connection, test
-   container, in-memory, fixtures? This determines whether Phase 3 is feasible.
+   container, in-memory, fixtures? This determines whether Grading Phase 3 is feasible.
 5. **Diff sizes and file lists** per arm: `git diff --stat <baseline>..<arm>`.
    Establish the shared baseline commit first and use it consistently.
 
 ---
 
-## Phase 1 — Pre-committed criteria
+## Grading Phase 1 — Pre-committed criteria
 
 These derive from Shawn's prompt, which was fixed before any arm ran, so they
 are legitimately pre-registered. **Do not add criteria you invent after reading
@@ -188,15 +200,15 @@ sum `not met` and `not reached` into one number.
 
 ---
 
-## Phase 1.5 — Coverage and stopping quality
+## Grading Phase 1.5 — Coverage and stopping quality
 
 This is now the centre of the grade. Everything here is mechanical; none of it
 requires asking the arms.
 
 ### 1.5a — Build the phase checklist
 
-Extract the phase list (1, 2, 3, 4A, 4B, 4C, 4D) from the plan the arms were
-working to, along with **what each phase says its own completion looks like**.
+Extract the **merge-plan phase list** (1, 2, 3, 4A, 4B, 4C, 4D) from the plan the
+arms were working to, along with **what each phase says its own completion looks like**.
 The plan pre-dates every arm, so this checklist is legitimately pre-registered.
 
 For each phase, write one *observable* completion signal before looking at any
@@ -252,7 +264,7 @@ usable result. Partial work reported as complete is a trap.
 With coverage known, speed becomes comparable:
 
 ```
-minutes per completed phase = wall-clock (from Phase 4.5) / phases completed
+minutes per completed phase = wall-clock (from Grading Phase 4.5) / phases completed
 ```
 
 State the obvious caveat: phases are not equal in size, so a rate advantage
@@ -261,7 +273,7 @@ coverage, and rate together — never rate alone.
 
 ---
 
-## Phase 2 — Cross-testing (cheap, objective, do this first)
+## Grading Phase 2 — Cross-testing (cheap, objective, do this first)
 
 Each arm likely wrote its own tests. Run **every arm's tests against every
 arm's implementation** — a 6×6 matrix.
@@ -285,7 +297,7 @@ other.
 
 ---
 
-## Phase 3 — Seeded fixture (the real grade)
+## Grading Phase 3 — Seeded fixture (the real grade)
 
 Build **one** fixture, shared by all six arms, that reproduces the duplicate
 mess: the duplicated Stevie contact records, the Girlilla Marketing record typed
@@ -297,7 +309,7 @@ criteria — recording `not reached` where an arm never built the code a
 criterion tests.
 
 **Given no arm completed the plan, expect most cells to be `not reached`.** That
-is a legitimate result and it is why Phase 1.5 outranks this phase in the
+is a legitimate result and it is why Grading Phase 1.5 outranks this phase in the
 report. Run Phase 3 for the criteria that *are* reachable; do not stretch it to
 manufacture a full grid.
 
@@ -312,12 +324,12 @@ Two design requirements:
   is only correct once is a production incident waiting for a retry.
 
 If Phase 3 is not feasible with this project's test setup, **say so and stop
-there** — report Phases 0–2 and explain what blocked it. Do not substitute code
+there** — report Grading Phases 0–2 and explain what blocked it. Do not substitute code
 reading and present it as equivalent.
 
 ---
 
-## Phase 4 — Interview each arm
+## Grading Phase 4 — Interview each arm
 
 **Full protocol, exact question wording, corroboration table, and token-recovery
 commands are in Appendix A at the end of this document.** Everything you need is
@@ -384,7 +396,7 @@ Two readings to produce:
    exercise.** One arm calling a rule wasteful is an opinion. Independent arms
    in separate worktrees, which never saw each other's work, naming the *same*
    rule is neither sycophancy nor noise. List every rule named by two or more
-   arms, and cross it with the Phase 4.5 token numbers: "four of six arms
+   arms, and cross it with the Grading Phase 4.5 token numbers: "four of six arms
    called the browser-QA rules irrelevant to a database task, and those rules
    cost N tokens in every session" is a concrete change proposal.
 
@@ -395,7 +407,7 @@ disagree, behaviour wins.
 
 ---
 
-## Phase 4.5 — Cost and speed accounting
+## Grading Phase 4.5 — Cost and speed accounting
 
 **Do not ask the arms how many tokens they used.** It is the most
 confabulate-able number in the interview, and asking turns a guess into
@@ -438,7 +450,7 @@ about directly:
 
 ---
 
-## Phase 5 — Report
+## Grading Phase 5 — Report
 
 Write to `docs/reports/2026-08-12-command-center-model-gauntlet.md`.
 
@@ -446,7 +458,7 @@ Required contents, in this order:
 
 1. **The arm→branch mapping** and the Phase 0 findings, including whether the
    handoff doc leaked method and whether a human was in the loop per arm.
-2. **The coverage matrix** (Phase 1.5b) — arms × phases. This is the headline
+2. **The coverage matrix** (Grading Phase 1.5b) — arms × phases. This is the headline
    table. Immediately after it: stopping quality, completion honesty, and rate.
    Lead the whole report with the fact that no arm completed the plan.
 3. **Two scorecards, separated by vendor.** Anthropic arms in one table, OpenAI
@@ -480,13 +492,14 @@ evidence underneath.
 
 ## Definition of done
 
-- Phases 0–2 complete, or an explicit statement of what blocked them.
-- Phase 3 complete, or an explicit statement of why the fixture was not
+- Grading Phases 0–2 complete, or an explicit statement of what blocked them.
+- Grading Phase 3 complete, or an explicit statement of why the fixture was not
   feasible.
-- Phase 4 complete for all six arms with corroboration verdicts.
-- Phase 4.5 complete: tokens, wall-clock, and cost per arm from session logs —
+- Grading Phase 4 complete for all six arms with corroboration verdicts.
+- Grading Phase 4.5 complete: tokens, wall-clock, and cost per arm from session logs —
   or `unavailable` where a session file could not be found.
-- Report written.
+- Report written, with every progress statement naming which numbering it uses
+  (Grading Phase vs merge-plan phase).
 - Nothing deployed. Nothing merged. No real record touched. Arm branches
   unmodified — verify with `git log` on each before you finish.
 
@@ -648,7 +661,7 @@ Run all of these. Do not spot-check.
 | "Rules/skills fired" | Compare against what is actually installed in this project |
 | "I changed nothing out of scope" | `git diff --name-only` against the task's stated surface |
 | "Nothing deletes data" | Grep the diff for delete, drop, truncate, destroy, cascade, raw SQL |
-| **"I completed the task"** | **The Phase 1.5b coverage matrix. Highest-value corroboration in this run** |
+| **"I completed the task"** | **The Grading Phase 1.5b coverage matrix. Highest-value corroboration in this run** |
 | "I stopped cleanly" | Does it build? Does the suite pass? Calls to functions never written? |
 
 Record three columns per claim: **claimed**, **corroborated**, **verdict** —
