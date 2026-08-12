@@ -145,6 +145,28 @@ Judges score twice — an absolute rubric and an order-balanced pairwise
 tournament (every pair judged in both directions, aggregated with
 Bradley-Terry). Details and the reasoning in `references/review-rubric.md`.
 
+## Stage 5.5 — Interview the arms
+
+A diff shows what an arm produced, not what it *did*. Ask each arm what tools
+it used, what it ran, and whether it verified anything live — then check the
+answers against the branch and the transcript.
+
+Run this **after the arm finishes and before it is scored or discussed**, by
+resuming the arm's own session so the answers come from the context that did
+the work. Full protocol, fixed question wording, and the corroboration table:
+`references/self-report.md`.
+
+**Self-reports are evidence about process, never about facts.** Agents
+confabulate about their own behavior, and "did you QA it live?" is the single
+most over-claimed answer. Require transcript evidence before scoring it as
+done. Report an **overclaim count** per arm beside its quality score: a model
+that reports verification it never performed is dangerous precisely in the
+unattended case you are evaluating it for.
+
+The interview also answers the harness question without judges. If an arm that
+was never told to use the workflow skills wrote a plan anyway, the always-on
+rules did that.
+
 ## Stage 6 — Read the scorecard honestly
 
 ```bash
@@ -195,6 +217,7 @@ Delete nothing: the arm branches are the evidence. Offer to push them
 | "Put 'write a plan first' in the brief so it's fair" | That IS the harness. Handing it to the bare arm guarantees a null result and wastes the whole run. |
 | "The judge can know which is which, it's objective" | It is not. That is the single most-studied failure mode in LLM judging. |
 | "Just merge the winner, the user will want that" | The user said they merge. A bake-off that merges its own winner is not an evaluation, it is an unsupervised deploy. |
+| "The arm says it ran the tests, so it ran the tests" | Agents confabulate their own process. An unverified claim of verification is worse than an admitted gap, because it hides the gap. |
 | "Report the composite, it's one clean number" | The composite hides the cost/quality tradeoff that is usually the actual decision. |
 
 ## References
@@ -202,6 +225,8 @@ Delete nothing: the arm branches are the evidence. Offer to push them
 - `references/course-design.md` — designing a course that measures something
 - `references/review-rubric.md` — the rubric, the blinding protocol, judge bias
 - `references/scoring.md` — what each number means and how to not overread it
+- `references/self-report.md` — interviewing the arms, and corroborating what
+  they claim against what they did
 - `references/adapters.md` — adding Codex, Grok, or any other agent CLI
 - `references/openrouter.md` — comparing every vendor at a fixed harness, and
   the provider-pinning trap that voids a run
