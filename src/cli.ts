@@ -4,6 +4,7 @@ import { runInit } from "./init.js";
 import { runRollback } from "./rollback.js";
 import { runDoctor } from "./doctor.js";
 import { runUpgrade } from "./upgrade.js";
+import { registerGauntletCommand } from "./gauntlet/index.js";
 import { getVersion } from "./pkg.js";
 
 
@@ -124,5 +125,7 @@ program
       process.exit(1);
     }
   });
+
+registerGauntletCommand(program);
 
 program.parse();
