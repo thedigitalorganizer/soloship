@@ -91,6 +91,12 @@ Note it in your writeup — it is a weaker control than the Claude arms get.
 
 ## Adding Grok
 
+> **Consider OpenRouter instead.** For any cross-vendor comparison, running
+> every model through one neutral harness via OpenRouter is a materially better
+> experiment than one CLI per vendor — it holds the harness constant and
+> restores the cost columns. It also has one trap that will void your results
+> if you miss it. Read `openrouter.md` before choosing.
+
 There is no single official Grok coding CLI, so this is a `generic` adapter
 with the command filled in. Whatever CLI you use needs three things: it runs
 non-interactively, it accepts a prompt, and it can edit files in its working

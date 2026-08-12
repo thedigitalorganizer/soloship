@@ -21,6 +21,7 @@ import {
 import { assertSafeArmBranch, PROTECTED_BRANCHES } from "../src/gauntlet/workspace";
 import {
   buildConfig,
+  configWarnings,
   expandArms,
   slugify,
   validateConfig,
@@ -285,6 +286,80 @@ describe("no-merge guarantee", () => {
     });
     config.branchPrefix = "release";
     expect(validateConfig(config).some((i) => i.field === "branchPrefix")).toBe(true);
+  });
+});
+
+describe("OpenRouter validity warnings", () => {
+  const withAdapter = (
+    adapter: Record<string, unknown>,
+    modelAdapter = "openrouter"
+  ) => {
+    const config = buildConfig({ repoRoot: "/tmp/x", runId: "r", baseline: "abc" });
+    config.adapters = { ...config.adapters, [modelAdapter]: adapter as never };
+    config.models = [
+      { id: "m", adapter: modelAdapter, model: "x-ai/grok", label: "Grok", conditions: ["bare"] },
+    ];
+    return config;
+  };
+
+  const openrouterAdapter = (env: Record<string, string>) => ({
+    id: "openrouter",
+    command: "opencode",
+    baseArgs: ["run", "--model", "{{model}}", "{{prompt}}"],
+    harnessedArgs: [],
+    bareArgs: [],
+    env,
+    telemetry: "none",
+  });
+
+  it("warns when an OpenRouter adapter has no provider pinning", () => {
+    // Unpinned, one slug can be served by different providers at different
+    // quantizations between requests — the run measures routing, not models.
+    const warnings = configWarnings(
+      withAdapter(openrouterAdapter({ OPENROUTER_API_KEY: "" }))
+    );
+    expect(warnings.some((w) => w.includes("provider pinning"))).toBe(true);
+  });
+
+  it("stays quiet once fallbacks are pinned off", () => {
+    const warnings = configWarnings(
+      withAdapter(
+        openrouterAdapter({
+          OPENROUTER_API_KEY: "",
+          OPENROUTER_ALLOW_FALLBACKS: "false",
+          OPENROUTER_PROVIDER_ORDER: "anthropic",
+        })
+      )
+    );
+    expect(warnings.some((w) => w.includes("provider pinning"))).toBe(false);
+  });
+
+  it("says nothing about pinning for adapters that never touch a gateway", () => {
+    const config = buildConfig({ repoRoot: "/tmp/x", runId: "r", baseline: "abc" });
+    expect(configWarnings(config)).toEqual([]);
+  });
+
+  it("warns when gateway-routed and direct arms share one run", () => {
+    // The gateway adds a network hop, so mixed arms make the speed column lie.
+    const config = withAdapter(openrouterAdapter({ OPENROUTER_ALLOW_FALLBACKS: "false" }));
+    config.models.push({
+      id: "direct", adapter: "claude", model: "claude-opus-5", label: "Opus 5",
+    });
+    expect(configWarnings(config).some((w) => w.includes("two gauntlets"))).toBe(true);
+  });
+
+  it("does not warn about mixing when every arm routes through the gateway", () => {
+    const config = withAdapter(openrouterAdapter({ OPENROUTER_ALLOW_FALLBACKS: "false" }));
+    config.models.push({
+      id: "m2", adapter: "openrouter", model: "openai/gpt-5.4", label: "GPT", conditions: ["bare"],
+    });
+    expect(configWarnings(config).some((w) => w.includes("two gauntlets"))).toBe(false);
+  });
+
+  it("ignores an unused adapter", () => {
+    const config = buildConfig({ repoRoot: "/tmp/x", runId: "r", baseline: "abc" });
+    config.adapters.openrouter = openrouterAdapter({}) as never;
+    expect(configWarnings(config)).toEqual([]);
   });
 });
 

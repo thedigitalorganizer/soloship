@@ -101,8 +101,39 @@ Two things the run surfaced that are worth recording:
 - Codex's harnessed/bare split is installation-wide rather than per-arm, so
   those two conditions must be run as separate gauntlets. That is a weaker
   control than the Claude arms get, and is documented as such.
-- Grok has no first-party coding CLI, so it runs through the `generic` adapter
-  with wall-clock-only telemetry and `bare` as its only honest condition.
+- Grok has no first-party coding CLI, so run through the `generic` adapter it
+  gets wall-clock-only telemetry and `bare` as its only honest condition.
+
+## Addendum: OpenRouter (added 2026-08-12, same session)
+
+Shawn asked whether OpenRouter would help. It does, for the model-and-speed
+question specifically, and it removes a confound the original design could not.
+
+A cross-vendor comparison built from one CLI per vendor compares
+**model+harness pairs**, not models — and Harness-Bench found the harness alone
+moves results 10–20 points, so such a ranking is uninterpretable. Routing every
+model through one neutral agent harness via OpenRouter holds the harness
+constant, which is the only honest way to ask "which model is better", and
+restores the cost/token columns that `generic` adapters must report as `n/a`.
+
+This makes the recommended shape **two gauntlets on the same course and
+baseline**: a harness gauntlet (Claude Code, harnessed vs bare) for the
+Soloship question, and a model gauntlet (one neutral harness via OpenRouter,
+all vendors, `bare` only) for the model question. Their scorecards are read
+side by side, never merged — the arms are not from the same experiment.
+
+Two validity traps, both now warned about mechanically at `init` and `run`:
+
+1. **Unpinned provider routing.** On OpenRouter a model slug is not a fixed
+   artifact: the same slug can be served by different providers, at different
+   quantizations, on different engines, changing between requests. Unpinned,
+   the run measures routing luck. `allow_fallbacks: false` plus an explicit
+   provider order is mandatory, and the pinned provider belongs in the writeup.
+2. **Mixing routed and direct arms.** The gateway adds a network hop, so mixed
+   arms make the speed column lie. Within one gauntlet, all arms route the same
+   way or none do.
+
+Full guidance in `skills/gauntlet/references/openrouter.md`.
 
 ## Status
 

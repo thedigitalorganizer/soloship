@@ -10,6 +10,7 @@ import { join, resolve } from "node:path";
 import {
   BUILTIN_ADAPTERS,
   buildConfig,
+  configWarnings,
   expandArms,
   readConfig,
   runDir,
@@ -184,6 +185,7 @@ export function registerGauntletCommand(program: Command): void {
         writeFileSync(acceptanceReadme, ACCEPTANCE_README, "utf-8");
       }
       const configFile = writeConfig(config);
+      configWarnings(config).forEach(warn);
 
       ok(`Gauntlet "${options.run}" scaffolded`);
       console.log(`  config:     ${configFile}`);
@@ -239,6 +241,7 @@ export function registerGauntletCommand(program: Command): void {
     .option("--skip-calibration", "Run without the calibration gate (not advised)")
     .action(async (options) => {
       const config = loadConfigOrExit(resolve(options.repo), options.run);
+      configWarnings(config).forEach(warn);
 
       if (!options.skipCalibration) {
         const calibration = calibrateCourse(config);

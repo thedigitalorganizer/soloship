@@ -203,3 +203,5 @@ Delete nothing: the arm branches are the evidence. Offer to push them
 - `references/review-rubric.md` — the rubric, the blinding protocol, judge bias
 - `references/scoring.md` — what each number means and how to not overread it
 - `references/adapters.md` — adding Codex, Grok, or any other agent CLI
+- `references/openrouter.md` — comparing every vendor at a fixed harness, and
+  the provider-pinning trap that voids a run

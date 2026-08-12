@@ -244,6 +244,67 @@ export function validateConfig(
   return issues;
 }
 
+/** Markers that an adapter routes through OpenRouter. */
+const OPENROUTER_MARKERS = /openrouter|open-router/i;
+/** Markers that provider routing has been pinned. Without pinning, the same
+ *  model slug can be served by different providers at different quantizations
+ *  between one request and the next, so the run measures the router's choices
+ *  rather than the models. */
+const PINNING_MARKERS =
+  /allow_fallbacks|allow-fallbacks|ALLOW_FALLBACKS|provider[._-]?order|provider[._-]?only|quantizations?/i;
+
+/**
+ * Non-blocking validity warnings.
+ *
+ * Kept separate from validateConfig because these describe ways a run can
+ * produce meaningless numbers rather than fail outright — and because pinning
+ * can legitimately be configured account-side, where nothing in the local
+ * config would show it.
+ */
+export function configWarnings(config: GauntletConfig): string[] {
+  const warnings: string[] = [];
+
+  for (const [name, adapter] of Object.entries(config.adapters)) {
+    const used = config.models.some((model) => model.adapter === name);
+    if (!used) continue;
+    const surface = [
+      adapter.command,
+      ...adapter.baseArgs,
+      ...Object.keys(adapter.env ?? {}),
+      ...Object.values(adapter.env ?? {}),
+    ].join(" ");
+    if (!OPENROUTER_MARKERS.test(surface + name)) continue;
+    if (!PINNING_MARKERS.test(surface)) {
+      warnings.push(
+        `adapter "${name}" routes through OpenRouter with no provider pinning in sight. ` +
+          `Unpinned, one model slug can be served by different providers at different ` +
+          `quantizations between requests, so the run measures routing luck rather than models. ` +
+          `Set allow_fallbacks=false and an explicit provider order, or confirm it is pinned account-side.`
+      );
+    }
+  }
+
+  // Mixing gateway-routed and direct arms puts a network hop in some arms'
+  // wall-clock and not others, which silently corrupts the speed comparison.
+  const routed = new Set(
+    config.models.map((model) => {
+      const adapter = config.adapters[model.adapter];
+      if (!adapter) return "unknown";
+      const surface = [adapter.command, ...adapter.baseArgs].join(" ");
+      return OPENROUTER_MARKERS.test(surface + model.adapter) ? "gateway" : "direct";
+    })
+  );
+  if (routed.has("gateway") && routed.has("direct")) {
+    warnings.push(
+      "this run mixes OpenRouter-routed and direct arms. The gateway adds a network hop, " +
+        "so the routed arms carry latency the direct ones do not and the speed comparison is not valid. " +
+        "Split them into two gauntlets on the same course and baseline."
+    );
+  }
+
+  return warnings;
+}
+
 /** Sensible starting models: the three Claude tiers Shawn asked about, both
  *  conditions. Codex/Grok entries are written commented-alongside in the skill
  *  reference rather than enabled blind, since their CLIs may not be installed. */
