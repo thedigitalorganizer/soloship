@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+### Added — Antigravity guardrail target
+
+`--agent antigravity` for init/upgrade: installs `.agents/rules/` and
+`.agents/hooks.json`, doctor reports the target (rules, hooks, global
+Gemini plugin), and `npm run antigravity:install-local` syncs the
+plugin into `~/.gemini/config/plugins/soloship`. Battle-tested during
+the 2026-08-15 multi-model governance evaluation; recovered from
+uncommitted main-checkout work while cutting 0.26.0.
+
 ### Changed — env-sync skills: docs check now precedes generation
 
 All four environment-sync skills (/cursor, /codex, /antigravity, /grok)

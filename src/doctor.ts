@@ -32,6 +32,8 @@ export async function runDoctor(): Promise<void> {
   const home = homedir();
   const projectHasClaude = existsSync(join(root, ".claude"));
   const projectHasCodex = existsSync(join(root, ".codex"));
+  const projectHasAntigravity =
+    existsSync(join(root, ".agents")) || existsSync(join(root, "GEMINI.md"));
 
   console.log(chalk.dim("Checking Soloship surfaces..."));
   console.log("");
@@ -94,6 +96,24 @@ export async function runDoctor(): Promise<void> {
       ],
     },
     {
+      title: "Antigravity",
+      results: [
+        checkAntigravityPlugin(home),
+        checkProjectFile(join(root, ".agents", "hooks.json"), {
+          name: ".agents/hooks.json",
+          severity: projectHasAntigravity ? "required" : "recommended",
+          purpose: "Project-level Antigravity hooks installed by npx soloship init.",
+          install: "npx soloship init --agent antigravity",
+        }),
+        checkRuleSet(join(root, ".agents", "rules"), {
+          name: ".agents/rules",
+          severity: projectHasAntigravity ? "required" : "recommended",
+          purpose: "Antigravity-facing auto-loaded Soloship workflow rules.",
+          install: "npx soloship upgrade --agent antigravity",
+        }),
+      ],
+    },
+    {
       title: "Shared Package",
       results: [
         checkProjectFile(join(root, ".soloship", "version"), {
@@ -151,6 +171,20 @@ function checkClaudePlugin(home: string): CheckResult {
     purpose: "Claude slash-command surface for /soloship:* workflows.",
     install:
       "/plugin marketplace add thedigitalorganizer/soloship, then /plugin install soloship@soloship",
+  };
+}
+
+function checkAntigravityPlugin(home: string): CheckResult {
+  const pluginDir = join(home, ".gemini", "config", "plugins", "soloship");
+  const manifest = join(pluginDir, "plugin.json");
+  const present = existsSync(manifest);
+
+  return {
+    name: "soloship Antigravity plugin",
+    present,
+    severity: "recommended",
+    purpose: "Antigravity plugin surface for Soloship workflows and safety hooks.",
+    install: "npm run antigravity:install-local",
   };
 }
 

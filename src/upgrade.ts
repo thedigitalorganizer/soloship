@@ -6,9 +6,13 @@ import {
   type AgentTarget,
 } from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
-import { installHooks } from "./hooks.js";
+import { installHooks, installAntigravityHooks } from "./hooks.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
-import { installClaudeRules, installCodexRules } from "./rules.js";
+import {
+  installClaudeRules,
+  installCodexRules,
+  installAntigravityRules,
+} from "./rules.js";
 import { writeVersionStamp } from "./scaffold.js";
 import {
   actionIcon,
@@ -44,6 +48,7 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
   const existingDocs = detected.existingDocs!;
   const agentSelection = resolveAgentSelection(agentTarget, {
     hasCodex: detected.hasCodex || false,
+    hasAntigravity: detected.hasAntigravity || false,
   });
 
   const projectInfo: ProjectInfo = {
@@ -53,6 +58,7 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     hasGit: detected.hasGit || false,
     hasClaude: detected.hasClaude || false,
     hasCodex: detected.hasCodex || false,
+    hasAntigravity: detected.hasAntigravity || false,
     existingDocs,
   };
 
@@ -68,9 +74,15 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     for (const result of installCloudPluginEnablement(root)) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
-  } else {
+  }
+
+  if (agentSelection.antigravity) {
     console.log("");
-    console.log(chalk.dim("Skipping Claude Code hooks (--agent codex)."));
+    console.log(chalk.blue("Refreshing Antigravity hooks..."));
+    const agHookResults = await installAntigravityHooks(root, projectInfo);
+    for (const result of agHookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
   }
 
   console.log("");
@@ -85,6 +97,12 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     const ruleResults = await installCodexRules(root, { force: true });
     for (const result of ruleResults) {
       console.log(`  ${chalk.green("+")} Codex: ${result}`);
+    }
+  }
+  if (agentSelection.antigravity) {
+    const ruleResults = await installAntigravityRules(root, { force: true });
+    for (const result of ruleResults) {
+      console.log(`  ${chalk.green("+")} Antigravity: ${result}`);
     }
   }
 

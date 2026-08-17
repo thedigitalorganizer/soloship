@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (29 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Codex, and Google Antigravity as guardrail targets (plus environment-sync skills that set up Cursor and Grok Build): **mechanical enforcement** that fires automatically (29 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -15,6 +15,7 @@ Everything ships inside the one Soloship plugin. Nothing depends on other plugin
 You need the agent you want to use and Node.js 20 or newer:
 
 - **Codex** for the Codex plugin surface.
+- **Google Antigravity** for the Antigravity guardrail surface (`--agent antigravity`).
 - **[Claude Code](https://claude.com/claude-code)** for the Claude plugin surface.
 - **Node.js 20+** for `npx soloship init`, `upgrade`, `doctor`, and `rollback`.
 
@@ -27,6 +28,7 @@ You don't need to install anything from npm by hand. `npx` downloads `soloship` 
 | **Codex plugin** | Soloship skills for audit, bootstrap, plan, implement, review, browse, and ship workflows | `codex plugin ...` |
 | **Claude Code plugin** | `/soloship:*` slash commands backed by the same `skills/` source tree | `/plugin ...` in Claude Code |
 | **npm CLI** | Project guardrails: docs, rules, Claude hooks, CI, rollback stamp | `npx soloship ...` |
+| **Antigravity guardrails** | `.agents/rules/` + `.agents/hooks.json` + the global Gemini plugin (`npm run antigravity:install-local`) | `npx soloship init\|upgrade --agent antigravity` |
 
 Use the plugin for daily workflow. Use the npm CLI once per project, then again when guardrails need refreshing.
 
@@ -166,7 +168,7 @@ For both:
 npx soloship init --agent both
 ```
 
-`init` creates the documentation structure, 19 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+`init` creates the documentation structure, 19 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`; Antigravity installs `.agents/rules/` and `.agents/hooks.json`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
 
 For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
 

@@ -10,9 +10,13 @@ import {
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
 import { actionIcon, printStaleNotice } from "./guide-freshness.js";
-import { installHooks } from "./hooks.js";
+import { installHooks, installAntigravityHooks } from "./hooks.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
-import { installClaudeRules, installCodexRules } from "./rules.js";
+import {
+  installClaudeRules,
+  installCodexRules,
+  installAntigravityRules,
+} from "./rules.js";
 import { installCi } from "./ci.js";
 
 interface InitOptions {
@@ -33,6 +37,7 @@ export async function runInit(options: InitOptions): Promise<void> {
   const existingDocs = detected.existingDocs!;
   const agentSelection = resolveAgentSelection(agentTarget, {
     hasCodex: detected.hasCodex || false,
+    hasAntigravity: detected.hasAntigravity || false,
   });
 
   if (stack.language !== "unknown") {
@@ -81,6 +86,7 @@ export async function runInit(options: InitOptions): Promise<void> {
     hasGit: detected.hasGit || false,
     hasClaude: detected.hasClaude || false,
     hasCodex: detected.hasCodex || false,
+    hasAntigravity: detected.hasAntigravity || false,
     existingDocs,
   };
 
@@ -99,7 +105,7 @@ export async function runInit(options: InitOptions): Promise<void> {
   }
   printStaleNotice(scaffoldResults, "npx soloship init --refresh-guides");
 
-  // Step 4: Install Claude Code hooks
+  // Step 4: Install Hooks
   if (agentSelection.claude) {
     console.log("");
     console.log(chalk.blue("Configuring Claude Code hooks..."));
@@ -110,9 +116,15 @@ export async function runInit(options: InitOptions): Promise<void> {
     for (const result of installCloudPluginEnablement(root)) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
-  } else {
+  }
+
+  if (agentSelection.antigravity) {
     console.log("");
-    console.log(chalk.dim("Skipping Claude Code hooks (--agent codex)."));
+    console.log(chalk.blue("Configuring Antigravity hooks..."));
+    const agHookResults = await installAntigravityHooks(root, projectInfo);
+    for (const result of agHookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
   }
 
   // Step 5: Install rules
@@ -128,6 +140,12 @@ export async function runInit(options: InitOptions): Promise<void> {
     const ruleResults = await installCodexRules(root);
     for (const result of ruleResults) {
       console.log(`  ${chalk.green("+")} Codex: ${result}`);
+    }
+  }
+  if (agentSelection.antigravity) {
+    const ruleResults = await installAntigravityRules(root);
+    for (const result of ruleResults) {
+      console.log(`  ${chalk.green("+")} Antigravity: ${result}`);
     }
   }
 

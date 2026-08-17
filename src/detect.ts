@@ -9,6 +9,7 @@ export interface ProjectInfo {
   hasGit: boolean;
   hasClaude: boolean;
   hasCodex: boolean;
+  hasAntigravity: boolean;
   existingDocs: ExistingDocs;
 }
 
@@ -46,6 +47,12 @@ export function detectProject(root: string): Partial<ProjectInfo> {
     hasGit: existsSync(join(root, ".git")),
     hasClaude: existsSync(join(root, ".claude")),
     hasCodex: existsSync(join(root, ".codex")) || commandExists("codex"),
+    hasAntigravity:
+      existsSync(join(root, ".agents")) ||
+      existsSync(join(root, "GEMINI.md")) ||
+      existsSync(join(root, ".gemini")) ||
+      commandExists("antigravity") ||
+      commandExists("agy"),
     existingDocs,
   };
 }
