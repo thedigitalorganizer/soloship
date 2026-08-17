@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+### Changed — env-sync skills: docs check now precedes generation
+
+All four environment-sync skills (/cursor, /codex, /antigravity, /grok)
+restructured so the live-docs check is a binding gate BEFORE any config
+generation, not a verification afterthought. Driver: two real drift
+finds in one day — Cursor natively loads .claude/skills/ (docs page the
+first draft never checked) and Codex's docs host moved with a Hooks
+section appearing. /cursor now reports skills as native (no conversion)
+and only generates rules .mdc + project-map; all four record the
+docs-check date in their reports.
+
 ### Added — /grok environment sync skill
 
 Fourth environment-sync target: Grok Build (xAI's coding agent CLI).
