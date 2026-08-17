@@ -68,6 +68,7 @@ const syncTargets = [
   [".claude-plugin/plugin.json", (j) => (j.version = next)],
   [".claude-plugin/marketplace.json", (j) => (j.plugins[0].version = next)],
   [".codex-plugin/plugin.json", (j) => (j.version = next)],
+  [".antigravity-plugin/plugin.json", (j) => (j.version = next)],
 ];
 for (const [rel, apply] of syncTargets) {
   const path = join(root, rel);
@@ -77,7 +78,7 @@ for (const [rel, apply] of syncTargets) {
   console.log(`  synced ${rel} → ${next}`);
 }
 
-run("git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json");
+run("git add .claude-plugin/plugin.json .claude-plugin/marketplace.json .codex-plugin/plugin.json .antigravity-plugin/plugin.json");
 run("git commit --amend --no-edit");
 run(`git tag -f v${next}`);
 
