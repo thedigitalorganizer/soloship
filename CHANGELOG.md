@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.26.0] - 2026-08-16
+
 ### Added — Antigravity guardrail target
 
 `--agent antigravity` for init/upgrade: installs `.agents/rules/` and
