@@ -212,3 +212,13 @@ always-on token cost doubled. Removed in v0.21.0; the validator now blocks
 reintroduction. Skills are already user-typable as `/soloship:<name>` — add a
 command file only if you want a *different* name than the skill it wraps.
 
+
+### Pitfall: this repo is PUBLIC and `docs/reports|solutions|known-issues` are tracked — client-derived content needs a visibility check first
+_Added by soloship-learn 2026-08-17_
+`docs/*` is gitignored EXCEPT known-issues/solutions/reports — the tracked
+exceptions publish to public GitHub. Evidence artifacts inherit the PII of the
+system they evaluated (a CRM report quotes CRM rows). Before writing any
+client-derived artifact into a tracked path: check `git check-ignore -v` on the
+destination and keep client identifiers out, or use the gitignored
+`docs/evidence/` instead. Near-miss recorded in
+`docs/solutions/best-practices/2026-08-17-client-derived-artifacts-vs-public-repo.md`.

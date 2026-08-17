@@ -113,3 +113,15 @@ Every fail-safe hook needs must-fire behavioral fixtures (see
 `HOOK_MODIFIED_FILE` contract); a unit test of the builder string passes right
 through this bug. See
 `docs/solutions/integration-issues/macos-git-grep-ere-no-word-boundary-20260723.md`.
+
+### Pitfall: installRulesAt only writes at cwd — multi-level installs shadow and drift
+_Added by soloship-learn 2026-08-17_
+There is no global installer: `installRulesAt` writes `<cwd>/.claude/rules/`
+only, and `upgrade --force` refreshes only that level. Running init/upgrade at
+home, workspace, and project levels over time leaves same-named rule files at
+multiple ancestor levels — Claude Code loads ALL of them, and the copies drift
+(found live 2026-08-13: two contradictory `deploy-from-main-only` variants in
+one session's context). Never assume the template in rules.ts is what sessions
+read; diff the installed stack. Doctor's planned rule-stack report makes this
+visible; removal is tombstone-by-byte-match only. See
+`docs/solutions/workflow-issues/2026-08-17-ancestor-rule-copies-shadow-and-drift.md`.
