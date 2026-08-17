@@ -1265,7 +1265,8 @@ HAS_UNSTAGED=$(git diff --name-only 2>/dev/null | head -1)
 
 # If a plan was just written, suggest next step
 if [ -n "$RECENT_PLANS" ] && [ -f "$RECENT_PLANS" ]; then
-  PLAN_AGE=$(( $(date +%s) - $(stat -f %m "$RECENT_PLANS" 2>/dev/null || stat -c %Y "$RECENT_PLANS" 2>/dev/null || echo 0) ))
+  PLAN_MTIME=$(stat -f %m "$RECENT_PLANS" 2>/dev/null) || PLAN_MTIME=$(stat -c %Y "$RECENT_PLANS" 2>/dev/null) || PLAN_MTIME=0
+  PLAN_AGE=$(( $(date +%s) - PLAN_MTIME ))
   if [ "$PLAN_AGE" -lt 120 ]; then
     MESSAGES="$MESSAGES Plan written. Design what it looks like, then run /soloship-implement to execute."
   fi
@@ -2059,7 +2060,7 @@ if [ -f "$LOCK" ]; then
   [ -z "$SID" ] && SID="pid-$PPID"
   LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 | sed -E "s/\\"session_id\\":\\"//; s/\\"$//")
   if [ -n "$LSID" ] && [ "$LSID" != "$SID" ]; then
-    MT=$(stat -f %m "$LOCK" 2>/dev/null || stat -c %Y "$LOCK" 2>/dev/null || echo 0)
+    MT=$(stat -f %m "$LOCK" 2>/dev/null) || MT=$(stat -c %Y "$LOCK" 2>/dev/null) || MT=0
     AGE_MIN=$(( ($(date +%s) - MT) / 60 ))
     if [ "$AGE_MIN" -lt ${DEPLOY_LOCK_STALE_MIN} ]; then
       echo "BLOCKED by deploy-from-main-only: another session (id $LSID) holds the deploy lock (refreshed $AGE_MIN min ago) — a deploy is already in progress. Wait for it to finish, or ask the user how to proceed. A lock is presumed stale only after ${DEPLOY_LOCK_STALE_MIN} min, and even then only the user may clear it: rm \\"$LOCK\\"" >&2
@@ -2116,7 +2117,7 @@ for f in "$COORD/sessions"/*.json; do
   [ -f "$f" ] || continue
   BASE=$(basename "$f" .json)
   [ "$BASE" = "$SID" ] && continue
-  MT=$(stat -f %m "$f" 2>/dev/null || stat -c %Y "$f" 2>/dev/null || echo 0)
+  MT=$(stat -f %m "$f" 2>/dev/null) || MT=$(stat -c %Y "$f" 2>/dev/null) || MT=0
   AGE_MIN=$(( (NOW - MT) / 60 ))
   [ "$AGE_MIN" -ge ${SESSION_IDLE_MIN} ] && continue
   SDIR=$(grep -oE "\\"dir\\":\\"[^\\"]*\\"" "$f" 2>/dev/null | head -1 | sed -E "s/\\"dir\\":\\"//; s/\\"$//")
@@ -2246,7 +2247,7 @@ CF="$BDIR/$SID.json"
 [ -f "$CF" ] || exit 0
 
 NOW=$(date +%s)
-MT=$(stat -f %m "$CF" 2>/dev/null || stat -c %Y "$CF" 2>/dev/null || echo 0)
+MT=$(stat -f %m "$CF" 2>/dev/null) || MT=$(stat -c %Y "$CF" 2>/dev/null) || MT=0
 AGE_MIN=$(( (NOW - MT) / 60 ))
 [ "$AGE_MIN" -lt ${BROWSER_TEARDOWN_REMIND_MIN} ] && exit 0
 
@@ -2281,7 +2282,7 @@ LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 |
 [ "$LSID" = "$SID" ] || exit 0
 
 NOW=$(date +%s)
-MT=$(stat -f %m "$LOCK" 2>/dev/null || stat -c %Y "$LOCK" 2>/dev/null || echo 0)
+MT=$(stat -f %m "$LOCK" 2>/dev/null) || MT=$(stat -c %Y "$LOCK" 2>/dev/null) || MT=0
 AGE_MIN=$(( (NOW - MT) / 60 ))
 [ "$AGE_MIN" -lt ${DEPLOY_LOCK_REMIND_MIN} ] && exit 0
 
