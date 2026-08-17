@@ -2,6 +2,90 @@
 
 ## [Unreleased]
 
+### Changed — env-sync skills: docs check now precedes generation
+
+All four environment-sync skills (/cursor, /codex, /antigravity, /grok)
+restructured so the live-docs check is a binding gate BEFORE any config
+generation, not a verification afterthought. Driver: two real drift
+finds in one day — Cursor natively loads .claude/skills/ (docs page the
+first draft never checked) and Codex's docs host moved with a Hooks
+section appearing. /cursor now reports skills as native (no conversion)
+and only generates rules .mdc + project-map; all four record the
+docs-check date in their reports.
+### Fixed — Stop-hook plan-status message asserted "done" without reading the plan
+
+The plan-truth Stop backstop (`buildStopScript`) compared ONLY frontmatter
+`status:` against `git merge-base` and, on a merged branch, told the agent to
+"Fix the status now (status: done)" — an imperative, not a prompt — even when
+the plan's own body still listed unresolved Cutover/QA items in prose
+("PENDING", "BLOCKED", numbered `IN PROGRESS` lines) or unchecked boxes. A
+merged branch means the CODE is live; it does not mean the PLAN's own body
+agrees the work is finished, and treating the two as the same claim is exactly
+the kind of false premise a downstream agent (or a different model reasoning
+from the transcript) can carry forward as ground truth.
+
+- **The Stop-hook message now reads the plan body**, not just frontmatter
+  (hook builders 28 -> 29). If the merged plan's body still carries an open-
+  item marker (`- [ ]`, PENDING, BLOCKED, IN PROGRESS), the message becomes a
+  prompt — "read the Cutover/QA Plan/Done-When sections before touching the
+  status" — instead of a command to flip to `done`. With no such markers, the
+  frontmatter is provably stale and the message stays the direct command it
+  always was.
+- **New plan-done-checklist gate** (PreToolUse/Edit|Write|MultiEdit) — the
+  write-side half that was missing entirely: blocks a write that sets
+  `status: done` while the plan body still has unresolved open-item markers.
+  Write is checked against its own full-content payload; Edit/MultiEdit
+  (which carry only the changed fragment) fall back to the on-disk body, so
+  an edit that both clears the last box and flips status in the same call
+  gets asked to land the checkbox first — conservative on purpose, same bias
+  as the read-side fix. `.ai/.plan-status-ack` is the escape hatch, as with
+  every other plan gate.
+- Both checks share one marker pattern (`PLAN_OPEN_ITEM_GREP`) so they can
+  never drift apart. The marker regex is deliberately ordered to never start
+  with `-` (some grep implementations, BSD/macOS included, parse a
+  leading-dash pattern as an option flag instead of a pattern even under
+  `-E`) — every call site also passes `--` as a second layer of defense.
+  Caught by a behavioral fixture, not by inspection.
+- `skills/plan/SKILL.md`'s MORE and A LOT plan templates had their
+  `## Done-When (observable)` sections switched from numbered prose to
+  `- [ ]` checkboxes (the MINIMAL template and Acceptance Criteria sections
+  already used checkboxes) — the new gate has nothing to check on a plan
+  written in prose.
+- Mutation-tested behavioral fixtures in
+  `__arch__/plan-status-contradiction-hook.test.ts` and
+  `__arch__/plan-done-checklist-gate.test.ts`.
+
+### Added — /grok environment sync skill
+
+Fourth environment-sync target: Grok Build (xAI's coding agent CLI).
+Verification-first design, unlike cursor/codex/antigravity: secondary
+sources claim Grok auto-reads CLAUDE.md and the .claude/ tree, but xAI's
+primary docs confirm only ~/.grok/config.toml and `grok inspect` — so the
+skill runs `grok inspect`, treats its output as ground truth for what
+actually loaded, bridges only the gaps, and reports verified-native vs
+bridged with inspect lines as evidence. Same manifest delta, MCP
+mirroring, live-docs check, absent-protections and certification
+sections as the other three. Validator REQUIRED_SKILL_COUNT 50 -> 51.
+
+### Added — environment sync skills: /cursor, /codex, /antigravity
+
+Three skills that set up or re-sync a project's governance for another
+AI tool, from whatever state it's in: inventory the source surface
+(CLAUDE.md, AGENTS.md, .claude/rules/, hooks, .mcp.json), diff against a
+per-target sync manifest (`.ai/sync-state/<target>.json`, sha-256 based)
+so later runs report exactly what changed, generate/refresh the target's
+native config, mirror user-chosen MCP servers, then check the target's
+LIVE docs for new capabilities and emit a non-coder manual-steps list.
+Codex and Antigravity route through Soloship's own installers and close
+the bespoke-rule drift gap the installer misses; Cursor has no native
+target yet, so its skill converts by hand (`.mdc` generation per
+Cursor's verified docs) and flags the durable fix (`--agent cursor` in
+src/rules.ts). All three end with the same two honest sections: which
+Claude Code/Soloship protections have NO counterpart in the target, and
+a reminder that synced config does not certify the tool (run the
+workspace's model-certification battery before granting write access).
+Validator's REQUIRED_SKILL_COUNT 47 → 50.
+
 ### Added — multi-session git discipline (station-only main)
 
 Every documented multi-session git incident traced back to sessions operating

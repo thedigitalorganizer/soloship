@@ -10,7 +10,7 @@
 
 **Two deliverables:**
 1. `npx soloship init` — npm CLI that installs mechanical enforcement + documentation infrastructure
-2. Soloship Codex plugin — 47 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
+2. Soloship Codex plugin — 51 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
 
 ## Status
 
@@ -43,7 +43,7 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── init.ts            # Main init orchestration
 │   ├── detect.ts          # Stack detection (language, framework, package manager)
 │   ├── scaffold.ts        # Folder structure + doc creation
-│   ├── hooks.ts           # Claude Code hook configuration (28 hooks)
+│   ├── hooks.ts           # Claude Code hook configuration (29 hooks)
 │   ├── rules.ts           # Workflow rule installation (19 rules)
 │   ├── ci.ts              # GitHub Actions CI + architecture fitness functions
 │   └── templates.ts       # CLAUDE.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
