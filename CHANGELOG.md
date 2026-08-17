@@ -12,6 +12,48 @@ first draft never checked) and Codex's docs host moved with a Hooks
 section appearing. /cursor now reports skills as native (no conversion)
 and only generates rules .mdc + project-map; all four record the
 docs-check date in their reports.
+### Fixed — Stop-hook plan-status message asserted "done" without reading the plan
+
+The plan-truth Stop backstop (`buildStopScript`) compared ONLY frontmatter
+`status:` against `git merge-base` and, on a merged branch, told the agent to
+"Fix the status now (status: done)" — an imperative, not a prompt — even when
+the plan's own body still listed unresolved Cutover/QA items in prose
+("PENDING", "BLOCKED", numbered `IN PROGRESS` lines) or unchecked boxes. A
+merged branch means the CODE is live; it does not mean the PLAN's own body
+agrees the work is finished, and treating the two as the same claim is exactly
+the kind of false premise a downstream agent (or a different model reasoning
+from the transcript) can carry forward as ground truth.
+
+- **The Stop-hook message now reads the plan body**, not just frontmatter
+  (hook builders 28 -> 29). If the merged plan's body still carries an open-
+  item marker (`- [ ]`, PENDING, BLOCKED, IN PROGRESS), the message becomes a
+  prompt — "read the Cutover/QA Plan/Done-When sections before touching the
+  status" — instead of a command to flip to `done`. With no such markers, the
+  frontmatter is provably stale and the message stays the direct command it
+  always was.
+- **New plan-done-checklist gate** (PreToolUse/Edit|Write|MultiEdit) — the
+  write-side half that was missing entirely: blocks a write that sets
+  `status: done` while the plan body still has unresolved open-item markers.
+  Write is checked against its own full-content payload; Edit/MultiEdit
+  (which carry only the changed fragment) fall back to the on-disk body, so
+  an edit that both clears the last box and flips status in the same call
+  gets asked to land the checkbox first — conservative on purpose, same bias
+  as the read-side fix. `.ai/.plan-status-ack` is the escape hatch, as with
+  every other plan gate.
+- Both checks share one marker pattern (`PLAN_OPEN_ITEM_GREP`) so they can
+  never drift apart. The marker regex is deliberately ordered to never start
+  with `-` (some grep implementations, BSD/macOS included, parse a
+  leading-dash pattern as an option flag instead of a pattern even under
+  `-E`) — every call site also passes `--` as a second layer of defense.
+  Caught by a behavioral fixture, not by inspection.
+- `skills/plan/SKILL.md`'s MORE and A LOT plan templates had their
+  `## Done-When (observable)` sections switched from numbered prose to
+  `- [ ]` checkboxes (the MINIMAL template and Acceptance Criteria sections
+  already used checkboxes) — the new gate has nothing to check on a plan
+  written in prose.
+- Mutation-tested behavioral fixtures in
+  `__arch__/plan-status-contradiction-hook.test.ts` and
+  `__arch__/plan-done-checklist-gate.test.ts`.
 
 ### Added — /grok environment sync skill
 
