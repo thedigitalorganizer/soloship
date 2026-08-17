@@ -53,7 +53,7 @@ lie in the first place.
 
 ## Mechanical floor
 
-Four gates enforce this; they are the floor, not the rule:
+Five gates enforce this; they are the floor, not the rule:
 
 - **plan-truth gate** (PreToolUse/Bash) — blocks a **code** commit on a branch
   whose plan still says `planned`. Docs-only commits pass (writing the plan is
@@ -63,8 +63,18 @@ Four gates enforce this; they are the floor, not the rule:
 - **plan-namespace gate** (PreToolUse/Edit|Write) — blocks writing a file into
   `docs/plans/` without valid status frontmatter, and names the folder it
   belongs in instead.
+- **plan-done-checklist gate** (PreToolUse/Edit|Write) — blocks setting
+  `status: done` while the plan body still lists an unchecked `- [ ]` box or a
+  PENDING/BLOCKED/IN PROGRESS marker. A merged branch or a self-report is not
+  the same claim as "this plan is finished" — the gate makes the plan's own
+  body the tiebreaker.
 - **Stop backstop** — surfaces any plan whose open status contradicts a merged
-  branch, and any statusless file sitting in `docs/plans/`.
+  branch, and any statusless file sitting in `docs/plans/`. It reads the plan
+  body, not just frontmatter: with no open-item markers present, the message
+  is a direct command to flip the status (the frontmatter is provably stale).
+  With open items still listed, "merged" and "done" are not the same claim —
+  the message prompts a review of the Cutover/QA Plan/Done-When sections
+  instead of asserting the work is finished.
 
 Escape hatch: `.ai/.plan-status-ack`. As with the billing and recurrence gates,
 creating it without a real, written reason removes the protection the gate

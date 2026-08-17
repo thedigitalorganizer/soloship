@@ -101,6 +101,32 @@ export const PLAN_STATUS_ACK = ".ai/.plan-status-ack";
 const PLAN_STATUS_RE = PLAN_STATUSES.join("|");
 const PLAN_STATUS_OPEN_RE = PLAN_STATUSES_OPEN.join("|");
 
+// Body-level open-item markers: an unchecked checkbox, or a shouted status
+// word a plan author dropped inline ("3. IN PROGRESS: watch quiz completion")
+// instead of using the checkbox convention. These mean "this plan still has
+// outstanding work" regardless of what its frontmatter or its branch's merge
+// state implies. Shared by the Stop-hook contradiction check (which softens
+// its message from a command to a prompt when these are present) and the
+// done-checklist gate (which blocks a `status: done` write while they remain)
+// — one definition so the two stay in lockstep.
+//
+// The status words are matched UPPERCASE-ONLY on purpose: the canonical
+// frontmatter line is lowercase (`status: in-progress`, `status: blocked`),
+// so this pattern never fires on the frontmatter itself, only on prose that
+// shouts the word. A false positive here only ever produces the SOFTER
+// message/the write-block asking to double check — never a false "done" — so
+// erring toward over-matching is the safe direction.
+//
+// Unanchored on purpose: this same pattern is grepped against both real plan
+// files (real newlines) AND raw tool-input JSON payloads (escaped into one
+// line, where a `^`/line-start anchor is meaningless) — one definition that
+// works against both shapes, rather than two patterns to keep in sync.
+// Ordered so the pattern text does NOT start with "-": a leading "-" makes
+// some grep implementations (BSD/macOS included) parse the pattern argument
+// itself as an option flag instead of a pattern, even with -E. Every call
+// site also passes "--" before the pattern as a second layer of defense.
+const PLAN_OPEN_ITEM_GREP = "PENDING|BLOCKED|IN PROGRESS|- \\[ \\]";
+
 interface HooksConfig {
   hooks: {
     PreToolUse?: HookEntry[];
@@ -319,6 +345,18 @@ export async function installHooks(
         },
       ],
     },
+    // Plan-done-checklist gate: blocks status: done while the body still has
+    // unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers.
+    {
+      matcher: "Edit|Write|MultiEdit",
+      hooks: [
+        {
+          type: "command",
+          command: buildPlanDoneChecklistGateScript(),
+          timeout: 5000,
+        },
+      ],
+    },
   ];
 
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
@@ -327,6 +365,7 @@ export async function installHooks(
   results.push("PreToolUse: main-checkout authoring warn (commit in main checkout while worktrees active; warn-only)");
   results.push("PreToolUse: plan-namespace gate (docs/plans/ holds plans only; routes drafts/handoffs/reports)");
   results.push("PreToolUse: plan-completeness gate (a plan must declare ## Goal + ## Done-When)");
+  results.push("PreToolUse: plan-done-checklist gate (blocks status: done while the plan body still has unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers)");
   results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
   results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
@@ -851,6 +890,72 @@ exit 2
 '`;
 }
 
+export function buildPlanDoneChecklistGateScript(): string {
+  // Gate B3 — done-checklist gate (PreToolUse/Edit|Write|MultiEdit). A merged
+  // branch does not mean a plan's own work is finished (see the Stop-hook
+  // bifurcation in buildStopScript), and neither does an agent's self-report.
+  // This is the write-side twin: refuse to let `status: done` land while the
+  // plan body still carries open-item markers (PLAN_OPEN_ITEM_GREP).
+  //
+  // Write vs Edit/MultiEdit read different shapes of $HOOK_TOOL_INPUT, so
+  // they get different treatment:
+  //   - Write carries the FULL new file content in its `content` field — that
+  //     payload IS the post-write truth, so open items are checked against
+  //     the payload alone, never the stale on-disk file.
+  //   - Edit/MultiEdit carry only the changed fragment (`old_string`/
+  //     `new_string`, or an `edits` array) — there is no cheap way to compute
+  //     the merged post-edit body in bash, so this falls back to the file as
+  //     it stands ON DISK right now. An edit that both clears the LAST open
+  //     item and flips the status in the same call gets blocked once — the
+  //     fix is to land the checkbox edit first (or do it all in one Write);
+  //     the escape hatch covers the rare genuine exception. Conservative by
+  //     design, same bias as the read-side gate: ask rather than assert.
+  //
+  // Same trigger/exemption shape as Gates B and B2: only *.md directly under
+  // the plans dir, archive/ and README.md exempt.
+  return `bash -c '
+TI="$HOOK_TOOL_INPUT"
+[ -z "$TI" ] && exit 0
+[ -f ${PLAN_STATUS_ACK} ] && exit 0
+
+FP=$(echo "$TI" | grep -oE "\\"file_path\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+[ -z "$FP" ] && exit 0
+
+case "$FP" in
+  *${PLANS_DIR}/*.md) ;;
+  *) exit 0 ;;
+esac
+case "$FP" in
+  *${PLANS_DIR}/archive/*) exit 0 ;;
+  */README.md) exit 0 ;;
+esac
+
+# Only fires when this write is SETTING status to done.
+echo "$TI" | grep -qE "status:[[:space:]]*\\"?done" || exit 0
+
+if echo "$TI" | grep -q "\\"content\\""; then
+  # Write: the payload is the complete new file — check IT, not disk.
+  echo "$TI" | grep -qE -- "${PLAN_OPEN_ITEM_GREP}" || exit 0
+else
+  # Edit / MultiEdit: no cheap way to compute the merged body — check the
+  # file as it stands on disk right now.
+  [ -f "$FP" ] || exit 0
+  grep -qE -- "${PLAN_OPEN_ITEM_GREP}" "$FP" 2>/dev/null || exit 0
+fi
+
+echo "BLOCKED by plan-done-checklist-gate: \\"$FP\\" is being set to status: done, but its body still lists open items — an unchecked \\"- [ ]\\" box, or a PENDING / BLOCKED / IN PROGRESS marker.
+
+A merged branch, or a self-report, is not the same claim as \\"this plan is finished\\" — the plan itself says otherwise right now.
+
+FIX: resolve the open items first (check the boxes, clear the markers) — in one Write, or in a prior edit — THEN flip status: done in its own edit.
+
+If the open markers are stale prose that no longer applies, clean them up in the same change instead of leaving them to contradict the status.
+
+Escape hatch (requires a real reason): mkdir -p .ai && echo \\"why this plan is done with open markers still present\\" > ${PLAN_STATUS_ACK}" >&2
+exit 2
+'`;
+}
+
 function buildPlanMergeGateScript(): string {
   // Gate C — merge gate (PreToolUse/Bash). The merge is the moment the work
   // becomes real. A plan still marked in-progress (or planned) whose branch is
@@ -939,7 +1044,7 @@ function buildReplyTimestampScript(): string {
   return `date "+{\\"systemMessage\\": \\"${REPLY_TIMESTAMP_FORMAT}\\"}"`;
 }
 
-function buildStopScript(project: ProjectInfo): string {
+export function buildStopScript(project: ProjectInfo): string {
   return `bash -c '
 MESSAGES=""
 
@@ -963,6 +1068,7 @@ DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed "s@
 [ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=main
 if [ -d ${PLANS_DIR} ] && [ ! -f ${PLAN_STATUS_ACK} ]; then
   LIARS=""
+  LIARS_OPEN=""
   ORPHANS=""
   for plan in ${PLANS_DIR}/*.md; do
     [ -f "$plan" ] || continue
@@ -983,11 +1089,24 @@ if [ -d ${PLANS_DIR} ] && [ ! -f ${PLAN_STATUS_ACK} ]; then
     [ -z "$PBRANCH" ] && continue
     git rev-parse --verify "$PBRANCH" >/dev/null 2>&1 || continue
     if git merge-base --is-ancestor "$PBRANCH" "$DEFAULT_BRANCH" 2>/dev/null; then
-      LIARS="$LIARS $plan(says:$PSTATUS)"
+      # A merged branch means the CODE is live — it does not mean the PLAN
+      # body agrees the work is finished. Split on whether the body still
+      # carries open-item markers (unchecked boxes, shouted PENDING/BLOCKED/
+      # IN PROGRESS): with none, the frontmatter is provably stale and the
+      # fix is mechanical (flip it). With markers present, "merged" and
+      # "done" are NOT the same claim — the message must ask, not assert.
+      if grep -qE -- "${PLAN_OPEN_ITEM_GREP}" "$plan" 2>/dev/null; then
+        LIARS_OPEN="$LIARS_OPEN $plan(says:$PSTATUS)"
+      else
+        LIARS="$LIARS $plan(says:$PSTATUS)"
+      fi
     fi
   done
   if [ -n "$LIARS" ]; then
     MESSAGES="$MESSAGES PLAN STATUS CONTRADICTION —$LIARS: the branch is already merged into $DEFAULT_BRANCH, so this work is LIVE, but the plan still claims it is not done. Fix the status now (status: done) — a lying plan can send the next agent to rebuild shipped work."
+  fi
+  if [ -n "$LIARS_OPEN" ]; then
+    MESSAGES="$MESSAGES PLAN STATUS CHECK —$LIARS_OPEN: the branch is merged into $DEFAULT_BRANCH, but the plan body still lists open items (an unchecked box, or a PENDING/BLOCKED/IN PROGRESS marker). Merged into the default branch means the code is live — it does NOT by itself mean the plan is finished. Read the Cutover/QA Plan/Done-When sections before touching the status: if the work is genuinely complete, flip to status: done; if it is not, leave the status open and say why, rather than assuming merged means done."
   fi
   if [ -n "$ORPHANS" ]; then
     MESSAGES="$MESSAGES NOT A PLAN? —$ORPHANS: no status frontmatter. ${PLANS_DIR}/ holds live plans only. Give it a status, or move it (draft -> ${DRAFTS_DIR}/, handoff -> ${HANDOFFS_DIR}/, report -> ${REPORTS_DIR}/, decision log -> ${DECISIONS_DIR}/)."
