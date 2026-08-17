@@ -45,6 +45,37 @@ from the transcript) can carry forward as ground truth.
   `__arch__/plan-status-contradiction-hook.test.ts` and
   `__arch__/plan-done-checklist-gate.test.ts`.
 
+### Added — /grok environment sync skill
+
+Fourth environment-sync target: Grok Build (xAI's coding agent CLI).
+Verification-first design, unlike cursor/codex/antigravity: secondary
+sources claim Grok auto-reads CLAUDE.md and the .claude/ tree, but xAI's
+primary docs confirm only ~/.grok/config.toml and `grok inspect` — so the
+skill runs `grok inspect`, treats its output as ground truth for what
+actually loaded, bridges only the gaps, and reports verified-native vs
+bridged with inspect lines as evidence. Same manifest delta, MCP
+mirroring, live-docs check, absent-protections and certification
+sections as the other three. Validator REQUIRED_SKILL_COUNT 50 -> 51.
+
+### Added — environment sync skills: /cursor, /codex, /antigravity
+
+Three skills that set up or re-sync a project's governance for another
+AI tool, from whatever state it's in: inventory the source surface
+(CLAUDE.md, AGENTS.md, .claude/rules/, hooks, .mcp.json), diff against a
+per-target sync manifest (`.ai/sync-state/<target>.json`, sha-256 based)
+so later runs report exactly what changed, generate/refresh the target's
+native config, mirror user-chosen MCP servers, then check the target's
+LIVE docs for new capabilities and emit a non-coder manual-steps list.
+Codex and Antigravity route through Soloship's own installers and close
+the bespoke-rule drift gap the installer misses; Cursor has no native
+target yet, so its skill converts by hand (`.mdc` generation per
+Cursor's verified docs) and flags the durable fix (`--agent cursor` in
+src/rules.ts). All three end with the same two honest sections: which
+Claude Code/Soloship protections have NO counterpart in the target, and
+a reminder that synced config does not certify the tool (run the
+workspace's model-certification battery before granting write access).
+Validator's REQUIRED_SKILL_COUNT 47 → 50.
+
 ### Added — multi-session git discipline (station-only main)
 
 Every documented multi-session git incident traced back to sessions operating

@@ -10,7 +10,7 @@
 
 **Two deliverables:**
 1. `npx soloship init` — npm CLI that installs mechanical enforcement + documentation infrastructure
-2. Soloship Codex plugin — 47 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
+2. Soloship Codex plugin — 51 skills for audit, bootstrap, brainstorming, planning, implementation, review, debugging, design, and shipping
 
 ## Status
 
