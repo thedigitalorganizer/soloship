@@ -15,6 +15,13 @@ export async function installCodexRules(
   return installRulesAt(join(root, ".codex", "rules"), options);
 }
 
+export async function installAntigravityRules(
+  root: string,
+  options: { force?: boolean } = {}
+): Promise<string[]> {
+  return installRulesAt(join(root, ".agents", "rules"), options);
+}
+
 export const installRules = installClaudeRules;
 
 async function installRulesAt(

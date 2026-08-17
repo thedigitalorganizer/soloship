@@ -563,6 +563,148 @@ export async function installHooks(
   return results;
 }
 
+export async function installAntigravityHooks(
+  root: string,
+  _project: ProjectInfo
+): Promise<string[]> {
+  const results: string[] = [];
+  const agentsDir = join(root, ".agents");
+
+  if (!existsSync(agentsDir)) {
+    mkdirSync(agentsDir, { recursive: true });
+  }
+
+  const hooksPath = join(agentsDir, "hooks.json");
+
+  const preCommandInline = `node -e '
+const fs = require("fs");
+const { execSync } = require("child_process");
+try {
+  const input = fs.readFileSync(0, "utf-8");
+  const data = JSON.parse(input || "{}");
+  const cmd = data.toolCall?.args?.CommandLine || "";
+  if (/\\brm\\s+-rf\\s+(~|\\/Users|\\/home|\\$HOME|\\/)\\b/.test(cmd)) {
+    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Dangerous rm -rf targeting home or root directory." }));
+    process.exit(0);
+  }
+  if (/(?:cat|echo|printf|>)\\s*.*\\.env(?:\\s|$)/.test(cmd)) {
+    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Direct .env file modification." }));
+    process.exit(0);
+  }
+  if (/git\\s+push.*--force.*(?:main|master)/.test(cmd)) {
+    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Force push to main/master." }));
+    process.exit(0);
+  }
+  if (/(?:ANTHROPIC|OPENAI|STRIPE|FIREBASE|GEMINI)_[A-Z_]*KEY\\s*=\\s*["\\x27][a-zA-Z0-9]{20,}["\\x27]/.test(cmd)) {
+    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Detected possible hardcoded API key." }));
+    process.exit(0);
+  }
+  if (/(?:npm\\s+run\\s+deploy|wrangler\\s+deploy|fly\\s+deploy|vercel\\s+--prod)/.test(cmd)) {
+    const branch = execSync("git branch --show-current 2>/dev/null", { encoding: "utf-8" }).trim();
+    if (branch && branch !== "main" && branch !== "master") {
+      console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Deployments must only be run from main/master branch." }));
+      process.exit(0);
+    }
+  }
+} catch(e) {}
+console.log(JSON.stringify({ decision: "allow" }));
+'`;
+
+  const preWriteInline = `node -e '
+const fs = require("fs");
+try {
+  const input = fs.readFileSync(0, "utf-8");
+  const data = JSON.parse(input || "{}");
+  const target = data.toolCall?.args?.TargetFile || data.toolCall?.args?.AbsolutePath || "";
+  const content = data.toolCall?.args?.CodeContent || data.toolCall?.args?.ReplacementContent || "";
+  if (target.includes(".soloship/version")) {
+    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: .soloship/version is managed exclusively by the Soloship CLI." }));
+    process.exit(0);
+  }
+  if (target.includes("docs/plans") && target.endsWith(".md") && content) {
+    if (!content.startsWith("---") || !/status:\\s*(?:backlog|planned|in-progress|blocked|done|abandoned|superseded)/.test(content)) {
+      console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Plans in docs/plans/ must have valid YAML frontmatter and status." }));
+      process.exit(0);
+    }
+  }
+} catch(e) {}
+console.log(JSON.stringify({ decision: "allow" }));
+'`;
+
+  const stopInline = `node -e '
+const fs = require("fs");
+const { execSync } = require("child_process");
+try {
+  const branch = execSync("git branch --show-current 2>/dev/null", { encoding: "utf-8" }).trim();
+  if ((branch === "main" || branch === "master") && fs.existsSync("docs/plans")) {
+    const files = fs.readdirSync("docs/plans").filter(f => f.endsWith(".md"));
+    for (const f of files) {
+      const c = fs.readFileSync("docs/plans/" + f, "utf-8");
+      if (c.includes("status: in-progress")) {
+        const m = c.match(/branch:\\s*([^\\s\\n]+)/);
+        if (m && m[1]) {
+          const merged = execSync("git branch --merged " + branch + " 2>/dev/null", { encoding: "utf-8" });
+          if (merged.includes(m[1])) {
+            console.log(JSON.stringify({ decision: "continue", reason: "PLAN STATUS CONTRADICTION: Branch " + m[1] + " is merged into " + branch + ", but docs/plans/" + f + " still says status: in-progress. Update to status: done." }));
+            process.exit(0);
+          }
+        }
+      }
+    }
+  }
+} catch(e) {}
+console.log(JSON.stringify({}));
+'`;
+
+  const hooksConfig = {
+    "soloship-command-safety": {
+      PreToolUse: [
+        {
+          matcher: "run_command",
+          hooks: [
+            {
+              type: "command",
+              command: preCommandInline,
+              timeout: 15,
+            },
+          ],
+        },
+      ],
+    },
+    "soloship-file-protection": {
+      PreToolUse: [
+        {
+          matcher: "write_to_file|replace_file_content|multi_replace_file_content",
+          hooks: [
+            {
+              type: "command",
+              command: preWriteInline,
+              timeout: 15,
+            },
+          ],
+        },
+      ],
+    },
+    "soloship-stop-checks": {
+      Stop: [
+        {
+          type: "command",
+          command: stopInline,
+          timeout: 15,
+        },
+      ],
+    },
+  };
+
+  writeFileSync(hooksPath, JSON.stringify(hooksConfig, null, 2));
+  results.push("PreToolUse: command-safety (blocks dangerous rm -rf, force push, hardcoded keys, non-main deploy)");
+  results.push("PreToolUse: file-protection (protects .soloship/version, validates plan format)");
+  results.push("Stop: plan-truth-check (prevents lying plans after branch merge)");
+  results.push("Written to .agents/hooks.json");
+
+  return results;
+}
+
 function buildPreToolUseScript(): string {
   // Exit code 2 blocks the action
   return `bash -c '

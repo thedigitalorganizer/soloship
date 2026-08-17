@@ -1,0 +1,25 @@
+{
+  "name": "soloship",
+  "version": "0.25.0",
+  "description": "Ship solo, safely. Guardrails for non-coders building software through AI agents.",
+  "author": {
+    "name": "thedigitalorganizer",
+    "email": "shawn@thedigitalorganizer.com",
+    "url": "https://github.com/thedigitalorganizer"
+  },
+  "homepage": "https://github.com/thedigitalorganizer/soloship",
+  "repository": "https://github.com/thedigitalorganizer/soloship",
+  "license": "MIT",
+  "keywords": [
+    "antigravity",
+    "codex",
+    "claude-code",
+    "ai-development",
+    "methodology",
+    "workflow",
+    "guardrails"
+  ],
+  "skills": "./skills/",
+  "rules": "./rules/",
+  "hooks": "./hooks.json"
+}

@@ -249,11 +249,33 @@ function validateCodexMarketplace(marketplace) {
   }
 }
 
+function validateAntigravityManifest(antigravityPlugin, packageVersion) {
+  if (!antigravityPlugin) return;
+
+  if (antigravityPlugin.name !== "soloship") {
+    errors.push(".antigravity-plugin/plugin.json name must be soloship");
+  }
+  if (!SEMVER_RE.test(antigravityPlugin.version || "")) {
+    errors.push(".antigravity-plugin/plugin.json version must be strict semver");
+  }
+  if (baseVersion(antigravityPlugin.version) !== packageVersion) {
+    errors.push(
+      `.antigravity-plugin/plugin.json base version ${baseVersion(
+        antigravityPlugin.version
+      )} does not match package.json ${packageVersion}`
+    );
+  }
+  if (antigravityPlugin.skills !== "./skills/") {
+    errors.push('.antigravity-plugin/plugin.json skills must be "./skills/"');
+  }
+}
+
 const packageJson = readJson("package.json");
 const claudePlugin = readJson(".claude-plugin/plugin.json");
 const claudeMarketplace = readJson(".claude-plugin/marketplace.json");
 const codexPlugin = readJson(".codex-plugin/plugin.json");
 const codexMarketplace = readJson(".agents/plugins/marketplace.json");
+const antigravityPlugin = readJson(".antigravity-plugin/plugin.json");
 
 const packageVersion = packageJson?.version;
 if (!SEMVER_RE.test(packageVersion || "")) {
@@ -279,6 +301,7 @@ if (!claudeMarketplaceEntry) {
 
 validateCodexManifest(codexPlugin, packageVersion);
 validateCodexMarketplace(codexMarketplace);
+validateAntigravityManifest(antigravityPlugin, packageVersion);
 
 const skillCount = countSkillFiles();
 if (skillCount !== REQUIRED_SKILL_COUNT) {

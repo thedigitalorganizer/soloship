@@ -49,6 +49,7 @@ const VERSION_FILES: { path: string; read: (j: any) => string }[] = [
   { path: ".claude-plugin/plugin.json", read: (j) => j.version },
   { path: ".claude-plugin/marketplace.json", read: (j) => j.plugins[0].version },
   { path: ".codex-plugin/plugin.json", read: (j) => j.version },
+  { path: ".antigravity-plugin/plugin.json", read: (j) => j.version },
 ];
 
 function getSourceFiles(dir: string, ext = ".ts"): string[] {

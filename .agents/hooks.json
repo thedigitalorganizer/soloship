@@ -1,0 +1,39 @@
+{
+  "soloship-command-safety": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e '\nconst fs = require(\"fs\");\nconst { execSync } = require(\"child_process\");\ntry {\n  const input = fs.readFileSync(0, \"utf-8\");\n  const data = JSON.parse(input || \"{}\");\n  const cmd = data.toolCall?.args?.CommandLine || \"\";\n  if (/\\brm\\s+-rf\\s+(~|\\/Users|\\/home|\\$HOME|\\/)\\b/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Dangerous rm -rf targeting home or root directory.\" }));\n    process.exit(0);\n  }\n  if (/(?:cat|echo|printf|>)\\s*.*\\.env(?:\\s|$)/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Direct .env file modification.\" }));\n    process.exit(0);\n  }\n  if (/git\\s+push.*--force.*(?:main|master)/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Force push to main/master.\" }));\n    process.exit(0);\n  }\n  if (/(?:ANTHROPIC|OPENAI|STRIPE|FIREBASE|GEMINI)_[A-Z_]*KEY\\s*=\\s*[\"\\x27][a-zA-Z0-9]{20,}[\"\\x27]/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Detected possible hardcoded API key.\" }));\n    process.exit(0);\n  }\n  if (/(?:npm\\s+run\\s+deploy|wrangler\\s+deploy|fly\\s+deploy|vercel\\s+--prod)/.test(cmd)) {\n    const branch = execSync(\"git branch --show-current 2>/dev/null\", { encoding: \"utf-8\" }).trim();\n    if (branch && branch !== \"main\" && branch !== \"master\") {\n      console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Deployments must only be run from main/master branch.\" }));\n      process.exit(0);\n    }\n  }\n} catch(e) {}\nconsole.log(JSON.stringify({ decision: \"allow\" }));\n'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-file-protection": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e '\nconst fs = require(\"fs\");\ntry {\n  const input = fs.readFileSync(0, \"utf-8\");\n  const data = JSON.parse(input || \"{}\");\n  const target = data.toolCall?.args?.TargetFile || data.toolCall?.args?.AbsolutePath || \"\";\n  const content = data.toolCall?.args?.CodeContent || data.toolCall?.args?.ReplacementContent || \"\";\n  if (target.includes(\".soloship/version\")) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: .soloship/version is managed exclusively by the Soloship CLI.\" }));\n    process.exit(0);\n  }\n  if (target.includes(\"docs/plans\") && target.endsWith(\".md\") && content) {\n    if (!content.startsWith(\"---\") || !/status:\\s*(?:backlog|planned|in-progress|blocked|done|abandoned|superseded)/.test(content)) {\n      console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Plans in docs/plans/ must have valid YAML frontmatter and status.\" }));\n      process.exit(0);\n    }\n  }\n} catch(e) {}\nconsole.log(JSON.stringify({ decision: \"allow\" }));\n'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-stop-checks": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "node -e '\nconst fs = require(\"fs\");\nconst { execSync } = require(\"child_process\");\ntry {\n  const branch = execSync(\"git branch --show-current 2>/dev/null\", { encoding: \"utf-8\" }).trim();\n  if ((branch === \"main\" || branch === \"master\") && fs.existsSync(\"docs/plans\")) {\n    const files = fs.readdirSync(\"docs/plans\").filter(f => f.endsWith(\".md\"));\n    for (const f of files) {\n      const c = fs.readFileSync(\"docs/plans/\" + f, \"utf-8\");\n      if (c.includes(\"status: in-progress\")) {\n        const m = c.match(/branch:\\s*([^\\s\\n]+)/);\n        if (m && m[1]) {\n          const merged = execSync(\"git branch --merged \" + branch + \" 2>/dev/null\", { encoding: \"utf-8\" });\n          if (merged.includes(m[1])) {\n            console.log(JSON.stringify({ decision: \"continue\", reason: \"PLAN STATUS CONTRADICTION: Branch \" + m[1] + \" is merged into \" + branch + \", but docs/plans/\" + f + \" still says status: in-progress. Update to status: done.\" }));\n            process.exit(0);\n          }\n        }\n      }\n    }\n  }\n} catch(e) {}\nconsole.log(JSON.stringify({}));\n'",
+        "timeout": 15
+      }
+    ]
+  }
+}

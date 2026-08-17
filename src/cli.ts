@@ -20,7 +20,7 @@ program
   .option("--skip-prompts", "Use defaults without asking questions")
   .option(
     "--agent <agent>",
-    "Project guardrail target: claude, codex, or both"
+    "Project guardrail target: claude, codex, antigravity, both, or all"
   )
   .option(
     "--refresh-guides",
@@ -66,7 +66,7 @@ program
   )
   .option(
     "--agent <agent>",
-    "Project guardrail target: claude, codex, or both"
+    "Project guardrail target: claude, codex, antigravity, both, or all"
   )
   .option(
     "--refresh-guides",

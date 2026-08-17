@@ -14,6 +14,8 @@
     "codex:sync-local": "node scripts/sync-codex-plugin.js",
     "codex:install-local": "npm run codex:sync-local && codex plugin add soloship@personal",
     "codex:validate-plugin": "node scripts/validate-plugin-metadata.js",
+    "antigravity:sync-local": "node scripts/sync-antigravity-plugin.js",
+    "antigravity:install-local": "npm run antigravity:sync-local",
     "validate:plugins": "node scripts/validate-plugin-metadata.js",
     "prepare": "tsc",
     "release": "node scripts/release.js",
