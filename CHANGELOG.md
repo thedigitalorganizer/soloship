@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+### Added — /grok environment sync skill
+
+Fourth environment-sync target: Grok Build (xAI's coding agent CLI).
+Verification-first design, unlike cursor/codex/antigravity: secondary
+sources claim Grok auto-reads CLAUDE.md and the .claude/ tree, but xAI's
+primary docs confirm only ~/.grok/config.toml and `grok inspect` — so the
+skill runs `grok inspect`, treats its output as ground truth for what
+actually loaded, bridges only the gaps, and reports verified-native vs
+bridged with inspect lines as evidence. Same manifest delta, MCP
+mirroring, live-docs check, absent-protections and certification
+sections as the other three. Validator REQUIRED_SKILL_COUNT 50 -> 51.
+
 ### Added — environment sync skills: /cursor, /codex, /antigravity
 
 Three skills that set up or re-sync a project's governance for another
