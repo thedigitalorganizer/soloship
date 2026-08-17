@@ -622,10 +622,10 @@ date: YYYY-MM-DD
 
 ## Done-When (observable)
 
-Numbered, observable conditions that mean the work is done — each a behavior you can watch, a file that exists, or a test that passes. This is the loop's termination condition; do not write "the code is written".
+Checkbox list of observable conditions that mean the work is done — each a behavior you can watch, a file that exists, or a test that passes. This is the loop's termination condition; do not write "the code is written". Use `- [ ]` (not numbered prose with an inline status word) so the condition is mechanically checkable, not just readable — the plan-done-checklist gate blocks flipping `status: done` while boxes here are still unchecked.
 
-1. [Observable condition 1]
-2. [Observable condition 2]
+- [ ] [Observable condition 1]
+- [ ] [Observable condition 2]
 
 ## Overview
 
@@ -703,10 +703,10 @@ date: YYYY-MM-DD
 
 ## Done-When (observable)
 
-Numbered, observable conditions that mean done — each a behavior you can watch, a file that exists, or a test that passes. The comprehensive Acceptance Criteria below elaborate these; this list is the crisp, top-level termination condition.
+Checkbox list of observable conditions that mean done — each a behavior you can watch, a file that exists, or a test that passes. The comprehensive Acceptance Criteria below elaborate these; this list is the crisp, top-level termination condition. Use `- [ ]`, not numbered prose — the plan-done-checklist gate blocks flipping `status: done` while boxes here are still unchecked.
 
-1. [Observable condition 1]
-2. [Observable condition 2]
+- [ ] [Observable condition 1]
+- [ ] [Observable condition 2]
 
 ## Overview
 
