@@ -27,6 +27,11 @@ The gate and the instinct stack, and the run pays twice for one assurance.
 - Evidence another always-on rule mandates is part of the gate, not an
   addition — e.g. a QA Plan row's per-surface run is mandated evidence, never
   "extra."
+- **Fable posture (model-mode):** a Fable launch brief's *named
+  self-verification cadence* — fresh-context verifier subagents at the
+  interval the brief states — is named evidence, part of the gate, not
+  stacking. What stays banned in every posture is the same: re-verifying
+  unchanged state, and improvising audit layers no gate or brief names.
 
 ## Changed state still requires fresh evidence (counter-pressure)
 

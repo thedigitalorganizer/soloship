@@ -8,7 +8,7 @@ const repoRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const SEMVER_RE =
   /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?$/;
 const REQUIRED_RULE_COUNT = 19;
-const REQUIRED_SKILL_COUNT = 47;
+const REQUIRED_SKILL_COUNT = 50;
 const REQUIRED_AGENT_PROMPT_COUNT = 5;
 const SKILLS_DIR = "skills";
 const COMMANDS_DIR = "commands";

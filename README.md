@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (28 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **47 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code and Codex: **mechanical enforcement** that fires automatically (28 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **50 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
