@@ -46,6 +46,8 @@ beforeAll(() => {
   // Repo WITH a sibling worktree (the must-fire environment).
   mainRepo = realpathSync(mkdtempSync(join(tmpdir(), "soloship-mcw-main-")));
   execSync("git init -q -b main", { cwd: mainRepo });
+  execSync('git config user.email "test@example.com"', { cwd: mainRepo });
+  execSync('git config user.name "Test"', { cwd: mainRepo });
   execSync("git commit -q --allow-empty -m base", { cwd: mainRepo });
   worktree = join(mainRepo, ".worktrees", "feat-x");
   execSync(`git worktree add -q -b feat-x "${worktree}"`, { cwd: mainRepo });
@@ -53,6 +55,8 @@ beforeAll(() => {
   // Repo with NO worktrees (nobody to collide with).
   soloRepo = realpathSync(mkdtempSync(join(tmpdir(), "soloship-mcw-solo-")));
   execSync("git init -q -b main", { cwd: soloRepo });
+  execSync('git config user.email "test@example.com"', { cwd: soloRepo });
+  execSync('git config user.name "Test"', { cwd: soloRepo });
   execSync("git commit -q --allow-empty -m base", { cwd: soloRepo });
 });
 

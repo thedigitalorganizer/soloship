@@ -54,6 +54,8 @@ let repo: string;
 beforeAll(() => {
   repo = realpathSync(mkdtempSync(join(tmpdir(), "soloship-stop-pc-")));
   execSync("git init -q -b main", { cwd: repo });
+  execSync('git config user.email "test@example.com"', { cwd: repo });
+  execSync('git config user.name "Test"', { cwd: repo });
   execSync("git commit -q --allow-empty -m base", { cwd: repo });
   mkdirSync(join(repo, "docs", "plans"), { recursive: true });
 });

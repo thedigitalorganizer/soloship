@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+### Fixed — CI red since 0.26.0: broken stat fallback + missing test git identity
+
+Two independent breaks, both introduced by the 2026-08-11 multi-session-git-
+discipline work, only visible on the GitHub Actions Linux runner (green
+locally on macOS, which masked both):
+
+1. `stat -f %m FILE 2>/dev/null || stat -c %Y FILE 2>/dev/null || echo 0` — the
+   age-lookup pattern used by the deploy-lock, session-heartbeat, and
+   browser-claim hooks. On GNU/Linux, `-f` means "filesystem mode" (not "use
+   this format" as on BSD/macOS), so `stat -f %m FILE` treats `%m` and `FILE`
+   as two separate paths to stat, fails on the bogus `%m` file but *also*
+   prints a full filesystem-info block for the real file to stdout before
+   exiting nonzero. Because `||` only checks exit status, the fallback
+   `stat -c %Y` still ran and its output got concatenated onto that garbage
+   inside the same `$(...)` capture, corrupting the age arithmetic into an
+   empty string ("untouched for  min" instead of a number). Fixed by
+   splitting into independent per-branch assignments
+   (`MT=$(stat -f %m ...) || MT=$(stat -c %Y ...) || MT=0`) so a failing
+   branch's stray stdout never leaks into the next branch's captured value.
+   Verified against real GNU coreutils in a Linux container. 5 call sites in
+   `src/hooks.ts`.
+2. `__arch__/main-checkout-warn-hook.test.ts` and
+   `__arch__/plan-status-contradiction-hook.test.ts` create scratch git repos
+   and `git commit` into them without ever configuring `user.email`/
+   `user.name`. Passed locally only because dev machines already have git
+   identity configured globally; GitHub's runner has none, so the commit
+   failed outright ("Author identity unknown"). Both now set a local test
+   identity right after `git init`.
+
 ## [0.26.0] - 2026-08-16
 
 ### Added — Antigravity guardrail target
