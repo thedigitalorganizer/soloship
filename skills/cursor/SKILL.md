@@ -145,10 +145,11 @@ menu path, exact value, one line on why.
 
 ## Phase 4 — Sync (per Phase 3's verified mapping)
 
-1. **Installer first.** Soloship HAS a cursor target as of v0.27.0:
-   `npx soloship init --agent cursor` / `npx soloship upgrade --agent cursor`
-   (also covered by `--agent all`, and by `auto` when `.cursor/` exists). It
-   writes:
+1. **Installer first.** Soloship HAS a cursor target as of the first release
+   after 0.26.0: `npx soloship init --agent cursor` /
+   `npx soloship upgrade --agent cursor` (also covered by `--agent all`, and by
+   `auto` when `.cursor/` exists **or** the `cursor` CLI is on PATH — the same
+   detection shape the antigravity target uses). It writes:
    - `.cursor/rules/*.mdc` — the packaged workflow rules, always-on
      (`alwaysApply: true`, `globs: ""`), each with a GENERATED header.
    - `.cursor/hooks.json` + executable `.cursor/hooks/soloship-*.js` — the
@@ -179,6 +180,13 @@ menu path, exact value, one line on why.
    containing CLAUDE.md verbatim under the GENERATED header. If Phase 3 ever
    finds Cursor reads CLAUDE.md natively, skip generation and delete the
    previously generated copy.
+
+   **First check whether CLAUDE.md is gitignored** (`git check-ignore -q
+   CLAUDE.md`). If it is, do NOT generate the project map: Gate 5 requires
+   generated config to be committed, so generating it would publish a file the
+   project deliberately keeps out of git. Report the conflict and ask — the
+   user may want a redacted map, or may accept that Cursor goes without one.
+   (Hit for real in Soloship's own repo, 2026-08-18.)
 
 4. **AGENTS.md:** read natively — confirm it exists at root; if the project
    has none, report that gap, don't invent one.
