@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Codex, and Google Antigravity as guardrail targets (plus environment-sync skills that set up Cursor and Grok Build): **mechanical enforcement** that fires automatically (29 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Codex, Google Antigravity, and Cursor as guardrail targets (plus an environment-sync skill that sets up Grok Build): **mechanical enforcement** that fires automatically (29 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -16,6 +16,7 @@ You need the agent you want to use and Node.js 20 or newer:
 
 - **Codex** for the Codex plugin surface.
 - **Google Antigravity** for the Antigravity guardrail surface (`--agent antigravity`).
+- **[Cursor](https://cursor.com)** for the Cursor guardrail surface (`--agent cursor`), covering both the IDE and Cursor **cloud agents**.
 - **[Claude Code](https://claude.com/claude-code)** for the Claude plugin surface.
 - **Node.js 20+** for `npx soloship init`, `upgrade`, `doctor`, and `rollback`.
 
@@ -29,6 +30,7 @@ You don't need to install anything from npm by hand. `npx` downloads `soloship` 
 | **Claude Code plugin** | `/soloship:*` slash commands backed by the same `skills/` source tree | `/plugin ...` in Claude Code |
 | **npm CLI** | Project guardrails: docs, rules, Claude hooks, CI, rollback stamp | `npx soloship ...` |
 | **Antigravity guardrails** | `.agents/rules/` + `.agents/hooks.json` + the global Gemini plugin (`npm run antigravity:install-local`) | `npx soloship init\|upgrade --agent antigravity` |
+| **Cursor guardrails** | Always-on `.cursor/rules/*.mdc` + a committed `.cursor/hooks.json` wired to `.cursor/hooks/soloship-*.cjs` | `npx soloship init\|upgrade --agent cursor` |
 
 Use the plugin for daily workflow. Use the npm CLI once per project, then again when guardrails need refreshing.
 
@@ -61,6 +63,19 @@ npx soloship init --agent claude
 
 This creates `CLAUDE.md`, `.claude/rules/`, and `.claude/settings.local.json`.
 
+**Cursor**, if you work in the Cursor IDE or run Cursor cloud agents:
+
+```bash
+npx soloship init --agent cursor
+git add .cursor && git commit -m "chore: Soloship guardrails for Cursor"
+```
+
+There is no Cursor plugin to install; Cursor is a CLI-only guardrail target. The setup writes always-on rules to `.cursor/rules/*.mdc` and mechanical gates to `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs` (command safety, file protection, and a plan-truth stop check).
+
+**Committing `.cursor/` is part of the setup, not a nicety.** A Cursor cloud agent loads the committed `.cursor/hooks.json` and nothing else: never `~/.cursor/hooks.json`, never your Claude Code hooks, regardless of any IDE toggle. Until that config is committed, a cloud agent on your repo is running with no mechanical protection at all.
+
+Two details worth knowing: the rules are written as **real copies, never symlinks**, because they are meant to be committed and read by a machine that has never seen your checkout. And the `.mdc` extension is load-bearing: Cursor **silently ignores** plain `.md` files in its rules directory, so a hand-copied rule looks installed and protects nothing.
+
 **Both Codex and Claude Code**, if you switch between them:
 
 ```bash
@@ -80,6 +95,14 @@ npx soloship init --agent both
 ```
 
 Both agents use the same `skills/` source and the same `docs/plans/` and `docs/solutions/` project artifacts. Claude Code gets `.claude/` hooks/rules; Codex gets `.codex/rules/` and `AGENTS.md`.
+
+**Every target at once**, if you want the project covered no matter which agent opens it:
+
+```bash
+npx soloship init --agent all
+```
+
+`all` includes Cursor alongside Claude Code, Codex, and Antigravity. `--agent auto` (the default) picks up Cursor too whenever the project already has a `.cursor/` directory or the `cursor` CLI is on your PATH.
 
 ### Codex Plugin
 
@@ -162,13 +185,19 @@ For Claude Code:
 npx soloship init --agent claude
 ```
 
-For both:
+For Cursor:
 
 ```bash
-npx soloship init --agent both
+npx soloship init --agent cursor
 ```
 
-`init` creates the documentation structure, 19 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`; Antigravity installs `.agents/rules/` and `.agents/hooks.json`. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+For every target at once:
+
+```bash
+npx soloship init --agent all
+```
+
+`init` creates the documentation structure, 19 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`; Antigravity installs `.agents/rules/` and `.agents/hooks.json`; Cursor installs `.cursor/rules/*.mdc` and `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs`, which you then commit. Re-running the Cursor target merges into an existing `.cursor/hooks.json` rather than overwriting it, so your own hooks survive and Soloship's are never duplicated. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
 
 For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
 
@@ -180,7 +209,9 @@ Update each surface separately:
 # Project guardrails
 npx soloship upgrade --agent codex
 npx soloship upgrade --agent claude
+npx soloship upgrade --agent cursor
 npx soloship upgrade --agent both
+npx soloship upgrade --agent all
 
 # Codex plugin
 codex plugin marketplace upgrade soloship
@@ -235,7 +266,7 @@ That became Soloship.
 
 Three layers, from most mechanical to most guided:
 
-**Hooks** fire automatically in Claude Code sessions. They can't be rationalized away. Dangerous command blocking, security scanning on commits, auto-lint, CHANGELOG enforcement, plan validation, deploy discipline, the billing and recurrence gates, session presence for parallel agents, checkpoint commits, and a reply timestamp on every response so session logs can reconstruct when work actually happened. If the agent forgets, the hook remembers. Codex hook parity is intentionally deferred until Codex hook payloads are verified.
+**Hooks** fire automatically in Claude Code sessions. They can't be rationalized away. Dangerous command blocking, security scanning on commits, auto-lint, CHANGELOG enforcement, plan validation, deploy discipline, the billing and recurrence gates, session presence for parallel agents, checkpoint commits, and a reply timestamp on every response so session logs can reconstruct when work actually happened. If the agent forgets, the hook remembers. Antigravity and Cursor get their own native hook sets (Cursor's covering command safety, file protection, and a plan-truth stop check). Codex hook parity is intentionally deferred until Codex hook payloads are verified.
 
 **Rules** are injected into every agent session as always-on context. Solution search before planning, plan materialization after plan mode, plan rationale and claim-verification requirements, plan lifecycle enforcement, a QA plan in every plan, the billing-confirmation and recurrence gates, parameterize-constants, deploy-from-main-only, the automation registry, and a **browser-QA gate that blocks "done" until the change has been exercised in a real browser** (with a test account where a flow needs login). The agent can't not see them, even if a skill doesn't reference them.
 
@@ -344,7 +375,7 @@ See the [Install](#install) section above for the Codex and Claude install comma
 ```bash
 npx soloship init --agent both   # initial setup: creates docs, rules, CI, AGENTS.md, and Claude hooks
 npx soloship upgrade     # refresh hooks, rules, and the .soloship/version stamp
-npx soloship doctor      # check Claude Code, Codex, and project guardrail status
+npx soloship doctor      # check Claude Code, Codex, Antigravity, Cursor, and project guardrail status
 npx soloship rollback    # restore the last safety snapshot
 ```
 
