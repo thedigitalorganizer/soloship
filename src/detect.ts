@@ -10,6 +10,7 @@ export interface ProjectInfo {
   hasClaude: boolean;
   hasCodex: boolean;
   hasAntigravity: boolean;
+  hasCursor: boolean;
   existingDocs: ExistingDocs;
 }
 
@@ -53,6 +54,9 @@ export function detectProject(root: string): Partial<ProjectInfo> {
       existsSync(join(root, ".gemini")) ||
       commandExists("antigravity") ||
       commandExists("agy"),
+    // `.cursor/` covers a project already opened in Cursor; the `cursor` CLI
+    // covers a machine with Cursor installed but this repo never opened there.
+    hasCursor: existsSync(join(root, ".cursor")) || commandExists("cursor"),
     existingDocs,
   };
 }

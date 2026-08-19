@@ -20,7 +20,7 @@ program
   .option("--skip-prompts", "Use defaults without asking questions")
   .option(
     "--agent <agent>",
-    "Project guardrail target: claude, codex, antigravity, both, or all"
+    "Project guardrail target: claude, codex, antigravity, cursor, both, or all"
   )
   .option(
     "--refresh-guides",
@@ -66,7 +66,7 @@ program
   )
   .option(
     "--agent <agent>",
-    "Project guardrail target: claude, codex, antigravity, both, or all"
+    "Project guardrail target: claude, codex, antigravity, cursor, both, or all"
   )
   .option(
     "--refresh-guides",
@@ -105,14 +105,14 @@ program
 program
   .command("doctor")
   .description(
-    "Audit your Claude Code and Codex environment for Soloship readiness"
+    "Audit your Claude Code, Codex, Antigravity, and Cursor environment for Soloship readiness"
   )
   .action(async () => {
     console.log("");
     console.log(chalk.bold("Soloship Doctor"));
     console.log(
       chalk.dim(
-        "Checking Claude Code, Codex, and shared project guardrail status."
+        "Checking Claude Code, Codex, Antigravity, Cursor, and shared project guardrail status."
       )
     );
     console.log("");

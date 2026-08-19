@@ -2,6 +2,78 @@
 
 ## [Unreleased]
 
+### Added — Cursor target: `--agent cursor`, with cloud agents actually on rails
+
+Soloship had no Cursor target. `/soloship:cursor` converted rules by hand and
+its Phase 3 baseline still said hooks had no Cursor equivalent — which stopped
+being true. Re-verified against Cursor's live docs on 2026-08-18: Cursor has a
+full native hooks system, and **cloud agents load committed
+`.cursor/hooks.json` and nothing else** — never `~/.cursor/hooks.json`, never
+Claude Code hooks, regardless of any IDE setting. Since Soloship writes its
+Claude gates to the gitignored `.claude/settings.local.json`, a Cursor cloud
+agent on a Soloship project ran with **zero** mechanical protection.
+
+- **`npx soloship init|upgrade --agent cursor`** (also in `--agent all`, and in
+  `auto` when `.cursor/` exists or the `cursor` CLI is on PATH). Installs:
+  - `.cursor/rules/*.mdc` — the packaged workflow rules, always-on
+    (`alwaysApply: true`), each with a GENERATED header. The `.mdc` extension
+    is load-bearing: Cursor **silently ignores** plain `.md` in that directory,
+    so a copied-across rule looks installed and protects nothing.
+  - `.cursor/hooks.json` + executable `.cursor/hooks/soloship-*.js` —
+    `beforeShellExecution` command safety (dangerous `rm -rf`, direct `.env`
+    writes, force-push to main/master, hardcoded API keys, deploys off the
+    default branch), `preToolUse` file protection (`.soloship/version`, `.env`,
+    `docs/plans/` frontmatter + status vocabulary, plan done-checklist), and a
+    `stop` plan-truth check. Real files, never symlinks — they are meant to be
+    committed, which is the entire point.
+  - Merges into an existing `.cursor/hooks.json` instead of overwriting it:
+    entries whose command is not a `soloship-` script are preserved, so
+    re-running never eats a user's own hooks and never duplicates ours.
+- **`soloship doctor`** gained a Cursor section. `checkRuleSet` is now
+  extension-aware so it counts `.mdc` there — counting `.md` would report an
+  unprotected project as protected.
+- **`/soloship:cursor` rewritten** (Phases 3-7) against the live docs: the
+  native hooks system, the seconds-not-milliseconds timeout unit, the stdin
+  JSON payload contract (`$HOOK_TOOL_INPUT` is Claude-only and does not exist
+  in Cursor), the third-party-hooks toggle as a *second* path that does nothing
+  for cloud agents, installer-first sync with the bespoke-rule drift gap kept,
+  and MCP mirroring that now defaults to mirroring everything instead of
+  stalling on a multi-select. A new gate requires the generated config to be
+  **committed** — uncommitted `.cursor/` config does not exist to a cloud agent.
+
+Four defects were caught by QA rather than shipped, all worth recording:
+
+1. Interpolating a pattern containing `/` (as in `/Users`, `/home`) into a
+   regex **literal** terminates the literal early; the emitted script failed to
+   parse. Cursor **fails open** on a crashing hook, so this produced a gate that
+   protected nothing while `doctor` reported it installed. Every pattern is now
+   built with `new RegExp` from a JSON-escaped string, and `installCursorHooks`
+   parse-checks each script with `node:vm` before writing it — a broken
+   generator now fails loudly instead of shipping a silent no-op.
+2. The `rm -rf` pattern inherited from the Antigravity target anchors on
+   whitespace/end, so it blocked `rm -rf ~` but **allowed `rm -rf ~/Documents`**
+   — every subpath, which is the common case. (The Antigravity gate still
+   carries the narrow shape; folding both onto shared constants is a follow-up.)
+3. The force-push pattern required the branch name to appear *after* the flag,
+   so it missed `git push origin main --force`. Now two order-independent
+   lookaheads.
+4. **The worst one, and only dogfooding into a real repo found it:** the
+   scripts were written as `.js`, and Soloship's own package.json declares
+   `"type": "module"`. That makes every `.js` file an ES module, so `require()`
+   throws — and the scripts' own try/catch converted that crash into a
+   well-formed `{"permission":"allow"}`. Every gate answered correctly-shaped
+   JSON, allowed everything, and looked healthy in `doctor`. Fixed by emitting
+   `.cjs` (CommonJS in both project shapes). A syntax check could never have
+   caught this, so `installCursorHooks` now **runs each script once after
+   writing it** and refuses to finish unless it answers, and separately
+   verifies every hooks.json command path exists — an entry pointing at a
+   deleted file is the same silent no-op wearing a different hat.
+
+`__arch__/cursor-hooks.test.ts` covers all three scripts end-to-end (47 assertions):
+syntax validity, the fail-open contract, execution inside a `"type": "module"`
+project, installer idempotency + user-hook preservation, and
+must-fire/must-not-fire fixtures for every gate.
+
 ### Fixed — CI red since 0.26.0: broken stat fallback + missing test git identity
 
 Two independent breaks, both introduced by the 2026-08-11 multi-session-git-

@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "hooks": {
+    "beforeShellExecution": [
+      {
+        "command": ".cursor/hooks/soloship-command-safety.cjs",
+        "timeout": 15
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": ".cursor/hooks/soloship-file-protection.cjs",
+        "matcher": "Write|Delete",
+        "timeout": 15
+      }
+    ],
+    "stop": [
+      {
+        "command": ".cursor/hooks/soloship-plan-truth.cjs",
+        "timeout": 15,
+        "loop_limit": 1
+      }
+    ]
+  }
+}

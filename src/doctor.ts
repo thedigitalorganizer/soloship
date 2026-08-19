@@ -34,6 +34,7 @@ export async function runDoctor(): Promise<void> {
   const projectHasCodex = existsSync(join(root, ".codex"));
   const projectHasAntigravity =
     existsSync(join(root, ".agents")) || existsSync(join(root, "GEMINI.md"));
+  const projectHasCursor = existsSync(join(root, ".cursor"));
 
   console.log(chalk.dim("Checking Soloship surfaces..."));
   console.log("");
@@ -110,6 +111,31 @@ export async function runDoctor(): Promise<void> {
           severity: projectHasAntigravity ? "required" : "recommended",
           purpose: "Antigravity-facing auto-loaded Soloship workflow rules.",
           install: "npx soloship upgrade --agent antigravity",
+        }),
+      ],
+    },
+    {
+      title: "Cursor",
+      results: [
+        checkCommand("cursor", {
+          severity: "recommended",
+          purpose: "Cursor CLI available for the Cursor surface.",
+          install: "Install Cursor from https://cursor.com, then enable the CLI",
+        }),
+        checkProjectFile(join(root, ".cursor", "hooks.json"), {
+          name: ".cursor/hooks.json",
+          severity: projectHasCursor ? "required" : "recommended",
+          purpose:
+            "Cursor-native project hooks. COMMIT THIS — Cursor cloud agents load committed .cursor/hooks.json only, never ~/.cursor/hooks.json and never Claude Code hooks.",
+          install: "npx soloship upgrade --agent cursor",
+        }),
+        checkRuleSet(join(root, ".cursor", "rules"), {
+          name: ".cursor/rules",
+          ext: ".mdc",
+          severity: projectHasCursor ? "required" : "recommended",
+          purpose:
+            "Cursor-facing always-on Soloship workflow rules (.mdc — plain .md here is silently ignored by Cursor).",
+          install: "npx soloship upgrade --agent cursor",
         }),
       ],
     },
@@ -317,11 +343,15 @@ function checkProjectFile(
 
 function checkRuleSet(
   path: string,
-  metadata: Omit<CheckResult, "present">
+  metadata: Omit<CheckResult, "present"> & { ext?: string }
 ): CheckResult {
-  const browserQaGate = join(path, "browser-qa-gate.md");
+  // Cursor reads `.mdc` and silently ignores `.md` in its rules directory, so
+  // the extension is load-bearing: counting the wrong one reports an
+  // unprotected project as protected.
+  const { ext = ".md", ...rest } = metadata;
+  const browserQaGate = join(path, `browser-qa-gate${ext}`);
   const ruleCount = existsSync(path)
-    ? readdirSync(path).filter((entry) => entry.endsWith(".md")).length
+    ? readdirSync(path).filter((entry) => entry.endsWith(ext)).length
     : 0;
 
   return {
@@ -329,7 +359,7 @@ function checkRuleSet(
     notes: existsSync(path)
       ? `${ruleCount} rule files found`
       : "rules directory missing",
-    ...metadata,
+    ...rest,
   };
 }
 

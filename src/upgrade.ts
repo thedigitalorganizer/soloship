@@ -6,12 +6,17 @@ import {
   type AgentTarget,
 } from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
-import { installHooks, installAntigravityHooks } from "./hooks.js";
+import {
+  installHooks,
+  installAntigravityHooks,
+  installCursorHooks,
+} from "./hooks.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import {
   installClaudeRules,
   installCodexRules,
   installAntigravityRules,
+  installCursorRules,
 } from "./rules.js";
 import { writeVersionStamp } from "./scaffold.js";
 import {
@@ -49,6 +54,7 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
   const agentSelection = resolveAgentSelection(agentTarget, {
     hasCodex: detected.hasCodex || false,
     hasAntigravity: detected.hasAntigravity || false,
+    hasCursor: detected.hasCursor || false,
   });
 
   const projectInfo: ProjectInfo = {
@@ -59,6 +65,7 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     hasClaude: detected.hasClaude || false,
     hasCodex: detected.hasCodex || false,
     hasAntigravity: detected.hasAntigravity || false,
+    hasCursor: detected.hasCursor || false,
     existingDocs,
   };
 
@@ -85,6 +92,15 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     }
   }
 
+  if (agentSelection.cursor) {
+    console.log("");
+    console.log(chalk.blue("Refreshing Cursor hooks..."));
+    const cursorHookResults = await installCursorHooks(root, projectInfo);
+    for (const result of cursorHookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+  }
+
   console.log("");
   console.log(chalk.blue("Refreshing workflow rules..."));
   if (agentSelection.claude) {
@@ -103,6 +119,12 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     const ruleResults = await installAntigravityRules(root, { force: true });
     for (const result of ruleResults) {
       console.log(`  ${chalk.green("+")} Antigravity: ${result}`);
+    }
+  }
+  if (agentSelection.cursor) {
+    const ruleResults = await installCursorRules(root, { force: true });
+    for (const result of ruleResults) {
+      console.log(`  ${chalk.green("+")} Cursor: ${result}`);
     }
   }
 
