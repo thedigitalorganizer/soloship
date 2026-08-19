@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.27.0] - 2026-08-19
+
 ### Added — Cursor target: `--agent cursor`, with cloud agents actually on rails
 
 Soloship had no Cursor target. `/soloship:cursor` converted rules by hand and
@@ -19,7 +21,7 @@ agent on a Soloship project ran with **zero** mechanical protection.
     (`alwaysApply: true`), each with a GENERATED header. The `.mdc` extension
     is load-bearing: Cursor **silently ignores** plain `.md` in that directory,
     so a copied-across rule looks installed and protects nothing.
-  - `.cursor/hooks.json` + executable `.cursor/hooks/soloship-*.js` —
+  - `.cursor/hooks.json` + executable `.cursor/hooks/soloship-*.cjs` —
     `beforeShellExecution` command safety (dangerous `rm -rf`, direct `.env`
     writes, force-push to main/master, hardcoded API keys, deploys off the
     default branch), `preToolUse` file protection (`.soloship/version`, `.env`,
@@ -68,6 +70,15 @@ Four defects were caught by QA rather than shipped, all worth recording:
    writing it** and refuses to finish unless it answers, and separately
    verifies every hooks.json command path exists — an entry pointing at a
    deleted file is the same silent no-op wearing a different hat.
+
+- **README** now presents Cursor as a guardrail target rather than an
+  environment-sync skill: named in the opening line, prerequisites, and the
+  surfaces table, with its own "Choose Your Setup" path that makes committing
+  `.cursor/` part of setup (a cloud agent loads the committed
+  `.cursor/hooks.json` and nothing else), states that rules are real copies
+  and never symlinks, and flags the silently-ignored `.md` extension.
+  `--agent all` / `--agent auto` and the `doctor` description now name Cursor.
+  Grok Build remains the one environment-sync skill.
 
 `__arch__/cursor-hooks.test.ts` covers all three scripts end-to-end (47 assertions):
 syntax validity, the fail-open contract, execution inside a `"type": "module"`
