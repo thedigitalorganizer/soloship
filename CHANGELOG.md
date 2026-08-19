@@ -78,7 +78,9 @@ Four defects were caught by QA rather than shipped, all worth recording:
   `.cursor/hooks.json` and nothing else), states that rules are real copies
   and never symlinks, and flags the silently-ignored `.md` extension.
   `--agent all` / `--agent auto` and the `doctor` description now name Cursor.
-  Grok Build remains the one environment-sync skill.
+  Grok Build remains the one environment-sync skill. The documented hook count
+  moved 29 → 32 (the three Cursor gates), caught by the release preflight's
+  count validator rather than shipped stale.
 
 `__arch__/cursor-hooks.test.ts` covers all three scripts end-to-end (47 assertions):
 syntax validity, the fail-open contract, execution inside a `"type": "module"`
