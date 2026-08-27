@@ -1,12 +1,11 @@
 ---
 name: review
 description: |
-  Multi-perspective review for plans or code. For plans: routes to gstack's eng,
-  CEO, or design plan review skills individually, or autoplan to run all four
-  (CEO + design + eng + DX) in one auto-decided pass. For code: routes to code-review
-  for PR-scale work (CE multi-agent parallel analysis with worktrees), or runs
-  three inline passes (structural, adversarial, design slop lens) for quick local
-  checks.
+  Multi-perspective review for plans or code. Use only when the user asked to
+  review. Do not start because a plan file exists. For plans: routes to eng,
+  CEO, or design review individually, or autoplan if they asked for all four.
+  For code: code-review for PR-scale work, or three inline passes for a quick
+  local check.
 ---
 
 ## Host Compatibility
@@ -15,18 +14,20 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 # Soloship Review
 
+Read `../references/work-size.md` before continuing. If the user did not ask
+to review, stop this skill.
+
 Your job is to review work from multiple perspectives. First, determine what
 you're reviewing.
 
 ## Determine Review Target
 
 **Reviewing a PLAN:**
-The user said something like "review this plan", "check the plan", or there's
-a recent plan file in `docs/plans/` that hasn't been implemented yet.
+The user asked to review a plan (named this skill, said "review this plan",
+or asked for autoplan). A plan file sitting in `docs/plans/` is not a trigger.
 
 **Reviewing CODE:**
-The user said "review the code", "code review", "check my changes", or there
-are uncommitted changes / recent commits to review.
+The user asked to review code. Uncommitted changes are not a trigger.
 
 ---
 

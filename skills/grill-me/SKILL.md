@@ -1,14 +1,10 @@
 ---
 name: grill-me
 description: |
-  Relentless pre-plan interview that walks every branch of the design tree until
-  user and agent share a complete mental model. Refuses to write a plan or any
-  code until alignment is explicit. Use when about to plan something non-trivial,
-  when user says "grill me", "interview me", "interrogate me", "stress test this",
-  or before invoking /plan on medium-to-large work.
-
-  Adapted from Matt Pocock's `grill-me` (MIT) — see `skills/vendored/pocock/`
-  for original and attribution.
+  Relentless pre-plan interview. Use only when the user said "grill me" /
+  "interview me", or they asked to plan load-bearing work (billing/credit,
+  live data, prod deploy, auth, schema). Do not run before ordinary work.
+  Refuses to write a plan or code until alignment is explicit.
 ---
 
 ## Host Compatibility
@@ -17,14 +13,15 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 # Soloship Grill Me
 
+Read `../references/work-size.md` before continuing. If the user did not ask
+to be grilled and the work is not load-bearing planning, stop this skill.
+
 Your job is to extract every constraint, edge case, and scope decision the user
 has in their head BEFORE any plan exists. Plans get rewritten when reviews catch
 what should have been settled at this stage. The fix is to settle it here.
 
-This is the upstream of `/plan`. Run grill-me first, then `/plan`, then `/review`
-or `/autoplan`. The interview transcript becomes the rationale doc the plan
-references — so a fresh agent after `/clear` can understand WHY each decision
-was made.
+This is the upstream of `/plan` when a plan is warranted. Run grill-me, then
+`/plan`. Do not chain into `/review` or `/autoplan` unless the user asks.
 
 ## Model posture (see .claude/rules/model-mode.md)
 

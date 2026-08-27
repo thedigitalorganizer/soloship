@@ -65,8 +65,8 @@ file without valid status frontmatter.
 thing a second time. The status field is only trustworthy if nothing else can
 masquerade as a plan.
 
-Completed plans are archived to \`archive/\` (large) or deleted (small), per the
-plan-lifecycle rule.
+Completed plans are archived to \`archive/\` (large) or deleted (small). The
+finish skill decides which.
 `,
   "docs/drafts": `# docs/drafts/
 

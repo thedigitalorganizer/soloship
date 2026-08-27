@@ -8,7 +8,13 @@
 import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { join, resolve, basename } from "node:path";
 import { describe, test, expect } from "vitest";
-import { getWorkflowRules } from "../src/rules";
+import { getWorkflowRules, RETIRED_WORKFLOW_RULES } from "../src/rules";
+import {
+  LOAD_BEARING_WORK,
+  generateAgentsMd,
+  generateClaudeMd,
+} from "../src/templates";
+import type { ProjectInfo } from "../src/detect";
 
 const ROOT = resolve(__dirname, "..");
 
@@ -22,24 +28,12 @@ const CONTENT_HEAVY_EXEMPT = new Set(["rules.ts", "hooks.ts"]);
 // The rules Soloship ships. Update this when adding/removing a rule — the test
 // then guarantees a rule can't be silently dropped from the installer.
 const EXPECTED_RULES = [
-  "solution-search.md",
-  "plan-materialization.md",
-  "plan-rationale.md",
-  "plan-lifecycle.md",
-  "plan-artifact-lifecycle.md",
-  "plan-claim-verification.md",
   "billing-confirmation-gate.md",
   "live-data-evidence-gate.md",
   "recurrence-gate.md",
-  "parameterize-constants.md",
   "browser-qa-gate.md",
-  "browser-tooling-priority.md",
-  "qa-plan-in-plans.md",
   "deploy-from-main-only.md",
   "automation-registry.md",
-  "component-reuse.md",
-  "delegation-discipline.md",
-  "verification-sufficiency.md",
   "model-mode.md",
 ];
 
@@ -127,6 +121,33 @@ describe("Architecture Fitness Functions", () => {
     expect(empty).toEqual([]);
   });
 
+  test("retired workflow rules are not re-shipped as always-on files", () => {
+    const shipped = new Set(Object.keys(getWorkflowRules()));
+    const leaked = RETIRED_WORKFLOW_RULES.filter((name) => shipped.has(name));
+    expect(leaked).toEqual([]);
+  });
+
+  test("new-project templates default to do-the-work, not a skill pipeline", () => {
+    const src = readFileSync(join(ROOT, "src/templates.ts"), "utf-8");
+    expect(src).toContain("Do not chain those skills as a default pipeline");
+    expect(src).not.toMatch(/THINK → PLAN → WORK → LEARN → SHIP/);
+    expect(existsSync(join(ROOT, "skills/references/work-size.md"))).toBe(true);
+  });
+
+  test("bootstrap does not reinstall retired workflow rules", () => {
+    const body = readFileSync(join(ROOT, "skills/bootstrap/SKILL.md"), "utf-8");
+    const leaked = RETIRED_WORKFLOW_RULES.filter((name) => {
+      const stem = name.replace(/\.md$/, "");
+      return (
+        body.includes(`.claude/rules/${name}`) ||
+        body.includes(`.codex/rules/${name}`) ||
+        body.includes(`.agents/rules/${name}`) ||
+        body.includes(`.cursor/rules/${stem}.mdc`)
+      );
+    });
+    expect(leaked).toEqual([]);
+  });
+
   test("all version files are in sync (release-version-sync)", () => {
     const versions = VERSION_FILES.map(({ path, read }) => {
       const j = JSON.parse(readFileSync(join(ROOT, path), "utf-8"));
@@ -134,5 +155,47 @@ describe("Architecture Fitness Functions", () => {
     });
     const distinct = new Set(versions.map((v) => v.version));
     expect(distinct.size, `version drift: ${JSON.stringify(versions)}`).toBe(1);
+  });
+
+  test("new-project guides default to do-the-work, not the full pipeline", () => {
+    const stub: ProjectInfo = {
+      name: "stub",
+      description: "",
+      stack: {
+        language: "typescript",
+        framework: null,
+        packageManager: "npm",
+        hasTests: true,
+        hasCi: true,
+        hasLinter: false,
+        hasFormatter: false,
+      },
+      hasGit: true,
+      hasClaude: true,
+      hasCodex: true,
+      hasAntigravity: false,
+      hasCursor: true,
+      existingDocs: {
+        hasClaudeMd: false,
+        hasAgentsMd: false,
+        hasChangelog: false,
+        hasReadme: true,
+        hasDocsDir: true,
+        hasPlansDir: true,
+        hasSolutionsDir: true,
+      },
+    };
+    const agents = generateAgentsMd(stub);
+    const claude = generateClaudeMd(stub);
+    const workSize = readFileSync(
+      join(ROOT, "skills/references/work-size.md"),
+      "utf-8"
+    );
+    for (const text of [agents, claude, workSize]) {
+      expect(text).toContain("Do the work");
+      expect(text).toContain(LOAD_BEARING_WORK);
+      expect(text).not.toContain("Always start here for new work");
+      expect(text).not.toMatch(/THINK\s*→\s*PLAN\s*→\s*WORK/);
+    }
   });
 });

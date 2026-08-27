@@ -6,7 +6,17 @@
 >
 > Be brief — lead with the conclusion, cut preamble and recap, length should track the question's complexity. Frame problems and decisions in product or user-experience terms (what behavior changes, why it matters), not code. Never ask Shawn to review code, judge technical correctness, or decide implementation specifics like data models, database structure, or library choices — make those calls yourself and surface only choices that need his product judgment.
 >
-> **Conventions:** Coding rules auto-load from `.codex/rules/` — including parameterizing meaningful values (no magic literals; refactor un-parameterized values you find in the section you're editing, then list other affected sites and ask).
+> **Conventions:** Name repeated or business/config values (no magic literals; refactor un-parameterized values you find in the section you're editing, then list other affected sites and ask). Always-on safety rules auto-load from `.codex/rules/`.
+
+**Default path:** do the work. Always-on gates still apply. Use `/soloship:plan`, `/soloship:grill-me`, `/soloship:review`, `/soloship:autoplan`, `/soloship:implement`, `/soloship:deepen-plan`, and `/soloship:shipthorough` only when Shawn asked for that skill, or the work is load-bearing (billing/credit, live customer or financial data, production deploy, auth, schema/migrations). Do not chain them as a default pipeline.
+
+## Default path
+
+Do the work. Always-on gates still apply.
+
+Use `/soloship:plan`, `/soloship:grill-me`, `/soloship:review`, `/soloship:autoplan`, `/soloship:implement`, `/soloship:deepen-plan`, and `/soloship:shipthorough` only when the user asked for that skill, or the work is load-bearing: billing/credit, live customer or financial data, production deploy, auth, or schema/migrations.
+
+Do not chain those skills as a default pipeline.
 
 **Two deliverables:**
 1. `npx soloship init` — npm CLI that installs mechanical enforcement + documentation infrastructure
@@ -28,7 +38,7 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 | 4. Bootstrap | Done | `/soloship:bootstrap` skill |
 | 5. Workflow commands | Done | 17 additional skills (19 total) |
 | 6. Hooks | Done | All 9 hooks implemented |
-| 7. Safety + Simplification | Not started | WS1: safety floor, WS2: surface simplification, WS3: AGENTS.md governance |
+| 7. Safety + Simplification | In progress | WS1 safety floor shipped earlier. WS2 always-on diet (19 rules → 7, coaching hooks removed) landed 2026-08-26. WS3 AGENTS.md governance still open. |
 | 8. Graduation + Docs | Not started | WS4: graduation system, methodology page for aifoundationlevels.com |
 
 ## Project Structure
@@ -43,8 +53,8 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── init.ts            # Main init orchestration
 │   ├── detect.ts          # Stack detection (language, framework, package manager)
 │   ├── scaffold.ts        # Folder structure + doc creation
-│   ├── hooks.ts           # Claude Code + Cursor hook configuration (32 hooks)
-│   ├── rules.ts           # Workflow rule installation (19 rules)
+│   ├── hooks.ts           # Claude Code + Cursor hook configuration (25 hooks)
+│   ├── rules.ts           # Workflow rule installation (7 rules)
 │   ├── ci.ts              # GitHub Actions CI + architecture fitness functions
 │   └── templates.ts       # CLAUDE.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
 ├── dist/                  # Compiled output (gitignored)
@@ -116,9 +126,9 @@ node dist/cli.js init --skip-prompts    # Run init in current directory
 1. **Companion, not replacement** — sits alongside Superpowers, CE, Impeccable, cherry-picked gstack
 2. **npm installer + Codex plugin** — installer handles one-time setup, plugin handles daily workflow
 3. **Audit before bootstrap** (existing projects) — understand before governing
-4. **Design-first principle** — /brainstorm nudges visual design before /plan, then /grill-me before plan-writing for non-trivial work (interview-first per Brooks/Pocock — share a design concept before any plan exists)
+4. **Default path is do the work** — the full plan → review → implement → shipthorough chain is opt-in (named skill, or load-bearing work). Design-first and grill-me apply when you are actually planning, not on every request.
 5. **Hooks for enforcement, skills for intelligence** — different jobs, different tools
-6. **Rules stay mandatory** — commands add enforcement on top (belt + suspenders)
+6. **Rules stay mandatory** — the seven always-on safety gates; commands add enforcement on top (belt + suspenders)
 
 ## Skills Are Symlinked
 

@@ -233,7 +233,7 @@ decision, exempt from freshness nagging.
 
 **Only runs for Options 1 and 4.** Options 2 and 3 always preserve the worktree.
 
-**Browser teardown first (all options, per `browser-tooling-priority`):** if this
+**Browser teardown first (all options, per `browser-qa-gate`):** if this
 session drove any browser during QA, release it now — close Claude in Chrome tabs you
 created (`tabs_close_mcp`), release credential grants (`release_credentials`),
 close built-in-browser pages. Leave the `/soloship:browse` daemon running (its

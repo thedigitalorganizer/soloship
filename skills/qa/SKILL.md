@@ -983,7 +983,7 @@ If the repo has a `TODOS.md`:
 ## Phase 12: Browser Teardown (always runs, even on early exit)
 
 QA is not finished until the browser surfaces it held are released (per the
-auto-loaded `browser-tooling-priority` rule):
+auto-loaded `browser-qa-gate` rule):
 
 1. **Claude in Chrome** (`claude-in-chrome` — the user's own Chrome): close every tab this session created
    (`tabs_close_mcp`) and release any 1Password credential grants

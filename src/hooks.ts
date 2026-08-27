@@ -57,10 +57,6 @@ export const BROWSER_CLAIMS_DIRNAME = "browser";
 export const BROWSER_MCP_TOOL_MATCHER =
   "mcp__claude-in-chrome__.*|mcp__chrome-devtools__.*|mcp__Claude_Browser__.*";
 
-// strftime format for the reply-timestamp Stop hook. Uses the machine's local
-// timezone (no TZ pin) since installed projects belong to users anywhere.
-export const REPLY_TIMESTAMP_FORMAT = "%-m/%-d/%Y %-I:%M:%S %p %Z";
-
 // --- Plan truth + artifact lifecycle -------------------------------------
 //
 // Plan status was the only Soloship invariant with no mechanical floor. /plan
@@ -225,7 +221,9 @@ export async function installHooks(
   // Build hooks config
   const hooks: HooksConfig["hooks"] = {};
 
-  // PreToolUse: Block dangerous commands + phone-a-friend warnings
+  // PreToolUse: dangerous-shell + deploy + billing + recurrence + plan gates.
+  // Coaching hooks (phone-a-friend, local Semgrep) were removed from the
+  // default set — CI owns Semgrep; review is deliberate, not filename heuristics.
   hooks.PreToolUse = [
     {
       matcher: "Bash",
@@ -234,26 +232,6 @@ export async function installHooks(
           type: "command",
           command: buildPreToolUseScript(),
           timeout: 5000,
-        },
-      ],
-    },
-    {
-      matcher: "Bash",
-      hooks: [
-        {
-          type: "command",
-          command: buildPhoneAFriendScript(),
-          timeout: 10000,
-        },
-      ],
-    },
-    {
-      matcher: "Bash",
-      hooks: [
-        {
-          type: "command",
-          command: buildSecurityScanScript(),
-          timeout: 30000,
         },
       ],
     },
@@ -374,14 +352,14 @@ export async function installHooks(
   results.push("PreToolUse: plan-namespace gate (docs/plans/ holds plans only; routes drafts/handoffs/reports)");
   results.push("PreToolUse: plan-completeness gate (a plan must declare ## Goal + ## Done-When)");
   results.push("PreToolUse: plan-done-checklist gate (blocks status: done while the plan body still has unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers)");
-  results.push("PreToolUse: phone-a-friend warnings on commits (6 heuristic patterns)");
-  results.push("PreToolUse: security scan on commits (Semgrep, blocks critical findings)");
   results.push("PreToolUse: deploy-freshness gate (blocks stale build artifact, warns on unapplied D1 migrations)");
   results.push("PreToolUse: deploy-discipline gate (blocks production deploys from worktrees, non-default branches, dirty trees, or past another session's fresh deploy lock)");
   results.push("PreToolUse: billing/credit/rerun-window confirmation gate (blocks edits until data-model semantics confirmed)");
   results.push("PreToolUse: recurrence gate (blocks a 2nd patch of a failure class already in .ai/learnings.jsonl)");
 
-  // PostToolUse: Auto-lint after file edits + CHANGELOG check after commits
+  // PostToolUse: lint + recurrence audit + session/browser heartbeats.
+  // Changelog nags, live-data phrase matching, and same-name component warns
+  // were removed from the default set (release workflow / search / inventory).
   const postToolUseHooks: HookEntry[] = [];
 
   if (project.stack.hasLinter) {
@@ -398,19 +376,6 @@ export async function installHooks(
     results.push("PostToolUse: auto-lint after file edits");
   }
 
-  // CHANGELOG check: warn if feat/fix/refactor commit lacks CHANGELOG entry
-  postToolUseHooks.push({
-    matcher: "Bash",
-    hooks: [
-      {
-        type: "command",
-        command: buildChangelogCheckScript(),
-        timeout: 5000,
-      },
-    ],
-  });
-  results.push("PostToolUse: CHANGELOG check for feat/fix/refactor commits");
-
   // Recurrence audit: catch script-issued commits the PreToolUse gate can't
   // block; record the recurrence + surface it so the next commit escalates.
   postToolUseHooks.push({
@@ -424,36 +389,6 @@ export async function installHooks(
     ],
   });
   results.push("PostToolUse: recurrence audit (records + surfaces script-issued commits that bypass the gate)");
-
-  // Live-data evidence gate (warn-only): when a durable artifact that records
-  // data conclusions asserts a prod-data claim without a Claims Table, warn.
-  postToolUseHooks.push({
-    matcher: "Edit|Write",
-    hooks: [
-      {
-        type: "command",
-        command: buildLiveDataEvidenceScript(),
-        timeout: 5000,
-      },
-    ],
-  });
-  results.push("PostToolUse: live-data evidence gate (warns when a solution/report/plan asserts a data claim with no Claims Table)");
-
-  // Duplicate-component warn (warn-only): a new .tsx/.jsx export colliding
-  // with a component name already exported elsewhere gets flagged to the
-  // agent at the moment the duplicate is born. Mechanical floor for the
-  // component-reuse rule.
-  postToolUseHooks.push({
-    matcher: "Edit|Write|MultiEdit",
-    hooks: [
-      {
-        type: "command",
-        command: buildComponentDupWarnScript(),
-        timeout: 5000,
-      },
-    ],
-  });
-  results.push("PostToolUse: duplicate-component warn (flags a new component export whose name already exists elsewhere)");
 
   // Session heartbeat: touch this session's presence file after every tool
   // call so other sessions can tell live sessions from dead ones.
@@ -472,7 +407,7 @@ export async function installHooks(
   // Browser claim: every browser MCP tool call stamps a per-session claim file
   // (mtime = heartbeat). Other sessions hitting "browser is busy" read these to
   // tell a live QA session from yesterday's dead one. Mechanical floor for the
-  // browser-tooling-priority rule.
+  // browser-qa-gate rule.
   postToolUseHooks.push({
     matcher: BROWSER_MCP_TOOL_MATCHER,
     hooks: [
@@ -489,7 +424,8 @@ export async function installHooks(
     hooks.PostToolUse = postToolUseHooks;
   }
 
-  // Stop: Plan validation + dependency graph + workflow navigator + handoff reminder
+  // Stop: plan-truth backstop + shared-resource nags. Workflow navigator,
+  // handoff coaching, and the per-reply timestamp were removed as noise.
   hooks.Stop = [
     {
       matcher: "",
@@ -498,16 +434,6 @@ export async function installHooks(
           type: "command",
           command: buildStopScript(project),
           timeout: 15000,
-        },
-      ],
-    },
-    {
-      matcher: "",
-      hooks: [
-        {
-          type: "command",
-          command: buildReplyTimestampScript(),
-          timeout: 5000,
         },
       ],
     },
@@ -532,12 +458,12 @@ export async function installHooks(
       },
     ],
   });
-  results.push("Stop: plan validation + workflow navigator + handoff reminder");
-  results.push("Stop: reply timestamp (stamps each reply with local date/time so session logs can reconstruct when work actually happened)");
+  results.push("Stop: plan-truth backstop (surfaces plans whose open status contradicts a merged branch)");
   results.push("Stop: browser teardown reminder (nags when this session still holds a quiet browser claim — close tabs, release grants, release the claim)");
   results.push("Stop: deploy lock reminder (nags when this session still holds a quiet deploy lock that is blocking every other session)");
 
-  // SessionStart: Checkpoint commit + Soloship update check
+  // SessionStart: safety snapshot + session presence. The daily npm update
+  // check was removed — plugin/package managers own updates.
   hooks.SessionStart = [
     {
       matcher: "",
@@ -554,16 +480,6 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildUpgradeCheckScript(),
-          timeout: 5000,
-        },
-      ],
-    },
-    {
-      matcher: "",
-      hooks: [
-        {
-          type: "command",
           command: buildSessionRegisterScript(),
           timeout: 10000,
         },
@@ -571,7 +487,6 @@ export async function installHooks(
     },
   ];
   results.push("SessionStart: checkpoint commit before agent session");
-  results.push("SessionStart: daily check for Soloship updates on npm");
   results.push("SessionStart: session presence (register this session, announce other live sessions in this repo)");
 
   // SessionEnd: release this session's shared-resource holds so the next
@@ -799,25 +714,6 @@ FILE="$HOOK_MODIFIED_FILE"
 if [ -n "$FILE" ] && echo "$FILE" | grep -qE "\\.(ts|tsx|js|jsx)$"; then
   ${lintCmd} "$FILE" 2>/dev/null || true
 fi
-'`;
-}
-
-function buildChangelogCheckScript(): string {
-  return `bash -c '
-# Only check if the last command was a git commit
-COMMAND="$HOOK_TOOL_INPUT"
-if echo "$COMMAND" | grep -qE "git\\s+commit"; then
-  # Get the most recent commit message
-  MSG=$(git log -1 --pretty=%s 2>/dev/null)
-  # Only warn for feat/fix/refactor commits
-  if echo "$MSG" | grep -qE "^(feat|fix|refactor):"; then
-    # Check if CHANGELOG.md was modified in this commit
-    if ! git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null | grep -q "CHANGELOG.md"; then
-      echo "{\\"systemMessage\\": \\"Warning: commit \\\\\"$MSG\\\\\" has no CHANGELOG.md entry. Consider adding one to the [Unreleased] section.\\"}"
-    fi
-  fi
-fi
-exit 0
 '`;
 }
 
@@ -1186,27 +1082,9 @@ exit 0
 '`;
 }
 
-function buildReplyTimestampScript(): string {
-  // Emits {"systemMessage": "<local date/time>"} after every assistant reply.
-  // Session-log tooling reads these stamps to reconstruct when work actually
-  // happened — a session resumed days later would otherwise be dated by when
-  // it was logged, not when it was done.
-  return `date "+{\\"systemMessage\\": \\"${REPLY_TIMESTAMP_FORMAT}\\"}"`;
-}
-
-export function buildStopScript(project: ProjectInfo): string {
+export function buildStopScript(_project: ProjectInfo): string {
   return `bash -c '
 MESSAGES=""
-
-# Plan validation: check for Key Decisions and Why lines
-for plan in ${PLANS_DIR}/$(date +%Y)*.md; do
-  if [ -f "$plan" ]; then
-    if ! grep -q "Key Decisions" "$plan" 2>/dev/null; then
-      MESSAGES="$MESSAGES Plan file $plan is missing a Key Decisions section."
-      break
-    fi
-  fi
-done
 
 # Gate D — plan-truth backstop. Gates A and C catch commits and merges; this
 # catches everything that never went through either (work done conversationally,
@@ -1263,52 +1141,6 @@ if [ -d ${PLANS_DIR} ] && [ ! -f ${PLAN_STATUS_ACK} ]; then
   fi
 fi
 
-# Dependency graph generation removed.
-
-# Workflow navigator: detect what just happened and suggest next step
-LAST_COMMIT=$(git log -1 --pretty=%s 2>/dev/null || true)
-RECENT_PLANS=$(find docs/plans -maxdepth 1 -name "*.md" -newer docs/plans/archive -type f 2>/dev/null | head -1)
-HAS_STAGED=$(git diff --cached --name-only 2>/dev/null | head -1)
-HAS_UNSTAGED=$(git diff --name-only 2>/dev/null | head -1)
-
-# If a plan was just written, suggest next step
-if [ -n "$RECENT_PLANS" ] && [ -f "$RECENT_PLANS" ]; then
-  PLAN_MTIME=$(stat -f %m "$RECENT_PLANS" 2>/dev/null) || PLAN_MTIME=$(stat -c %Y "$RECENT_PLANS" 2>/dev/null) || PLAN_MTIME=0
-  PLAN_AGE=$(( $(date +%s) - PLAN_MTIME ))
-  if [ "$PLAN_AGE" -lt 120 ]; then
-    MESSAGES="$MESSAGES Plan written. Design what it looks like, then run /soloship-implement to execute."
-  fi
-fi
-
-# If code was just committed, suggest ship or learn
-if echo "$LAST_COMMIT" | grep -qE "^(feat|fix|refactor):" 2>/dev/null; then
-  COMMIT_AGE=$(( $(date +%s) - $(git log -1 --format=%ct 2>/dev/null || echo 0) ))
-  if [ "$COMMIT_AGE" -lt 120 ]; then
-    MESSAGES="$MESSAGES Code committed. Run /soloship-shipfast to deploy or /soloship-shipthorough for full review."
-  fi
-fi
-
-# Handoff reminder: if session has been active 30+ min, nudge for state capture
-SESSION_FILE=".ai/.session-start"
-if [ ! -f "$SESSION_FILE" ]; then
-  mkdir -p .ai
-  date +%s > "$SESSION_FILE"
-fi
-SESSION_START=$(cat "$SESSION_FILE" 2>/dev/null || echo 0)
-NOW=$(date +%s)
-ELAPSED=$(( NOW - SESSION_START ))
-HANDOFF_FILE=".ai/.last-handoff"
-LAST_HANDOFF=$(cat "$HANDOFF_FILE" 2>/dev/null || echo 0)
-SINCE_HANDOFF=$(( NOW - LAST_HANDOFF ))
-
-# Remind every 30 minutes
-if [ "$ELAPSED" -gt 1800 ] && [ "$SINCE_HANDOFF" -gt 1800 ]; then
-  if [ -n "$HAS_STAGED" ] || [ -n "$HAS_UNSTAGED" ]; then
-    MESSAGES="$MESSAGES Session active 30+ min with uncommitted work. Consider writing a handoff note: state of work + next tiny action."
-    echo "$NOW" > "$HANDOFF_FILE"
-  fi
-fi
-
 # Output combined message if any
 if [ -n "$MESSAGES" ]; then
   ${emitSystemMessage("MESSAGES")}
@@ -1348,251 +1180,6 @@ else
   rm -f "$CHECKPOINT_DIR/.last-checkpoint-stash"
   echo "{\\"systemMessage\\": \\"Safety snapshot saved. If anything goes wrong, run: npx soloship rollback\\"}"
 fi
-'`;
-}
-
-function buildUpgradeCheckScript(): string {
-  // Once-per-day check for newer Soloship releases. Detects whether the user
-  // installed via npm (.soloship/version present) or via Claude Code plugin
-  // marketplace only (plugin.json present, no .soloship/version) and shows
-  // the appropriate upgrade command for each. Silent if up-to-date, network
-  // unavailable, or installed version cannot be determined.
-  return `bash -c '
-SOLOSHIP_DIR=".soloship"
-VERSION_FILE="$SOLOSHIP_DIR/version"
-CACHE_FILE="$SOLOSHIP_DIR/.last-update-check"
-PLUGIN_MANIFEST="$HOME/.claude/plugins/marketplaces/soloship/.claude-plugin/plugin.json"
-
-# Determine installed version + install path
-INSTALLED=""
-INSTALL_PATH=""
-if [ -f "$VERSION_FILE" ]; then
-  INSTALLED=$(cat "$VERSION_FILE" 2>/dev/null | head -n1 | tr -d "[:space:]")
-  INSTALL_PATH="npm"
-elif [ -f "$PLUGIN_MANIFEST" ]; then
-  INSTALLED=$(grep -E "\\"version\\"" "$PLUGIN_MANIFEST" 2>/dev/null | head -n1 | sed -E "s/.*\\"version\\"[[:space:]]*:[[:space:]]*\\"([^\\"]+)\\".*/\\\\1/" | tr -d "[:space:]")
-  INSTALL_PATH="plugin"
-fi
-
-[ -z "$INSTALLED" ] && exit 0
-
-# Cache (npm-path projects keep cache in .soloship/; plugin-path falls back to /tmp)
-if [ "$INSTALL_PATH" = "plugin" ]; then
-  CACHE_FILE="/tmp/.soloship-update-check-$(id -u)"
-fi
-
-NOW=$(date +%s)
-LATEST=""
-if [ -f "$CACHE_FILE" ]; then
-  CACHED_TS=$(sed -n 1p "$CACHE_FILE" 2>/dev/null)
-  CACHED_VER=$(sed -n 2p "$CACHE_FILE" 2>/dev/null)
-  if [ -n "$CACHED_TS" ] && [ $((NOW - CACHED_TS)) -lt 86400 ]; then
-    LATEST="$CACHED_VER"
-  fi
-fi
-
-if [ -z "$LATEST" ]; then
-  # Prefer npm for the source-of-truth version (npm + plugin ship from same repo).
-  # If npm isn't available, fall back to the GitHub raw plugin.json on main.
-  if command -v npm >/dev/null 2>&1; then
-    LATEST=$(timeout 3 npm view soloship version 2>/dev/null | tr -d "[:space:]")
-  fi
-  if [ -z "$LATEST" ] && command -v curl >/dev/null 2>&1; then
-    LATEST=$(timeout 3 curl -sf "https://raw.githubusercontent.com/thedigitalorganizer/soloship/main/.claude-plugin/plugin.json" 2>/dev/null | grep -E "\\"version\\"" | head -n1 | sed -E "s/.*\\"version\\"[[:space:]]*:[[:space:]]*\\"([^\\"]+)\\".*/\\\\1/" | tr -d "[:space:]")
-  fi
-  [ -z "$LATEST" ] && exit 0
-  mkdir -p "$(dirname "$CACHE_FILE")" 2>/dev/null
-  printf "%s\\n%s\\n" "$NOW" "$LATEST" > "$CACHE_FILE" 2>/dev/null
-fi
-
-if [ "$INSTALLED" != "$LATEST" ]; then
-  NEWEST=$(printf "%s\\n%s\\n" "$INSTALLED" "$LATEST" | sort -V | tail -n1)
-  if [ "$NEWEST" = "$LATEST" ]; then
-    if [ "$INSTALL_PATH" = "plugin" ]; then
-      echo "{\\"systemMessage\\": \\"Soloship update available: $INSTALLED → $LATEST. Update via Claude Code: type /plugins, find Soloship, click Update.\\"}"
-    else
-      echo "{\\"systemMessage\\": \\"Soloship update available: $INSTALLED → $LATEST. Run: npx soloship upgrade\\"}"
-    fi
-  fi
-fi
-
-exit 0
-'`;
-}
-
-function buildPhoneAFriendScript(): string {
-  // Phone-a-friend: warn on git commit/push when staged changes match risk heuristics.
-  // All 6 checks use git diff and the filesystem only — no conversation parsing, no AI judgment.
-  // Exit 0 always (warn, never block). Warnings via systemMessage JSON.
-  return `bash -c '
-COMMAND="$HOOK_TOOL_INPUT"
-
-# Only check git commit commands (push has no staged changes to check)
-if ! echo "$COMMAND" | grep -qE "git\\s+commit"; then
-  exit 0
-fi
-
-WARNINGS=""
-
-STAGED=$(git diff --cached --name-only 2>/dev/null)
-if [ -z "$STAGED" ]; then
-  exit 0
-fi
-
-# --- Heuristic 1: Files outside declared source directories ---
-# Detect source dirs from filesystem at runtime
-SRC_PATTERN=""
-for d in src lib app pages components routes services models views controllers public static assets; do
-  if [ -d "$d" ]; then
-    SRC_PATTERN="$SRC_PATTERN|$d"
-  fi
-done
-SRC_PATTERN="\${SRC_PATTERN#|}"
-
-if [ -n "$SRC_PATTERN" ]; then
-  KNOWN_DIRS="$SRC_PATTERN|tests?|__tests__|spec|__arch__|docs|doc|bin|scripts|dist|build|node_modules|\\.github|\\.claude"
-  KNOWN_ROOT="^(package\\.json|tsconfig.*\\.json|README.*|CLAUDE\\.md|AGENTS\\.md|CHANGELOG\\.md|\\.gitignore|\\.eslintrc.*|eslint\\.config.*|prettier.*|vite\\.config.*|next\\.config.*|jest\\.config.*|vitest\\.config.*)$"
-
-  while IFS= read -r file; do
-    [ -z "$file" ] && continue
-    DIR_PART=$(echo "$file" | cut -d/ -f1)
-    # Skip files in known directories
-    if echo "$DIR_PART" | grep -qE "^($KNOWN_DIRS)$"; then
-      continue
-    fi
-    # Skip known root-level files
-    BASENAME=$(basename "$file")
-    if echo "$BASENAME" | grep -qE "$KNOWN_ROOT"; then
-      continue
-    fi
-    WARNINGS="$WARNINGS  - File outside source directories: $file\\n"
-  done <<< "$STAGED"
-fi
-
-# --- Heuristic 2: Configuration file changes ---
-while IFS= read -r file; do
-  [ -z "$file" ] && continue
-  if echo "$file" | grep -qiE "\\.(env|env\\..+)$|\\.env$"; then
-    WARNINGS="$WARNINGS  - Environment file changed: $file\\n"
-  elif echo "$file" | grep -qiE "(^|/)(\\.github/|Dockerfile|docker-compose|wrangler\\.toml|vercel\\.json|firebase\\.json|netlify\\.toml|fly\\.toml|\\.circleci/)"; then
-    WARNINGS="$WARNINGS  - CI/deploy config changed: $file\\n"
-  elif echo "$file" | grep -qiE "(package-lock\\.json|yarn\\.lock|pnpm-lock\\.yaml|bun\\.lockb|bun\\.lock|Gemfile\\.lock|Pipfile\\.lock|poetry\\.lock)$"; then
-    WARNINGS="$WARNINGS  - Lock file changed: $file\\n"
-  fi
-done <<< "$STAGED"
-
-# --- Heuristic 3: New dependencies added ---
-while IFS= read -r file; do
-  [ -z "$file" ] && continue
-  if echo "$file" | grep -qE "(package\\.json|requirements\\.txt|Gemfile|Pipfile|pyproject\\.toml|go\\.mod|Cargo\\.toml|pom\\.xml|build\\.gradle)$"; then
-    # Check if dependency sections have additions (+ lines in the diff)
-    ADDITIONS=$(git diff --cached -- "$file" 2>/dev/null | grep -cE "^\\+.*(dependencies|require|gem |install_requires)" || true)
-    if [ "$ADDITIONS" -gt 0 ]; then
-      WARNINGS="$WARNINGS  - New dependency added (check $file)\\n"
-    fi
-  fi
-done <<< "$STAGED"
-
-# --- Heuristic 4: Auth/migration/env/secret file patterns ---
-while IFS= read -r file; do
-  [ -z "$file" ] && continue
-  if echo "$file" | grep -qiE "(auth|migration|migrate|secret|credential|security|permission|token|password|session|oauth|jwt|api.?key)"; then
-    WARNINGS="$WARNINGS  - Security-sensitive file changed: $file\\n"
-  fi
-done <<< "$STAGED"
-
-# --- Heuristic 5: Large diffs (>300 lines added+removed) ---
-DIFF_STAT=$(git diff --cached --numstat 2>/dev/null | awk "{ added += \\$1; removed += \\$2 } END { print added + removed }")
-if [ -n "$DIFF_STAT" ] && [ "$DIFF_STAT" -gt 300 ] 2>/dev/null; then
-  WARNINGS="$WARNINGS  - Large change: $DIFF_STAT lines added+removed (threshold: 300)\\n"
-fi
-
-# --- Heuristic 6: Removal of validation/sanitization patterns ---
-REMOVED_VALIDATION=$(git diff --cached 2>/dev/null | grep -cE "^-.*(sanitize|validate|escape|parameteriz|prepared.?statement|htmlspecialchars|encodeURI|DOMPurify|csrf|xss|sql.?inject|input.?valid)" || true)
-if [ "$REMOVED_VALIDATION" -gt 0 ]; then
-  WARNINGS="$WARNINGS  - Validation/sanitization code removed ($REMOVED_VALIDATION lines)\\n"
-fi
-
-# --- Output warnings ---
-if [ -n "$WARNINGS" ]; then
-  MSG="PHONE A FRIEND — Get a second opinion on these changes before shipping:\\n\\n$WARNINGS\\nAsk a developer you trust, post in a coding community (Reddit, Discord, forum), or use a code review service. Non-obvious changes are where bugs hide."
-  ${emitSystemMessage("MSG", true)}
-fi
-
-exit 0
-'`;
-}
-
-function buildSecurityScanScript(): string {
-  // Automated security scanning: runs Semgrep on staged files before git commit.
-  // Deterministic tool-based scanning, not AI-based — the fox doesn't guard the henhouse.
-  // Blocks on critical findings (exit 2), warns on medium (exit 0 + systemMessage).
-  // Gracefully skips if semgrep is not installed (with install instructions).
-  return `bash -c '
-COMMAND="$HOOK_TOOL_INPUT"
-
-# Only check git commit commands
-if ! echo "$COMMAND" | grep -qE "git\\s+commit"; then
-  exit 0
-fi
-
-STAGED=$(git diff --cached --name-only 2>/dev/null)
-if [ -z "$STAGED" ]; then
-  exit 0
-fi
-
-# Check if semgrep is available
-if ! command -v semgrep &>/dev/null; then
-  if [ -f ".semgrep.yml" ] || [ -d ".semgrep" ]; then
-    echo "{\\"systemMessage\\": \\"Security scan skipped: semgrep not installed. Install with: pip install semgrep (or pipx install semgrep)\\"}"
-  fi
-  exit 0
-fi
-
-# Only scan source files that are staged
-SCAN_FILES=""
-while IFS= read -r file; do
-  [ -z "$file" ] && continue
-  if echo "$file" | grep -qE "\\.(ts|tsx|js|jsx|py|rb|go|java|php|rs)$"; then
-    if [ -f "$file" ]; then
-      SCAN_FILES="$SCAN_FILES $file"
-    fi
-  fi
-done <<< "$STAGED"
-
-if [ -z "$SCAN_FILES" ]; then
-  exit 0
-fi
-
-# Use project config if available, otherwise OWASP rules
-SEMGREP_CONFIG=".semgrep.yml"
-if [ ! -f "$SEMGREP_CONFIG" ] && [ ! -d ".semgrep" ]; then
-  SEMGREP_CONFIG="p/owasp-top-ten"
-fi
-
-# Run scan, capture output
-RESULTS=$(semgrep --config "$SEMGREP_CONFIG" --json $SCAN_FILES 2>/dev/null || true)
-
-if [ -z "$RESULTS" ]; then
-  exit 0
-fi
-
-# Count findings by severity using grep (no python3 dependency)
-CRITICAL=$(echo "$RESULTS" | grep -cE "\\"severity\\"[[:space:]]*:[[:space:]]*\\"ERROR\\"" 2>/dev/null || echo "0")
-MEDIUM=$(echo "$RESULTS" | grep -cE "\\"severity\\"[[:space:]]*:[[:space:]]*\\"WARNING\\"" 2>/dev/null || echo "0")
-
-# Block on critical findings
-if [ "$CRITICAL" -gt 0 ]; then
-  echo "BLOCKED: Semgrep found $CRITICAL critical security finding(s). Run: semgrep --config $SEMGREP_CONFIG to see details." >&2
-  exit 2
-fi
-
-# Warn on medium findings
-if [ "$MEDIUM" -gt 0 ]; then
-  echo "{\\"systemMessage\\": \\"Security scan: $MEDIUM medium-severity finding(s). Run semgrep for details. Consider fixing before shipping.\\"}"
-fi
-
-exit 0
 '`;
 }
 
@@ -1717,93 +1304,6 @@ WHY="$PATH_HIT"
 [ -z "$WHY" ] && WHY="$CONTENT_HIT"
 
 echo "BLOCKED by billing-confirmation-gate: this edit touches billing / credit / rerun-window state (matched: $WHY). Per the billing-confirmation-gate rule, you must FIRST confirm the data-model semantics with the user — unit & sign (cents vs dollars, balance vs delta), idempotency (what a double-run does), the window boundary (inclusive/exclusive, timezone), and backfill scope (which rows, before/after counts). Do NOT write this code until the user confirms. After they confirm, record it: mkdir -p .ai && echo \\"confirmed: <what> ($(date +%Y-%m-%d))\\" > .ai/.billing-ack — then this gate stands down. Creating that file without an actual confirmation removes the protection this gate provides — if the gate seems wrong, surface that to the user instead." >&2
-exit 2
-'`;
-}
-
-// File extensions the duplicate-component warn hook inspects. v1 is React-only
-// (.tsx/.jsx); the LLM-driven component-inventory skill covers .vue/.svelte.
-// Extending the hook to other frameworks is a one-line change here.
-const COMPONENT_HOOK_EXTENSIONS_RE = "\\.(tsx|jsx)$";
-// git grep pathspecs matching the same extensions — repo-wide (tracked files
-// only, so node_modules is skipped by construction; no hardcoded source-dir
-// list, so monorepos / packages/ui / route-local components are covered).
-const COMPONENT_HOOK_PATHSPECS = `-- "*.tsx" "*.jsx"`;
-// Component declaration pattern: an exported PascalCase function/const/class.
-// By construction this EXCLUDES re-exports (`export { X } from`,
-// `export * from`) and type-only exports (`export type X`) — none of those
-// have function|const|class after `export`. `export const X = memo(...)` and
-// `forwardRef(...)` assignments match via the const form.
-const COMPONENT_DECL_RE =
-  "export[[:space:]]+(default[[:space:]]+)?(async[[:space:]]+)?(function|const|class)[[:space:]]+[A-Z][A-Za-z0-9_]*";
-
-export function buildComponentDupWarnScript(): string {
-  // Duplicate-component warn hook (PostToolUse/Edit|Write). Mechanical floor
-  // for the component-reuse rule at the moment a duplicate is born: when a
-  // just-written .tsx/.jsx file exports a component whose name is already
-  // exported by another file, surface a warning to the agent (stderr + exit 2
-  // on PostToolUse = shown to Claude, never blocks — the write already
-  // happened; same warn pattern as the live-data evidence gate).
-  //
-  // Detection ceiling is deliberate: name collisions only — the cheap
-  // real-time layer. Same-purpose components with DIFFERENT names are caught
-  // upstream (component-inventory dup-flagging, review lenses). Fail-safe:
-  // any internal error (not a git repo, grep failure) exits 0 silently — a
-  // warn hook must never break an edit.
-  return `bash -c '
-FILE="$HOOK_MODIFIED_FILE"
-[ -n "$FILE" ] || exit 0
-echo "$FILE" | grep -qE "${COMPONENT_HOOK_EXTENSIONS_RE}" || exit 0
-[ -f "$FILE" ] || exit 0
-DIR=$(dirname "$FILE")
-git -C "$DIR" rev-parse --show-toplevel >/dev/null 2>&1 || exit 0
-TOP=$(git -C "$DIR" rev-parse --show-toplevel 2>/dev/null) || exit 0
-REL=$(git -C "$DIR" ls-files --full-name --error-unmatch "$FILE" 2>/dev/null)
-NAMES=$(grep -hoE "${COMPONENT_DECL_RE}" "$FILE" 2>/dev/null | grep -oE "[A-Z][A-Za-z0-9_]*$" | sort -u)
-[ -n "$NAMES" ] || exit 0
-WARN=""
-for NAME in $NAMES; do
-  # Boundary class instead of \\b — macOS git grep ERE has no \\b support
-  # (found by the fixture tests: \\b matched nothing and the fail-safe
-  # silently swallowed the miss).
-  HITS=$(git -C "$TOP" grep -lE "export[[:space:]]+(default[[:space:]]+)?(async[[:space:]]+)?(function|const|class)[[:space:]]+$NAME([^A-Za-z0-9_]|$)" ${COMPONENT_HOOK_PATHSPECS} 2>/dev/null | grep -v "^$REL\$" || true)
-  if [ -n "$HITS" ]; then
-    WARN="$WARN component $NAME already exported by: $(echo "$HITS" | tr "\\n" " ");"
-  fi
-done
-[ -z "$WARN" ] && exit 0
-echo "WARN (component-reuse): $FILE exports$WARN Reuse or extend the existing component if it serves the same purpose, or rename if genuinely different. Check docs/architecture/COMPONENTS.md (regenerate with /soloship:component-inventory) and apply the rule of three — see the component-reuse rule." >&2
-exit 2
-'`;
-}
-
-function buildLiveDataEvidenceScript(): string {
-  // Live-data evidence gate (PostToolUse/Edit|Write). Mechanical floor for the
-  // live-data-evidence-gate rule at the durable-write boundary. WARN-ONLY (the
-  // write already happened; this is PostToolUse): if a doc that records data
-  // conclusions (docs/solutions, docs/reports, a plan file) asserts a
-  // production-data claim but carries no Claims Table, surface a warning so the
-  // agent adds provenance or labels it inferred. Narrow scope + high-precision
-  // phrase list keeps false-positives low — a noisy hook gets disabled, and a
-  // hard block on a heuristic trains ignore-the-warning behavior. It cannot
-  // judge truth; it only checks a Claims Table is present when a data claim is.
-  return `bash -c '
-TI="$HOOK_TOOL_INPUT"
-[ -z "$TI" ] && exit 0
-
-# Only artifacts that record data conclusions. Not every docs/ write.
-echo "$TI" | grep -qiE "\\"(file_)?path\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*(docs/solutions/|docs/reports/|docs/plans/)[^\\"]*\\.md\\"" || exit 0
-
-# High-precision data-claim phrases (precision-first to keep noise low).
-CLAIM=$(echo "$TI" | grep -oiE "(matched exactly|reconciles? to|reconciled to|already linked|no[nt]?[- ]?existent|does not exist|doesn.t exist|is free|free to link|numbers? match)" | head -1)
-[ -z "$CLAIM" ] && exit 0
-
-# Provenance present? A Claims Table shows a verdict column / confirmed|inferred.
-if echo "$TI" | grep -qiE "(claims? table|\\| *verdict|confirmed|inferred|provenance)"; then
-  exit 0
-fi
-
-echo "WARN (live-data-evidence-gate): this artifact asserts a live-data claim (matched: \\"$CLAIM\\") but carries no Claims Table. Per the live-data-evidence-gate rule, back the claim with a provenance-complete row (claim | exact query | environment | timestamp | result+rowcount | verdict) or label it inferred. Run the evidence loop (references/evidence-loop.md)." >&2
 exit 2
 '`;
 }
@@ -2262,7 +1762,7 @@ AGE_MIN=$(( (NOW - MT) / 60 ))
 SURFACE=$(grep -oE "\\"surface\\":\\"[^\\"]*\\"" "$CF" 2>/dev/null | head -1 | sed -E "s/\\"surface\\":\\"//; s/\\"$//")
 [ -z "$SURFACE" ] && SURFACE="browser"
 
-echo "{\\"systemMessage\\": \\"This session still holds a browser claim ($SURFACE — last browser call $AGE_MIN min ago). If browser QA is finished, tear down now per browser-tooling-priority: close the tabs/pages you opened, release credential grants, then release the claim: rm \\\\\\"$CF\\\\\\" (otherwise it releases at session end).\\"}"
+echo "{\\"systemMessage\\": \\"This session still holds a browser claim ($SURFACE — last browser call $AGE_MIN min ago). If browser QA is finished, tear down now per browser-qa-gate: close the tabs/pages you opened, release credential grants, then release the claim: rm \\\\\\"$CF\\\\\\" (otherwise it releases at session end).\\"}"
 exit 0
 '`;
 }

@@ -58,7 +58,7 @@ Check if `docs/audit/audit-findings.json` exists.
 - Intent Layer (list all directories that have AGENTS.md)
 - Cross-Cutting Contracts (from audit findings or placeholder)
 - Global Invariants (from audit conventions or placeholder)
-- Workflow section (Soloship workflow: THINK → PLAN → WORK → LEARN → SHIP)
+- Workflow section (Soloship default path: do the work; plan/review/implement/shipthorough only when asked or the work is load-bearing)
 
 **Audience note (place directly after the stack line):**
 
@@ -101,25 +101,25 @@ knows the directory better than an automated tool.
 
 ## Step 4: Rules
 
-Install rules to `.claude/rules/` based on what the project needs.
+The 7 always-on safety rules come from `npx soloship init` / `upgrade`, not
+from hand-written copies in this skill. Do not reinstall the retired planning
+essays (`solution-search`, `plan-*`, `parameterize-constants`,
+`component-reuse`, `delegation-discipline`, `verification-sufficiency`,
+`browser-tooling-priority`, `qa-plan-in-plans`). Planning shape lives in
+`/soloship:plan` and `AGENTS.md`.
 
-**Always install (core methodology):**
-- `solution-search.md` — search docs/solutions/ before planning
-- `plan-materialization.md` — write plan files immediately after planning
-- `plan-rationale.md` — every plan needs Key Decisions and Why lines
-- `plan-lifecycle.md` — archive or delete plans after completion
-- `parameterize-constants.md` — no magic literals; when refactoring, fix the current section silently and ask about the rest
+**If init/upgrade has not been run:** run it (`--agent` matching this project).
+Confirm the seven safety-floor files are present. Stop if they are missing.
 
-**Install if audit findings suggest them:**
-- If audit found a consistent error handling pattern → create a rule enforcing it
-- If audit found naming conventions → create a rule documenting them
-- If audit found cross-cutting contracts → create a rule listing them
-- If audit found security patterns (e.g., always validate input at boundaries) → create a rule
+**Install extra rules only from audit findings** (error handling, naming,
+cross-cutting contracts, security at boundaries). Product facts belong here;
+workflow coaching does not.
 
 **Don't install:**
 - Rules that fight existing conventions
 - Rules for problems that don't exist in this codebase
-- More than 8 rules total (cognitive overload)
+- Retired Soloship workflow essays as always-on files
+- More than a handful of *project-specific* extras (cognitive overload)
 
 Check what rules already exist in `.claude/rules/`. Don't duplicate.
 
@@ -171,10 +171,9 @@ inventory exists — it's the data source every reuse checkpoint reads:
   markers, matching bootstrap's never-overwrite contract).
 - No UI in this project? Skip — say so explicitly.
 
-The `component-reuse.md` rule (installed in Step 6 via init) makes the
-contract stick: search + cite before creating any component, rule of three
-against over-abstraction, and the duplicate-component warn hook flags name
-collisions in real time.
+The component-reuse convention in `AGENTS.md` makes the contract stick:
+search + cite before creating any component, and extract a shared component
+on the third use. `/soloship:component-inventory` is the data source.
 
 ---
 
@@ -283,7 +282,7 @@ Updated:
 
 Skipped (already exists):
   - CHANGELOG.md
-  - .claude/rules/solution-search.md
+  - .claude/rules/billing-confirmation-gate.md
   - src/contexts/AGENTS.md
 
 [Post-bootstrap nudge]
@@ -296,8 +295,8 @@ Bootstrap is not complete until ALL of these are true:
 - [ ] CLAUDE.md exists and contains project-specific content (not just a template)
 - [ ] AGENTS.md files created for directories with 3+ source files
 - [ ] No existing AGENTS.md files were overwritten
-- [ ] 5 core rules installed in `.claude/rules/`
-- [ ] Total rules ≤ 8
+- [ ] 7 safety-floor rules present in `.claude/rules/` (from init/upgrade, not hand-copied)
+- [ ] No retired Soloship workflow essays reinstalled as always-on files
 - [ ] Hooks verified in `.claude/settings.local.json`
 - [ ] Output summary presented listing all created/updated/skipped items
 - [ ] Post-bootstrap nudge shown

@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Codex, Google Antigravity, and Cursor as guardrail targets (plus an environment-sync skill that sets up Grok Build): **mechanical enforcement** that fires automatically (32 hook protections, 19 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Codex, Google Antigravity, and Cursor as guardrail targets (plus an environment-sync skill that sets up Grok Build): **mechanical enforcement** that fires automatically (25 hook protections, 7 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -197,7 +197,7 @@ For every target at once:
 npx soloship init --agent all
 ```
 
-`init` creates the documentation structure, 19 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`; Antigravity installs `.agents/rules/` and `.agents/hooks.json`; Cursor installs `.cursor/rules/*.mdc` and `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs`, which you then commit. Re-running the Cursor target merges into an existing `.cursor/hooks.json` rather than overwriting it, so your own hooks survive and Soloship's are never duplicated. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+`init` creates the documentation structure, 7 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`; Antigravity installs `.agents/rules/` and `.agents/hooks.json`; Cursor installs `.cursor/rules/*.mdc` and `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs`, which you then commit. Re-running the Cursor target merges into an existing `.cursor/hooks.json` rather than overwriting it, so your own hooks survive and Soloship's are never duplicated. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
 
 For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
 
@@ -302,9 +302,9 @@ All 45 are invoked the same way: `/soloship:<name>`. Source attribution lives in
 When you run `/soloship:bootstrap` (or `/soloship:audit` then `/soloship:bootstrap` on an existing project), it detects your language, framework, and package manager, then installs:
 
 - **Folder scaffolding**: `docs/plans/`, `docs/solutions/`, `docs/audit/`, `docs/automations/` (the automation registry), `AGENTS.md` stubs
-- **29 Claude Code hook protections** across five events. **PreToolUse (13):** dangerous command blocking, phone-a-friend warnings, Semgrep security scan on commits, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate, plan-truth gate, plan-merge gate, main-checkout authoring warn, plan-namespace gate, plan-completeness gate (every plan must declare an observable Goal + Done-When), plan-done-checklist gate (blocks `status: done` while the plan body still has unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers). **PostToolUse (7):** auto-lint, CHANGELOG check, recurrence audit, live-data evidence check, duplicate-component warning, session heartbeat, browser claim. **Stop (4):** plan validation + workflow navigator + handoff reminder (the plan-status contradiction check reads the plan body, not just frontmatter — it prompts a review instead of commanding `status: done` when open items are still listed), a reply timestamp (so session logs can reconstruct when work actually happened), a browser-teardown reminder, and a deploy-lock reminder. **SessionStart (3):** checkpoint commit, update check, session presence. **SessionEnd (2):** browser-claim release, deploy-lock release.
-- **3 Cursor hook protections** in `.cursor/hooks.json`, wired to committed `.cursor/hooks/soloship-*.cjs` so Cursor cloud agents get them too. **beforeShellExecution:** command safety (dangerous `rm -rf`, direct `.env` writes, force-push to main/master, hardcoded API keys, deploys off the default branch). **preToolUse (Write|Delete):** file protection (`.soloship/version`, `.env`, `docs/plans/` frontmatter + status vocabulary, plan done-checklist). **stop:** plan-truth check. That's 32 hook protections across both targets.
-- **19 workflow rules**: solution search, plan materialization, plan rationale, plan lifecycle, plan artifact lifecycle, claim verification, QA plan in plans, billing confirmation, live-data evidence, recurrence, parameterized constants, browser QA gate, browser tooling priority, deploy-from-main-only, automation registry, component reuse, delegation discipline, verification sufficiency, model mode (Fable-era postures)
+- **22 Claude Code hooks** across five events. **PreToolUse (11):** dangerous command blocking, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate, plan-truth gate, plan-merge gate, main-checkout authoring warn, plan-namespace gate, plan-completeness gate (every plan must declare an observable Goal + Done-When), plan-done-checklist gate (blocks `status: done` while the plan body still has unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers). **PostToolUse (4):** auto-lint, recurrence audit, session heartbeat, browser claim. **Stop (3):** plan-truth backstop (reads the plan body, not just frontmatter — it prompts a review instead of commanding `status: done` when open items are still listed), a browser-teardown reminder, and a deploy-lock reminder. **SessionStart (2):** checkpoint commit, session presence. **SessionEnd (2):** browser-claim release, deploy-lock release.
+- **3 Cursor hook protections** in `.cursor/hooks.json`, wired to committed `.cursor/hooks/soloship-*.cjs` so Cursor cloud agents get them too. **beforeShellExecution:** command safety (dangerous `rm -rf`, direct `.env` writes, force-push to main/master, hardcoded API keys, deploys off the default branch). **preToolUse (Write|Delete):** file protection (`.soloship/version`, `.env`, `docs/plans/` frontmatter + status vocabulary, plan done-checklist). **stop:** plan-truth check. That's 25 hook protections across both targets.
+- **7 workflow rules** (always-on safety floor): billing confirmation, live-data evidence, recurrence, browser QA, deploy-from-main-only, automation registry, model mode. Planning shape, component reuse, named constants, and solution search live in skills and `AGENTS.md`, not as always-on essays.
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs**: `CLAUDE.md`, `AGENTS.md`, `CHANGELOG`, `SOLUTION_GUIDE`, sized to your stack
 
@@ -317,20 +317,20 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 **Setup & orientation**
 
 - `/soloship:audit`: Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 7 more to assess quality, entanglement, security, dependencies, gaps, leverage points, and the automation surface (every cron, webhook, and scheduled job plus its monitoring state). Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
-- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 19 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
+- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 7 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard`: Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. Fully self-contained.
 
 **Daily work**
 
 - `/soloship:brainstorm`: Feature exploration that merges Compound Engineering's brainstorm methodology with Superpowers' brainstorming discipline. Ends with a mandatory design-first nudge: sketch before you plan. For demand-validation questions (should this exist?), use `/soloship:office-hours` instead.
-- `/soloship:grill-me`: Relentless pre-plan interview that walks every branch of the design tree until user and agent share a complete mental model. Refuses to produce a plan or any code until alignment is explicit. Triggered explicitly ("grill me", "interview me") or by `/soloship:plan` on medium-to-large work. Adapted from Matt Pocock's `grill-me` (MIT).
+- `/soloship:grill-me`: Relentless pre-plan interview that walks every branch of the design tree until user and agent share a complete mental model. Refuses to produce a plan or any code until alignment is explicit. Use when the user said "grill me" / "interview me", or when planning load-bearing work. Not a default before ordinary requests. Adapted from Matt Pocock's `grill-me` (MIT).
 - `/soloship:spec`: Writes formal specifications with numbered acceptance criteria, data models, API contracts, user flows (including error states), and explicit out-of-scope boundaries. 8-point verification checklist. Fully self-contained.
-- `/soloship:plan`: Searches `docs/solutions/` for prior art, reads architecture context, then runs the Compound-Engineering-derived plan-writing methodology. Every plan must include a QA Plan section with the verification method matched to each touched surface. The enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, QA Plan, no unaddressed pitfalls, and that non-trivial work was preceded by `/soloship:grill-me`. Review is separate, handled by `/soloship:review`.
-- `/soloship:implement`: Finds the most recent plan in `docs/plans/`, claims it (so parallel sessions don't double-work it), sets up an isolated worktree, then runs the Compound-Engineering-derived execution methodology with branching and quality checks. Freshness check warns on stale plans. **A mandatory QA Gate (Step 2.6) executes every row of the plan's QA Plan before completion, and browser QA via `/soloship:browse` is required for any user-facing flow, with a test account where a flow needs login.** **Defaults to a local merge into the base branch** when execution finishes; it does not auto-create a GitHub PR. Ask explicitly ("open a PR for this") or use `/soloship:finish` Option 2 if you want one.
+- `/soloship:plan`: Use when the user asked to plan, or the work is load-bearing. Not the default for ordinary requests — do the work instead. Searches `docs/solutions/` for prior art, reads architecture context, then runs the Compound-Engineering-derived plan-writing methodology. Every plan must include a QA Plan section with the verification method matched to each touched surface. The enforcement gate validates: Why lines, Key Decisions, Execution Strategy, Handoff section, QA Plan, no unaddressed pitfalls, and that non-trivial work was preceded by `/soloship:grill-me`. Review is separate, handled by `/soloship:review`.
+- `/soloship:implement`: Use when the user named this skill or a plan file, or the work is load-bearing. Ordinary requests: do the work — do not send the user to `/plan` first. Finds the most recent plan in `docs/plans/`, claims it (so parallel sessions don't double-work it), sets up an isolated worktree, then runs the Compound-Engineering-derived execution methodology with branching and quality checks. Freshness check warns on stale plans. **A mandatory QA Gate (Step 2.6) executes every row of the plan's QA Plan before completion, and browser QA via `/soloship:browse` is required for any user-facing flow, with a test account where a flow needs login.** **Defaults to a local merge into the base branch** when execution finishes; it does not auto-create a GitHub PR. Ask explicitly ("open a PR for this") or use `/soloship:finish` Option 2 if you want one.
 - `/soloship:debug`: Iron law: no fixes without root cause investigation. Searches solutions for prior art first, then runs the Superpowers-derived 4-phase discipline (Investigate, Analyze, Hypothesize, Implement). Nudges `/soloship:learn` for non-obvious fixes.
 - `/soloship:learn`: Captures knowledge from non-obvious work. Runs the Compound-Engineering-derived compound methodology to write a solution doc. Adds Soloship protocols: JSONL logging for cross-session search, architecture registry drift checking, and distributed AGENTS.md propagation (pitfalls into existing AGENTS.md files, new ones for directories above the 3-file governance threshold). Anti-rationalization table blocks "this fix was straightforward, not worth documenting."
 - `/soloship:cleanup`: Knowledge system maintenance. Launches 5 parallel audit agents (solution health, overlap detection, plan lifecycle, AGENTS.md staleness, index sync), presents findings interactively, then executes approved changes in a single atomic commit. Merge candidates require 2-of-3 signal threshold.
-- `/soloship:component-inventory`: Scans the codebase for UI components (React/Vue/Svelte) and generates `docs/architecture/COMPONENTS.md` — name, file, purpose, props, and usage sites per component, plus a "Possible duplicates" section the user decides on. Delta-updates an existing inventory (unchanged rows are preserved byte-for-byte, so a no-change re-run produces no diff). The data source behind the `component-reuse` rule and the duplicate-component warn hook.
+- `/soloship:component-inventory`: Scans the codebase for UI components (React/Vue/Svelte) and generates `docs/architecture/COMPONENTS.md` — name, file, purpose, props, and usage sites per component, plus a "Possible duplicates" section the user decides on. Delta-updates an existing inventory (unchanged rows are preserved byte-for-byte, so a no-change re-run produces no diff). The data source behind the component-reuse convention in `AGENTS.md`.
 
 **Operations**
 
@@ -352,21 +352,21 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 
 ## Quick start
 
-See the [Install](#install) section above for the Codex and Claude install commands. Once installed, the daily flow inside any project is:
+See the [Install](#install) section above for the Codex and Claude install commands. Once installed, the daily flow inside any project is: **do the work.** Always-on gates still apply. `/soloship:plan` → `/soloship:implement` → `/soloship:shipthorough` is opt-in for load-bearing work (billing, live customer data, production deploy, auth, schema) or when you ask for it — not the default for every request.
 
 **New project:**
 
 ```
 /soloship:bootstrap                           # set up the guardrails
-/soloship:brainstorm → /soloship:plan → /soloship:implement
+# then do the work. Plan only if the work is load-bearing or you asked to plan.
 ```
 
 **Existing project:**
 
 ```
-/soloship:audit                               # understand what's there first
+/soloship:audit                               # understand what's there first (once)
 /soloship:bootstrap                           # set up guardrails tailored to what audit found
-/soloship:plan → /soloship:implement → /soloship:shipthorough
+# then do the work. Plan / review / shipthorough only when asked or load-bearing.
 ```
 
 ### Running the npm CLI directly
@@ -385,7 +385,7 @@ npx soloship rollback    # restore the last safety snapshot
 ## Design decisions
 
 1. **Audit before bootstrap on existing projects.** Don't impose governance on a codebase you haven't understood yet.
-2. **Design-first principle.** `/soloship:brainstorm` nudges you toward visual design before `/soloship:plan`. Design catches problems text can't.
+2. **Design-first when the work is visual.** `/soloship:brainstorm` is for new product/UI work you asked to explore — not a required first step on every request.
 3. **Hooks for enforcement, skills for intelligence.** Hooks are mechanical and fire automatically. Skills are guided and require judgment. Rules sit underneath both; they're always on, even when the skill forgets.
 4. **npm installer + Claude Code + Codex plugins.** Installer handles one-time infrastructure. Shared skills handle daily workflow. Different jobs, different tools.
 5. **Vendored, not dependent.** Where [Superpowers](https://github.com/obra/superpowers), [Compound Engineering](https://github.com/EveryInc/compound-engineering-plugin), or [gstack](https://github.com/garrytan/gstack) already do the job well, Soloship vendors the skill (with attribution and version pins) and adds enforcement gates and solo-operator defaults on top. One plugin install carries everything; nothing breaks when an upstream plugin isn't installed. Upstream refreshes are pulled in deliberately, not automatically.
@@ -397,7 +397,7 @@ npx soloship rollback    # restore the last safety snapshot
 | 1-2 | Done | Cleanup + `npx soloship init` with stack detection |
 | 3-4 | Done | `/audit` + `/bootstrap` skills |
 | 5-6 | Done | The initial skill set + hooks + rules |
-| 7 | Partially done | The safety floor shipped (Semgrep security scanning, checkpoint/rollback, phone-a-friend warnings). Surface simplification has not started. |
+| 7 | In progress | Safety floor shipped earlier. Always-on diet (7 rules, 25 hooks) is the first slice of surface simplification. AGENTS.md governance still open. |
 | 8 | Not started | Graduation system, methodology documentation |
 
 Since the phase plan was written, releases 0.5 through 0.13 also vendored the full 45-skill set into the plugin, added Codex support, the browser QA gate, the QA-plan requirement, deploy discipline (deploy-from-main-only, the deploy lock, the `prod` tag), cross-session coordination for parallel agents, and the automation registry with its one-watchdog standard. See [`CHANGELOG.md`](CHANGELOG.md) for the full history. Phase 8's graduation system (calibrated thresholds that tell you when your project has outgrown solo mode) remains open.

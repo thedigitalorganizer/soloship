@@ -1,9 +1,10 @@
 ---
 name: shipthorough
 description: |
-  Full due diligence deploy pipeline. Review, coverage audit, registry update,
-  CHANGELOG, plan cleanup, bisectable commits, PR, verification, deploy.
-  Use after significant work when everything needs to be solid.
+  Full due diligence deploy pipeline. Use only when the user asked to
+  shipthorough, or asked for a thorough production go-live. Do not start
+  because implement finished. Review, coverage, CHANGELOG, plan cleanup,
+  merge, verification, deploy.
 ---
 
 ## Host Compatibility
@@ -11,6 +12,9 @@ description: |
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
 # Soloship Ship Thorough
+
+Read `../references/work-size.md` before continuing. If the user did not ask
+to ship thoroughly, stop this skill. Implement finishing is not a trigger.
 
 ## Model posture (see .claude/rules/model-mode.md)
 
@@ -174,7 +178,7 @@ another way. "Tests pass" / "build is green" does NOT satisfy this gate. Do not
 proceed to Step 10 until it passes.
 
 **When the gate passes, tear down before proceeding** (per the auto-loaded
-`browser-tooling-priority` rule): close every Claude in Chrome tab you created
+`browser-qa-gate` rule): close every Claude in Chrome tab you created
 (`tabs_close_mcp`), release credential grants (`release_credentials`), close
 built-in-browser pages. Leave the `/soloship:browse` daemon running — it is
 shared state by design. Shipping while still holding the user's browser is what

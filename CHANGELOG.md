@@ -2,6 +2,55 @@
 
 ## [Unreleased]
 
+### Changed — Always-on diet: 19 rules → 7, 32 hooks → 25
+
+The always-on cage was mixing product-safety gates with workflow coaching.
+Planning essays, model-behavior micromanagement (except the Fable posture
+switch), and noisy Claude hooks were costing 14k–18k tokens before any
+product fact loaded, and most of those hooks never ran in Codex anyway.
+
+**Always-on rules kept (shortened):** billing confirmation, live-data evidence
+(cite the query/environment/timestamp or label inferred — the six-column
+Claims Table is no longer mandatory), recurrence, browser QA (includes a
+host-agnostic browser-priority paragraph), deploy-from-main, automation
+registry, model-mode.
+
+**Moved out of always-on:** plan shape/lifecycle/rationale/QA-table/claim
+verification → `/soloship:plan` + the `AGENTS.md` template. Component reuse,
+named constants, and solution search → `AGENTS.md` conventions.
+Delegation-discipline and verification-sufficiency stay skill references
+only. Browser-tooling-priority folded into the short browser-QA rule.
+
+**Init/upgrade deletes the retired rule files** so an existing project does
+not keep the old essays next to the short replacements.
+
+### Changed — Default path is do-the-work, not the full pipeline
+
+New-project `AGENTS.md`/`CLAUDE.md` templates no longer prescribe
+brainstorm → plan → implement → shipthorough as the daily flow. Agents
+do the work; `/soloship:plan`, grill-me, review, autoplan, implement,
+deepen-plan, and shipthorough load only when the user asked or the work
+is load-bearing (billing/credit, live data, prod deploy, auth, schema).
+Plan no longer auto-runs deepen-plan or loops until implement/review.
+
+**Claude hooks removed from the default set:** phone-a-friend, local Semgrep
+(CI still runs it), changelog nag, live-data phrase matching, duplicate
+component-name warn, per-reply timestamp, workflow navigator / handoff
+coaching, daily npm update check. Gates kept: dangerous shell, billing,
+recurrence, deploy freshness/discipline, plan-truth/merge/namespace/
+completeness/done-checklist, main-checkout warn, session snapshot and
+presence, browser claim + teardown, deploy-lock reminder/release.
+
+### Changed — Default path is do the work
+
+`/plan` → four reviewers → `/implement` → `/shipthorough` is no longer the
+implied default. New-project `AGENTS.md` / `CLAUDE.md` say: do the work;
+always-on gates still apply; load the heavy skills only when the user named
+them or the work is load-bearing (billing/credit, live customer or financial
+data, production deploy, auth, schema/migrations). Skill descriptions and
+`skills/references/work-size.md` match. `upgrade` preserves existing project
+docs, so an already-initialized repo needs that sentence added by hand.
+
 ## [0.27.0] - 2026-08-19
 
 ### Added — Cursor target: `--agent cursor`, with cloud agents actually on rails

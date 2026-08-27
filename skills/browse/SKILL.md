@@ -161,7 +161,7 @@ Always flag anything that looks wrong — one sentence, what you noticed and its
 Persistent headless Chromium. First call auto-starts (~3s), then ~100ms per command.
 State persists between calls (cookies, tabs, login sessions).
 
-**Browser priority (per the `browser-tooling-priority` rule):** browse is the
+**Browser priority (per the `browser-qa-gate` rule):** browse is the
 FIRST-choice browser surface for all QA and testing. If browse can't handle the
 flow, escalate in order: Google's Chrome DevTools MCP (`chrome-devtools` — its
 own managed Chrome, isolated from the user's), then Claude in Chrome

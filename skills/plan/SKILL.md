@@ -1,11 +1,12 @@
 ---
 name: plan
 description: |
-  Create an implementation plan with enforcement gates. Searches
-  docs/solutions/ for prior art, reads architecture context, then runs
-  the Compound-Engineering-derived plan-writing methodology. Review is
-  separate — handled by /soloship:review (which dispatches CEO/eng/design/
-  devex plan-review skills, or autoplan for all-in-one).
+  Create an implementation plan with enforcement gates. Use only when the user
+  asked to plan, or the work is load-bearing (billing/credit, live customer or
+  financial data, production deploy, auth, schema/migrations). Do not run this
+  as the default for ordinary requests — do the work instead. Searches
+  docs/solutions/ for prior art, then writes the plan. Review is separate
+  (only if the user asked).
 ---
 
 ## Host Compatibility
@@ -13,6 +14,10 @@ description: |
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
 # Soloship Plan
+
+Read `../references/work-size.md` before continuing. If the user asked you to
+do the work — not to plan — stop this skill and do the work unless it is
+load-bearing.
 
 Your job is to create a thorough implementation plan that a fresh agent with
 zero context can execute correctly.
@@ -250,7 +255,7 @@ Rules for the section:
   for email-sending flows include opening the QA inbox and seeing the email as
   evidence.
 - **The QA Plan implicitly ends with browser teardown** (per the
-  `browser-tooling-priority` rule): close tabs/pages opened, release credential
+  `browser-qa-gate` rule): close tabs/pages opened, release credential
   grants, release the browser claim. `/soloship:implement` treats teardown as
   part of executing the plan.
 - Each phase's success criteria should reference the QA Plan rows they satisfy.
@@ -908,32 +913,21 @@ Examples:
 
 ## Post-Generation Options
 
-After writing the plan file, use the **AskUserQuestion tool** to present these options:
+After writing the plan file, present these options **once** and stop. Do not
+loop. Do not start `/soloship:implement`, `/soloship:review`, `/soloship:autoplan`,
+or `/deepen-plan` unless the user picks that option.
 
-**Question:** "Plan ready at `docs/plans/YYYY-MM-DD-<type>-<name>-plan.md`. What would you like to do next?"
+**Question:** "Plan ready at `docs/plans/YYYY-MM-DD-<slug>.md`. What next?"
 
 **Options:**
-1. **Open plan in editor** - Open the plan file for review
-2. **Run `/deepen-plan`** - Enhance each section with parallel research agents (best practices, performance, UI)
-3. **Run `/soloship:review`** - Technical feedback from code-focused reviewers (DHH, Kieran, Simplicity)
-4. **Review and refine** - Improve the document through structured self-review
-5. **Start `/soloship:implement`** - Begin implementing this plan locally
-6. **Start `/soloship:implement` on remote** - Begin implementing in Claude Code on the web (use `&` to run in background)
-7. **Create Issue** - Create issue in project tracker (GitHub/Linear)
+1. **Nothing — I'll take it from here** (the default)
+2. **Open plan in editor**
+3. **Start `/soloship:implement`**
+4. **Run `/soloship:review`** (or `/soloship:autoplan` if they ask for all four)
+5. **Run `/deepen-plan`** — parallel research; expensive; only if they asked
+6. **Create Issue** — GitHub/Linear
 
-Based on selection:
-- **Open plan in editor** → Run `open docs/plans/<plan_filename>.md` to open the file in the user's default editor
-- **`/deepen-plan`** → Call the /deepen-plan command with the plan file path to enhance with research
-- **`/soloship:review`** → Call the /soloship:review command with the plan file path
-- **Review and refine** → Load `document-review` skill.
-- **`/soloship:implement`** → Call the /soloship:implement command with the plan file path
-- **`/soloship:implement` on remote** → Run `/soloship:implement docs/plans/<plan_filename>.md &` to start work in background for Claude Code web
-- **Create Issue** → See "Issue Creation" section below
-- **Other** (automatically provided) → Accept free text for rework or specific changes
-
-**Note:** If running `/soloship:plan` with ultrathink enabled, automatically run `/deepen-plan` after plan creation for maximum depth and grounding.
-
-Loop back to options after Simplify or Other changes until user selects `/soloship:implement` or `/soloship:review`.
+Do not auto-run `/deepen-plan` because ultrathink (or any thinking mode) is on.
 
 ## Issue Creation
 
@@ -963,6 +957,6 @@ When user selects "Create Issue", detect their project tracker from CLAUDE.md:
 
 5. **After creation:**
    - Display the issue URL
-   - Ask if they want to proceed to `/soloship:implement` or `/soloship:review`
+   - Stop. Do not proceed to `/soloship:implement` or `/soloship:review` unless they ask.
 
 NEVER CODE! Just research and write the plan.

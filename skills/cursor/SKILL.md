@@ -150,7 +150,7 @@ menu path, exact value, one line on why.
    `npx soloship upgrade --agent cursor` (also covered by `--agent all`, and by
    `auto` when `.cursor/` exists **or** the `cursor` CLI is on PATH — the same
    detection shape the antigravity target uses). It writes:
-   - `.cursor/rules/*.mdc` — the packaged workflow rules, always-on
+   - `.cursor/rules/*.mdc` — the packaged always-on safety rules
      (`alwaysApply: true`, `globs: ""`), each with a GENERATED header.
    - `.cursor/hooks.json` + executable `.cursor/hooks/soloship-*.js` — the
      mechanical gates (below). The installer **merges** into an existing
@@ -171,8 +171,10 @@ menu path, exact value, one line on why.
    present in `.claude/rules/` but missing or stale in `.cursor/rules/`,
    generate `<name>.mdc`: body copied verbatim under the GENERATED header,
    frontmatter `alwaysApply: true`, `globs: ""`, `description:` the rule's H1
-   title. Soloship projects inject rules unconditionally by design — partial
-   delivery is worse than token cost. List every file you moved; each is a
+   title. Soloship projects inject the safety-floor rules unconditionally —
+   partial delivery of a gate is worse than its token cost. Planning and
+   convention guidance lives in skills and AGENTS.md, not as extra always-on
+   files. List every file you moved; each is a
    candidate to fold into `src/rules.ts` (suggest it; that change belongs in
    the Soloship repo).
 
@@ -211,15 +213,12 @@ menu path, exact value, one line on why.
 
    Everything Soloship gates in Claude Code but does NOT gate here goes in the
    report as **protection absent in Cursor** — never silently dropped. As of
-   the 2026-08-18 build that list is: the semgrep security scan, the
-   phone-a-friend commit warnings, the billing/credit confirmation gate, the
+   the always-on diet, that list is: the billing/credit confirmation gate, the
    recurrence gate, deploy-freshness, the worktree/dirty-tree/deploy-lock half
    of deploy discipline, the plan-truth **commit** and plan-**merge** gates,
-   CHANGELOG and live-data-evidence warnings, the duplicate-component warn,
    and everything on `SessionStart`/`SessionEnd` (session registration,
-   checkpoint commit, upgrade check, browser-claim and deploy-lock release) —
-   the last group is structurally unavailable to cloud agents, which never
-   fire those events.
+   checkpoint commit, browser-claim and deploy-lock release) — the last group
+   is structurally unavailable to cloud agents, which never fire those events.
 
 7. **Legacy `.cursorrules`:** if present, fold anything unique into the
    generated set, then propose its deletion (ask, don't auto-delete).
