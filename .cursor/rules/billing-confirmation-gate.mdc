@@ -12,51 +12,18 @@ alwaysApply: true
 
 **Any code that mutates billing, credit, or rerun-window state requires
 confirming the data-model semantics with the user BEFORE writing the code.**
-This is a hard gate, not a suggestion. Writing first and asking later is the
-exact failure this prevents.
+Writing first and asking later is the exact failure this prevents.
 
-"Mutates billing/credit/rerun-window state" includes:
+Covers charges, refunds, invoices, subscriptions, credit grant/deduction/
+expiry, rerun/retry/grace/trial windows, and any backfill that touches those.
 
-- Charging, refunding, proration, invoice or subscription state
-- Credit grant / deduction / expiry / balance / ledger entries
-- Rerun windows, free-retry windows, grace periods, trial length
-- Backfills or migrations that touch any of the above
-- Anything that changes how much a user is charged or how much credit/quota
-  they have or how long a window stays open
+Before writing code, confirm with the user:
 
-## What "Confirm Data-Model Semantics" Means
+1. **Unit and sign** — cents vs dollars; balance vs delta; larger number means more credit or more owed
+2. **Idempotency** — what happens if this runs twice
+3. **Window boundary** — inclusive/exclusive; timezone; what "expired" means
+4. **Backfill scope** — which rows, current values, new values, how you will count before and after
 
-Before writing code, state your understanding back to the user and get explicit
-confirmation on:
-
-1. **The unit and sign** — cents vs dollars; is the field a balance or a
-   delta; does a larger number mean more credit or more owed
-2. **Idempotency** — what happens if this runs twice (double-charge /
-   double-grant is the classic backfill disaster)
-3. **The window boundary** — inclusive/exclusive; timezone; what "expired"
-   means; what an in-flight rerun does at the boundary
-4. **Backfill scope** — which rows, what they currently hold, what they will
-   hold after, and how you will verify the count before and after
-
-Do not write or run the mutation/backfill until the user has confirmed these.
-After confirmation, record it so the mechanical tripwire stands down: write a
-one-line note to `.ai/.billing-ack` (`mkdir -p .ai`) describing what was
-confirmed and the date.
-
-## Why This Exists
-
-This was the single most expensive recurring friction: billing/credit changes
-written on an assumed data model, shipped, then discovered wrong — requiring
-two rounds of backfill plus reverts. The cost of a five-minute confirmation is
-nothing against a wrong production backfill of money or credit.
-
-## When This Triggers
-
-- Before editing any file whose path or content matches billing / credit /
-  invoice / subscription / proration / refund / charge / ledger /
-  rerun-window / grace-period / trial-length semantics.
-- Before running any backfill or migration touching those tables.
-- The Soloship `PreToolUse` billing tripwire hook blocks the edit until
-  `.ai/.billing-ack` exists — that block is this rule's mechanical floor.
-  Creating the ack file without actually confirming with the user violates
-  this rule.
+Then write a one-line note to `.ai/.billing-ack` describing what was confirmed
+and the date. The PreToolUse hook blocks matching edits until that file exists.
+Creating the ack without actually confirming violates this rule.

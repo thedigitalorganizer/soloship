@@ -1,10 +1,9 @@
 ---
 name: implement
 description: |
-  Execute an implementation plan. Finds the most recent plan in
-  docs/plans/, sets up a working branch, then runs the Compound-Engineering-
-  derived execution methodology with branching, clarification gates,
-  and quality checks. Freshness check warns on stale plans.
+  Execute an existing plan file. Use only when the user named this skill or a
+  plan file, or the work is load-bearing. Ordinary requests: do the work —
+  do not send the user to /plan first.
 ---
 
 ## Host Compatibility
@@ -13,8 +12,13 @@ If you are running this skill in Codex, read `../references/codex-compatibility.
 
 # Soloship Implement
 
+Read `../references/work-size.md` before continuing. If the user asked you to
+do work and did not name this skill or a plan file, stop this skill and do
+the work unless it is load-bearing.
+
 Your job is to execute an existing plan. Do NOT start implementing without a plan
-file in `docs/plans/`. If no plan exists, tell the user to run `/plan` first.
+file in `docs/plans/`. If they invoked this skill and no plan exists, tell them —
+do not bounce ordinary work to `/plan`.
 
 ## Model posture (see .claude/rules/model-mode.md)
 
@@ -327,7 +331,7 @@ fix-and-re-verify loop below verifies a new state and remains mandatory.
 
 ### What "browser QA" means here
 
-Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows the change touches**, end to end, on the running app (local dev server or deployed preview). Browser selection follows the auto-loaded `browser-tooling-priority` rule: `/soloship:browse` first, then Google's Chrome DevTools MCP (`chrome-devtools` — its own managed Chrome, isolated from the user's), then Claude in Chrome (the extension in the user's own Chrome — `claude-in-chrome` — with the 1Password credential flow for logins), then the host app's built-in browser — and "the browser is in use by another session" means check the claim's liveness and fall down that list, never give up:
+Use `/soloship:browse` (Soloship's headless browser) to drive the **actual flows the change touches**, end to end, on the running app (local dev server or deployed preview). Browser selection follows the `browser-qa-gate` rule: isolated browser first (`/soloship:browse`, then a managed Chrome such as Chrome DevTools MCP), then the user's real browser only when a login or existing session is required — and "the browser is in use by another session" means check the claim's liveness and fall down that list, never give up:
 
 1. **Identify the affected surface.** From the diff, list every page, route, component, and user flow this change can reach. That list is what must be exercised — not just the one page you were thinking about.
 2. **Exercise the real flow, not just page load.** Click through the happy path *and* the key states the change introduces or affects: empty state, error state, loading, validation failures, the specific interaction you built. Loading a page without interacting with it is not QA.
@@ -355,7 +359,7 @@ If executing ANY QA Plan row surfaces ANY issue — a visual break, broken inter
 
 ### QA teardown (both exits, before reporting)
 
-The moment QA reaches an exit — pass or blocked — release the browser surfaces you held (per `browser-tooling-priority`): close every Claude in Chrome tab you created (`tabs_close_mcp`), release any 1Password credential grants (`release_credentials`), close Chrome DevTools MCP pages and built-in-browser pages you opened, then release your browser claim (the Stop-hook teardown reminder prints the exact `rm` command; run it — otherwise the claim holds until session end). **Leave the `/soloship:browse` daemon running** — its logins are shared state by design. A QA session that keeps holding the user's browser after finishing is exactly why the next session finds it "busy." Only you can close your tabs — no hook can.
+The moment QA reaches an exit — pass or blocked — release the browser surfaces you held (per `browser-qa-gate`): close every Claude in Chrome tab you created (`tabs_close_mcp`), release any 1Password credential grants (`release_credentials`), close Chrome DevTools MCP pages and built-in-browser pages you opened, then release your browser claim (the Stop-hook teardown reminder prints the exact `rm` command; run it — otherwise the claim holds until session end). **Leave the `/soloship:browse` daemon running** — its logins are shared state by design. A QA session that keeps holding the user's browser after finishing is exactly why the next session finds it "busy." Only you can close your tabs — no hook can.
 
 ### The only valid exemption
 
@@ -366,7 +370,7 @@ If the change genuinely has **no browser-reachable surface** — a pure CLI chan
 When implementation is complete:
 
 1. If the work was non-trivial, suggest: "Run `/learn` to capture what you learned."
-2. Then suggest: "Run `/shipfast` for a quick deploy or `/shipthorough` for full due diligence." (Both deploy from the merged base branch, not from a PR.)
+2. Do not start a shipping skill. If the user asked to ship, use `/shipfast` for a production hotfix or `/shipthorough` for a thorough production go-live. Otherwise stop.
 
 ## Verification
 

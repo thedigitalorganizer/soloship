@@ -3,15 +3,10 @@ name: autoplan
 preamble-tier: 3
 version: 1.0.0
 description: |
-  Auto-review pipeline — reads the full CEO, design, eng, and DX review skills from disk
-  and runs them sequentially with auto-decisions using 6 decision principles. Surfaces
-  taste decisions (close approaches, borderline scope, codex disagreements) at a final
-  approval gate. One command, fully reviewed plan out.
-  Use when asked to "auto review", "autoplan", "run all reviews", "review this plan
-  automatically", or "make the decisions for me".
-  Proactively suggest when the user has a plan file and wants to run the full review
-  gauntlet without answering 15-30 intermediate questions.
-  Voice triggers (speech-to-text aliases): "auto plan", "automatic review".
+  Auto-review pipeline — reads CEO, design, eng, and DX review skills and runs
+  them sequentially. Use only when the user asked to autoplan / run all reviews.
+  Do not suggest this because a plan file exists. Expensive: four full review
+  skills in one pass.
 benefits-from: [office-hours]
 triggers:
   - run all reviews
@@ -31,6 +26,10 @@ allowed-tools:
 ## Host Compatibility
 
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
+
+Read `../references/work-size.md` before continuing. If the user did not ask
+to autoplan / run all reviews, stop this skill. A plan file existing is not
+a trigger.
 
 ## Model posture (Soloship)
 

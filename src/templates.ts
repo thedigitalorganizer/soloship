@@ -11,6 +11,18 @@ import {
   schemaVersionMarker,
 } from "./solution-schema.js";
 
+/** Copied into new-project AGENTS.md/CLAUDE.md. Keep short — it is always-on context. */
+export const LOAD_BEARING_WORK =
+  "billing/credit, live customer or financial data, production deploy, auth, or schema/migrations";
+
+export const DEFAULT_WORK_PATH = `## Default path
+
+Do the work. Always-on gates still apply.
+
+Use \`/soloship:plan\`, \`/soloship:grill-me\`, \`/soloship:review\`, \`/soloship:autoplan\`, \`/soloship:implement\`, \`/soloship:deepen-plan\`, and \`/soloship:shipthorough\` only when the user asked for that skill, or the work is load-bearing: ${LOAD_BEARING_WORK}.
+
+Do not chain those skills as a default pipeline.`;
+
 export function generateClaudeMd(project: ProjectInfo): string {
   const stackLine = [
     project.stack.language === "typescript"
@@ -68,21 +80,22 @@ TODO: Run /audit or /bootstrap to populate this section
 
 <!-- TODO: Add project-specific invariants discovered by /audit -->
 
-## Workflow
+${DEFAULT_WORK_PATH}
 
-This project follows: **THINK → PLAN → WORK → LEARN → SHIP**
-
-| Phase | Tool | When to Upgrade |
-|-------|------|-----------------|
-| Think | /brainstorm | Always start here for new work |
-| Plan | /plan | After brainstorming + visual design |
-| Work | /implement | Execute the plan |
-| Learn | /learn | After non-obvious fixes |
-| Ship | /shipfast or /shipthorough | Fast for hotfixes, thorough for features |
+After a non-obvious fix, write a solution doc (\`/soloship:learn\`). Ship to production only when the user asks (\`/soloship:shipfast\` for a hotfix, \`/soloship:shipthorough\` for a thorough production go-live).
 
 ## Rules
 
-Coding conventions and workflow rules auto-load from \`.claude/rules/\` — including **parameterize-constants** (no magic literals; refactor un-parameterized values when you encounter them, then list other affected sites and ask). **automation-registry** applies to any cron/webhook/scheduled-job work: register in \`docs/automations/registry.json\`, wire a check-in, observe it land — one watchdog, never per-job watchdogs (\`/soloship:cron\` is the console).
+Coding conventions live in this file and in package-level AGENTS.md files.
+Always-on safety rules auto-load from \`.claude/rules/\` (billing confirmation,
+live-data evidence, browser QA, deploy-from-main, automation registry,
+recurrence, model-mode). Name repeated or business/config values; leave
+one-shot literals inline. Search for an existing UI component before creating
+one (extract a shared component on the third use). Before planning or
+debugging, search \`docs/solutions/\`. Plans live in \`docs/plans/\` with status
+frontmatter, \`## Goal\`, \`## Done-When\`, a Why per phase, Key Decisions, and a
+QA Plan row per touched surface. Automations register in
+\`docs/automations/registry.json\` and check in (\`/soloship:cron\` is the console).
 
 ## Agent Surfaces
 
@@ -127,19 +140,23 @@ The maintainer may not be a traditional coder. Explain technical work with a pla
 | CHANGELOG.md | Version history |
 | docs/SOLUTION_GUIDE.md | Schema for solution docs |
 
-## Workflow
+${DEFAULT_WORK_PATH}
 
-This project follows: THINK -> PLAN -> WORK -> LEARN -> SHIP.
-
-- Think: use Soloship brainstorm/spec skills for new work.
-- Plan: write plans to \`docs/plans/YYYY-MM-DD-<slug>.md\`.
-- Work: implement from the latest approved plan.
-- Learn: write solution docs for non-obvious fixes.
-- Ship: run the appropriate Soloship shipping workflow.
+When a plan is warranted, write it to \`docs/plans/YYYY-MM-DD-<slug>.md\`. After a non-obvious fix, write a solution doc. Ship to production only when the user asks.
 
 ## Rules
 
-Coding conventions and workflow rules auto-load from \`.codex/rules/\`. The important project-wide rule is **browser-qa-gate**: no user-facing change is done until the affected flow has been exercised in a real browser, any issue found has been fixed, and the flow has been re-run successfully. If a flow needs login, use the default test account documented at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask to create a test account before claiming the flow is verified. Browser selection and end-of-QA cleanup follow **browser-tooling-priority**: Soloship's \`/browse\` daemon first, Google's Chrome DevTools MCP (its own managed Chrome) second, Claude in Chrome (the extension in the user's own Chrome, with the 1Password credential flow) third, the host app's built-in browser last — and when QA ends, close the browser tabs/sessions you opened so the next session doesn't find the browser held by a dead one.
+Coding conventions live in this file and in package-level AGENTS.md files.
+Always-on safety rules auto-load from \`.codex/rules/\`: billing confirmation,
+live-data evidence, browser QA, deploy-from-main, automation registry,
+recurrence, and model-mode.
+
+- Name repeated or business/config values; leave one-shot literals inline.
+- Search for an existing UI component before creating one; extract a shared component on the third use.
+- Before planning or debugging, search \`docs/solutions/\` for prior art.
+- Plans live in \`docs/plans/\` with status frontmatter (\`planned\` / \`in-progress\` / \`blocked\` / \`done\` / \`abandoned\` / \`superseded\`), \`## Goal\`, \`## Done-When\`, a Why per phase, Key Decisions, and a QA Plan row per touched surface.
+- No user-facing change is done until the affected flow has been exercised in a real browser. Isolated browser first (\`/soloship:browse\`); use the user's real browser only when a login is required. If a flow needs login, use the default test account at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask.
+- Every automation is registered in \`docs/automations/registry.json\` and checks in.
 
 Claude Code uses \`CLAUDE.md\`, \`.claude/rules/\`, and \`.claude/settings.local.json\`. Codex uses this file and \`.codex/rules/\`.
 

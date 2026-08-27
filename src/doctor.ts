@@ -1,8 +1,5 @@
 /**
- * `soloship doctor` — report Claude Code, Codex, and project guardrail status.
- *
- * This is intentionally filesystem/CLI based. It does not try to infer quality;
- * it reports whether the install surfaces Soloship relies on are present.
+ * `soloship doctor` — filesystem/CLI report of Soloship install surfaces.
  */
 
 import chalk from "chalk";
@@ -10,6 +7,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join } from "node:path";
+import { getWorkflowRules, RETIRED_WORKFLOW_RULES } from "./rules.js";
 
 type Severity = "required" | "recommended";
 
@@ -345,19 +343,25 @@ function checkRuleSet(
   path: string,
   metadata: Omit<CheckResult, "present"> & { ext?: string }
 ): CheckResult {
-  // Cursor reads `.mdc` and silently ignores `.md` in its rules directory, so
-  // the extension is load-bearing: counting the wrong one reports an
-  // unprotected project as protected.
+  // Cursor reads `.mdc` and silently ignores `.md` in its rules directory.
   const { ext = ".md", ...rest } = metadata;
-  const browserQaGate = join(path, `browser-qa-gate${ext}`);
+  const toName = (f: string) => f.replace(/\.md$/, ext);
+  const missing = Object.keys(getWorkflowRules()).filter(
+    (f) => !existsSync(join(path, toName(f)))
+  );
+  const leftovers = RETIRED_WORKFLOW_RULES.filter((f) =>
+    existsSync(join(path, toName(f)))
+  );
   const ruleCount = existsSync(path)
-    ? readdirSync(path).filter((entry) => entry.endsWith(ext)).length
+    ? readdirSync(path).filter((e) => e.endsWith(ext)).length
     : 0;
-
+  const extra =
+    (missing.length ? `; missing ${missing.join(", ")}` : "") +
+    (leftovers.length ? `; ${leftovers.length} retired leftovers — run npx soloship upgrade` : "");
   return {
-    present: existsSync(browserQaGate) && ruleCount >= 9,
+    present: missing.length === 0 && leftovers.length === 0,
     notes: existsSync(path)
-      ? `${ruleCount} rule files found`
+      ? `${ruleCount} rule files found${extra}`
       : "rules directory missing",
     ...rest,
   };

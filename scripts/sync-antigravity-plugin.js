@@ -126,5 +126,5 @@ writeJson(join(pluginRoot, "installed_version.json"), {
 console.log(`Synced Soloship Antigravity plugin to ${pluginRoot}`);
 console.log(`Version: ${manifest.version}`);
 console.log(`Skills: 47 skills loaded`);
-console.log(`Rules: 19 workflow rules loaded`);
+console.log(`Rules: ${Object.keys(getWorkflowRules()).length} workflow rules loaded`);
 console.log(`Hooks: Command safety, file protection, and stop checks configured`);

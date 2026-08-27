@@ -3,58 +3,14 @@
 ## The Rule
 
 **No automation ships without a registry entry and an observed first
-check-in.** An "automation" is anything that runs on a schedule or fires on
-an event without a human driving it: cron jobs, scheduled workers, CI
-schedules, local launchd/crontab jobs, webhook receivers, queue consumers.
+check-in.** Cron, scheduled workers, CI schedules, launchd/crontab, webhooks,
+queue consumers.
 
-The registry is `docs/automations/registry.json` — the single source of
-truth for every automation this project owns (human view:
-`docs/automations/README.md`). Each entry: name, kind, where it runs,
-check-in mechanism, `maxSilenceMinutes` (~3x expected cadence, floor 60),
-a troubleshoot pointer, and a `description` (optional but recommended —
-one plain-English sentence: what it does and why it matters, surfaced
-wherever humans look: status endpoints, alert emails, dashboards).
+Registry: `docs/automations/registry.json`. Each entry: name, kind, where it
+runs, check-in, `maxSilenceMinutes` (~3x cadence, floor 60), troubleshoot
+pointer, and a one-sentence `description`.
 
-## Why
-
-Automations fail silently: a dead cron throws no errors, a webhook whose
-auth secret drifted delivers nothing, and both look identical to "nothing
-happened" until the damage surfaces weeks later. The countermeasure is a
-dead-man's switch — every automation checks in on SUCCESS, and one watchdog
-alerts on the absence of good news. That only works if every automation is
-registered; an unregistered automation is invisible to the watchdog by
-definition.
-
-## How To Apply
-
-Building a new automation (this is `/soloship:cron` add mode — the order
-is mandatory):
-
-1. **Register** the entry in `docs/automations/registry.json` BEFORE
-   wiring anything.
-2. **Deploy** the registry (if a watchdog imports it at build time,
-   check-ins for unregistered names are rejected — that rejection enforcing
-   registration is by design).
-3. **Wire the check-in** — a sync-log write, a heartbeat curl via the
-   check-in wrapper, or a recorder call after webhook auth. Webhooks also
-   get a baseline check-in seeded at wiring time.
-4. **Observe the first real check-in** before calling the work done.
-   "It should check in" is an assertion, not evidence.
-
-Retiring an automation: delete its registry entry in the same change —
-a registered-but-deleted job alerts forever.
-
-## One Watchdog, Ever
-
-Never build a per-automation watchdog, ad-hoc staleness checker, or
-one-off "is it alive" script. ONE watchdog reads the whole registry; new
-automations are one registry entry, not new monitoring infrastructure.
-If a job needs monitoring semantics the watchdog lacks, extend the
-watchdog — don't fork it.
-
-## When This Triggers
-
-- Any task that creates or modifies a cron trigger, scheduled worker,
-  webhook receiver, queue consumer, or local scheduled job.
-- Any `/soloship:implement` run whose plan touches those surfaces.
-- Retiring/renaming any registered automation.
+Order is mandatory: register → deploy the registry → wire a success check-in
+→ observe the first real check-in. Retire by deleting the registry entry in
+the same change. One watchdog reads the whole registry; never fork a
+per-job watchdog.

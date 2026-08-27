@@ -1,6 +1,6 @@
 ---
 name: deepen-plan
-description: Enhance a plan with parallel research agents for each section to add depth, best practices, and implementation details
+description: Enhance a plan with parallel research agents. Use only when the user asked to deepen a plan. Do not auto-run after /plan or because thinking mode is on.
 argument-hint: "[path to plan file]"
 ---
 
@@ -9,6 +9,9 @@ argument-hint: "[path to plan file]"
 If you are running this skill in Codex, read `../references/codex-compatibility.md` before following host-specific tool instructions. Claude Code should continue to use the Claude-specific tools and command wrappers described here.
 
 ## Model posture (Soloship)
+
+Read `../references/work-size.md` before continuing. If the user did not ask
+to deepen a plan, stop this skill.
 
 See the auto-loaded `model-mode` rule. **Standard posture** (the default):
 execute this skill exactly as written. **Fable posture** (model id contains
