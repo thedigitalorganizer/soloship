@@ -357,24 +357,14 @@ export async function installHooks(
   results.push("PreToolUse: billing/credit/rerun-window confirmation gate (blocks edits until data-model semantics confirmed)");
   results.push("PreToolUse: recurrence gate (blocks a 2nd patch of a failure class already in .ai/learnings.jsonl)");
 
-  // PostToolUse: lint + recurrence audit + session/browser heartbeats.
+  // PostToolUse: recurrence audit + session/browser heartbeats.
   // Changelog nags, live-data phrase matching, and same-name component warns
   // were removed from the default set (release workflow / search / inventory).
+  // The auto-lint hook was retired here too: it read $HOOK_MODIFIED_FILE, an
+  // env var Claude Code never sets (same root cause as the inert PreToolUse
+  // gates below), so it never actually ran — CI already lints, so nothing is
+  // lost by deleting rather than porting it to stdin.
   const postToolUseHooks: HookEntry[] = [];
-
-  if (project.stack.hasLinter) {
-    postToolUseHooks.push({
-      matcher: "Edit|Write",
-      hooks: [
-        {
-          type: "command",
-          command: buildPostToolUseLintScript(project),
-          timeout: 10000,
-        },
-      ],
-    });
-    results.push("PostToolUse: auto-lint after file edits");
-  }
 
   // Recurrence audit: catch script-issued commits the PreToolUse gate can't
   // block; record the recurrence + surface it so the next commit escalates.
@@ -670,7 +660,7 @@ console.log(JSON.stringify({}));
 function buildPreToolUseScript(): string {
   // Exit code 2 blocks the action
   return `bash -c '
-COMMAND="$HOOK_TOOL_INPUT"
+COMMAND=$(cat 2>/dev/null || true)
 
 # Block rm -rf with home directory
 if echo "$COMMAND" | grep -qE "rm\\s+-rf\\s+(~|/Users|/home|\\$HOME)"; then
@@ -678,8 +668,13 @@ if echo "$COMMAND" | grep -qE "rm\\s+-rf\\s+(~|/Users|/home|\\$HOME)"; then
   exit 2
 fi
 
-# Block .env edits
-if echo "$COMMAND" | grep -qE "(cat|echo|printf|>).*\\.env($|\\s)"; then
+# Block .env edits. Boundary after ".env" must accept end-of-string,
+# whitespace, OR a double quote — COMMAND is now the raw stdin JSON payload
+# (fixed 2026-08-27; previously this env var was never set at all), and a
+# command embedded in JSON is always followed by a closing quote, never
+# whitespace or EOL. A boundary of ($|\\s) alone silently never matches
+# inside JSON — found live via a MUST-BLOCK regression check on "cat .env".
+if echo "$COMMAND" | grep -qE "(cat|echo|printf|>).*\\.env(\$|[[:space:]\\\"])"; then
   echo "BLOCKED: Direct .env file modification" >&2
   exit 2
 fi
@@ -697,23 +692,6 @@ if echo "$COMMAND" | grep -qE "(ANTHROPIC|OPENAI|STRIPE|FIREBASE)_.*_KEY.*=.*[a-
 fi
 
 exit 0
-'`;
-}
-
-function buildPostToolUseLintScript(project: ProjectInfo): string {
-  const lintCmd =
-    project.stack.hasLinter
-      ? project.stack.packageManager === "bun"
-        ? "bunx eslint --fix"
-        : "npx eslint --fix"
-      : "true";
-
-  return `bash -c '
-# Only lint if a source file was modified
-FILE="$HOOK_MODIFIED_FILE"
-if [ -n "$FILE" ] && echo "$FILE" | grep -qE "\\.(ts|tsx|js|jsx)$"; then
-  ${lintCmd} "$FILE" 2>/dev/null || true
-fi
 '`;
 }
 
@@ -757,7 +735,7 @@ function buildPlanTruthGateScript(): string {
   // branch-slug match. No plan resolved => exit 0. This gate's job is to stop
   // plans from lying, not to force every commit to have a plan.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 echo "$TI" | grep -qE "git[[:space:]]+commit" || exit 0
 [ -f ${PLAN_STATUS_ACK} ] && exit 0
@@ -829,7 +807,7 @@ function buildPlanNamespaceGateScript(): string {
   // Blocking without routing would be hostile, so the block message names the
   // folder the file actually belongs in.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 [ -f ${PLAN_STATUS_ACK} ] && exit 0
 
@@ -891,7 +869,7 @@ function buildPlanGoalGateScript(): string {
   // observable stop condition). Either present in the write payload OR already on
   // disk counts, so incremental edits to a complete plan are never blocked.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 [ -f ${PLAN_STATUS_ACK} ] && exit 0
 
@@ -960,7 +938,7 @@ export function buildPlanDoneChecklistGateScript(): string {
   // Same trigger/exemption shape as Gates B and B2: only *.md directly under
   // the plans dir, archive/ and README.md exempt.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 [ -f ${PLAN_STATUS_ACK} ] && exit 0
 
@@ -1012,7 +990,7 @@ function buildPlanMergeGateScript(): string {
   // messages, heredocs), match in the other direction: for each open plan that
   // records a `branch:`, check whether the command mentions that branch.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 echo "$TI" | grep -qE "git[[:space:]]+merge" || exit 0
 [ -f ${PLAN_STATUS_ACK} ] && exit 0
@@ -1066,7 +1044,7 @@ export function buildMainCheckoutAuthorWarnScript(): string {
   // worktrees exist (alone in the repo there is nobody to collide with).
   // Fail-safe: any internal error exits 0 silently.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 echo "$TI" | grep -qE "git[[:space:]]+commit" || exit 0
 GIT_DIR=$(cd "$(git rev-parse --git-dir 2>/dev/null)" 2>/dev/null && pwd -P)
@@ -1200,7 +1178,7 @@ function buildDeployFreshnessScript(): string {
   // irrelevant, and any command that visibly builds. Pure filesystem + git +
   // package.json inspection — no AI judgment, no conversation parsing.
   return `bash -c '
-COMMAND="$HOOK_TOOL_INPUT"
+COMMAND=$(cat 2>/dev/null || true)
 
 # Only engage on deploy commands
 if ! echo "$COMMAND" | grep -qE "(firebase[[:space:]]+deploy|wrangler[[:space:]]+(pages[[:space:]]+deploy|deploy)|netlify[[:space:]]+deploy|fly[[:space:]]+deploy|vercel([[:space:]]|$)|(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+deploy)"; then
@@ -1282,7 +1260,7 @@ function buildBillingGateScript(): string {
   // .ai/.billing-ack. The ack file is the escape hatch — the rule forbids
   // creating it without an actual confirmation.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 
 # Already confirmed for this working area => stand down.
@@ -1319,7 +1297,7 @@ function buildRecurrenceGateScript(): string {
   // escape hatch. No LLM judgment — match is deterministic on existing schema.
   // Spec: docs/plans/2026-05-16-recurrence-gate.md.
   return `bash -c '
-TI="$HOOK_TOOL_INPUT"
+TI=$(cat 2>/dev/null || true)
 [ -z "$TI" ] && exit 0
 echo "$TI" | grep -qE "git[[:space:]]+commit" || exit 0
 
@@ -1337,7 +1315,14 @@ if echo "$TI" | grep -qE "<<.{0,6}EOF|<<-?[A-Za-z_]+"; then
   DEGRADED=1
   MSG=""
 else
-  MSG=$(echo "$TI" | grep -oE -- "-m[[:space:]]+\\"[^\\"]*\\"" | head -1 | sed -E "s/^-m[[:space:]]+\\"//; s/\\"$//")
+  # TI is now the raw stdin JSON payload (fixed 2026-08-27), so every quote
+  # around the -m argument is JSON-escaped (\\") rather than bare (") — a
+  # bare-quote grep never matches, which silently forced every real commit
+  # into the degraded/warn-only path instead of the intended block-on-first-
+  # recurrence path. Match against a backslash-stripped copy instead of
+  # trying to make the ERE tolerate an optional backslash at each boundary.
+  TI_UNESC=$(printf "%s" "$TI" | tr -d "\\\\")
+  MSG=$(echo "$TI_UNESC" | grep -oE -- "-m[[:space:]]+\\"[^\\"]*\\"" | head -1 | sed -E "s/^-m[[:space:]]+\\"//; s/\\"$//")
   [ -z "$MSG" ] && DEGRADED=1
 fi
 MSG_TOK=$(printf "%s" "$MSG" | tr "A-Z" "a-z" | tr -c "a-z0-9" " ")
@@ -1502,7 +1487,7 @@ function buildDeployDisciplineScript(): string {
   // The manifest + go/no-go conversation lives in the skills (a hook cannot
   // converse); this is only the mechanical floor.
   return `bash -c '
-COMMAND="$HOOK_TOOL_INPUT"
+COMMAND=$(cat 2>/dev/null || true)
 
 # Only engage on deploy commands (same detection as the deploy-freshness gate)
 if ! echo "$COMMAND" | grep -qE "(firebase[[:space:]]+deploy|wrangler[[:space:]]+(pages[[:space:]]+deploy|deploy)|netlify[[:space:]]+deploy|fly[[:space:]]+deploy|vercel([[:space:]]|$)|(npm|pnpm|yarn|bun)([[:space:]]+run)?[[:space:]]+deploy)"; then
@@ -1563,8 +1548,7 @@ fi
 # (d) Foreign fresh deploy lock: another session is mid-deploy.
 LOCK="$GCD/soloship/deploy.lock"
 if [ -f "$LOCK" ]; then
-  INPUT=$(cat 2>/dev/null || true)
-  SID=$(printf "%s" "$INPUT" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
+  SID=$(printf "%s" "$COMMAND" | grep -oE "\\"session_id\\"[[:space:]]*:[[:space:]]*\\"[^\\"]*\\"" | head -1 | sed -E "s/.*:[[:space:]]*\\"//; s/\\"$//")
   [ -z "$SID" ] && SID="pid-$PPID"
   LSID=$(grep -oE "\\"session_id\\":\\"[^\\"]*\\"" "$LOCK" 2>/dev/null | head -1 | sed -E "s/\\"session_id\\":\\"//; s/\\"$//")
   if [ -n "$LSID" ] && [ "$LSID" != "$SID" ]; then
@@ -1874,8 +1858,13 @@ exit 0
 //   * `timeout` is in SECONDS here (Claude's is milliseconds).
 //   * Blocking is `{"permission":"deny"}` on stdout (or exit code 2), not
 //     exit-2-with-stderr.
-//   * The payload arrives as JSON on stdin. `$HOOK_TOOL_INPUT` is a Claude
-//     Code-ism and does not exist in Cursor.
+//   * The payload arrives as JSON on stdin — same as Claude Code, which
+//     also delivers it only on stdin, never via a `$HOOK_TOOL_INPUT` env
+//     var. (Soloship's Claude gates read that nonexistent env var until
+//     2026-08-27, which made them silently inert — see the fix note on
+//     buildPreToolUseScript and friends. Cursor's scripts never made that
+//     mistake, which is why this installer's pattern is now the template
+//     the Claude gates were rewritten to match.)
 //   * `stop` returns `{"followup_message": "..."}`, which Cursor auto-submits
 //     as the next user message.
 //   * Scripts for PROJECT hooks resolve relative to the project root, so the

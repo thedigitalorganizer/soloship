@@ -1,8 +1,10 @@
 // Main-checkout authoring warn hook — behavioral regression tests.
 //
 // Exercises the GENERATED hook script end-to-end via child_process using the
-// real input contract ($HOOK_TOOL_INPUT env var, the same contract the
-// plan-merge gate uses). The hook is fail-safe by design (exit 0 on any
+// real input contract (the hook payload piped on stdin, the same contract
+// the plan-merge gate uses — a prior version of this test fed the payload via
+// a $HOOK_TOOL_INPUT env var Claude Code never sets, which masked the
+// inert-gate bug fixed 2026-08-27). The hook is fail-safe by design (exit 0 on any
 // internal error), so MUST-FIRE positive fixtures are the load-bearing part:
 // without them a dead detection regex reads as "nothing to report".
 //
@@ -27,7 +29,7 @@ const HOOK_CMD = buildMainCheckoutAuthorWarnScript();
 function runHook(toolInput: string, cwd: string) {
   const result = spawnSync("sh", ["-c", HOOK_CMD], {
     cwd,
-    env: { ...process.env, HOOK_TOOL_INPUT: toolInput },
+    input: toolInput,
     encoding: "utf8",
     timeout: 10_000,
   });
@@ -126,7 +128,7 @@ describe("main-checkout authoring warn hook", () => {
     }
   });
 
-  it("fails safe with empty HOOK_TOOL_INPUT", () => {
+  it("fails safe with an empty stdin payload", () => {
     const { status, stdout } = runHook("", mainRepo);
     expect(status).toBe(0);
     expect(stdout).toBe("");
