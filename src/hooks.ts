@@ -733,6 +733,39 @@ function ensureCodexHooksFeatureFlag(root: string): boolean {
   return true;
 }
 
+// Codex's own default cap on combined AGENTS.md content is 32 KiB (per the
+// plan's Phase 3 research) — too small once root AGENTS.md carries the seven
+// safety gates (Phase 2) plus nested intent-layer files; a real project's
+// root instructions alone can exceed that (MAPS: 17.5 KB, before this diet
+// added the gates). 128 KiB is generous headroom without being unbounded.
+export const CODEX_PROJECT_DOC_MAX_BYTES = 131072;
+
+// `project_doc_max_bytes` is a TOP-LEVEL TOML key (not under any table —
+// verified against learn.chatgpt.com/docs/config-file/config-reference,
+// 2026-08-27), so unlike the `[features]` table above, the only placement
+// rule is "before the first [table] header" — prepending at position 0
+// always satisfies that regardless of what else is in the file.
+function ensureCodexProjectDocMaxBytes(root: string): boolean {
+  const configPath = join(root, CODEX_DIR, "config.toml");
+  let content = existsSync(configPath) ? readFileSync(configPath, "utf-8") : "";
+
+  const keyRe = /^project_doc_max_bytes\s*=\s*(\d+)\s*$/m;
+  const existing = content.match(keyRe);
+  if (existing && Number(existing[1]) >= CODEX_PROJECT_DOC_MAX_BYTES) {
+    return false; // already generous enough — never shrink a user's own value
+  }
+
+  content = existing
+    ? content.replace(keyRe, `project_doc_max_bytes = ${CODEX_PROJECT_DOC_MAX_BYTES}`)
+    : `project_doc_max_bytes = ${CODEX_PROJECT_DOC_MAX_BYTES}\n${content}`;
+
+  if (!existsSync(join(root, CODEX_DIR))) {
+    mkdirSync(join(root, CODEX_DIR), { recursive: true });
+  }
+  writeFileSync(configPath, content);
+  return true;
+}
+
 // Codex CLI hooks. Verified live against learn.chatgpt.com/docs/hooks,
 // 2026-08-27: PreToolUse delivers {session_id, cwd, hook_event_name,
 // tool_name, tool_input} on stdin — byte-identical to Claude Code's contract
@@ -790,6 +823,7 @@ export async function installCodexHooks(
   writeFileSync(hooksPath, JSON.stringify(config, null, 2) + "\n");
 
   const flagChanged = ensureCodexHooksFeatureFlag(root);
+  const capChanged = ensureCodexProjectDocMaxBytes(root);
 
   results.push(`Written ${gateFiles.length} shared gate files to scripts/soloship-hooks/ (shared with Claude, Cursor, Antigravity — commit these)`);
   results.push(
@@ -800,6 +834,11 @@ export async function installCodexHooks(
     flagChanged
       ? `${CODEX_DIR}/config.toml: set [features] hooks = true (hooks are off by default until this is set)`
       : `${CODEX_DIR}/config.toml: [features] hooks = true already set`
+  );
+  results.push(
+    capChanged
+      ? `${CODEX_DIR}/config.toml: raised project_doc_max_bytes to ${CODEX_PROJECT_DOC_MAX_BYTES} (Codex's default cap on combined AGENTS.md content is 32 KiB — too small once the safety gates are in there)`
+      : `${CODEX_DIR}/config.toml: project_doc_max_bytes already >= ${CODEX_PROJECT_DOC_MAX_BYTES}`
   );
 
   return results;

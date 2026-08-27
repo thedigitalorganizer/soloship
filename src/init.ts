@@ -206,13 +206,4 @@ export async function runInit(options: InitOptions): Promise<void> {
     }
   }
 
-  if (agentSelection.codex) {
-    console.log("");
-    console.log(chalk.dim("Codex note: hooks are not installed yet."));
-    console.log(
-      chalk.dim(
-        "  Soloship installs Codex rules and AGENTS.md guidance now; Claude hook parity waits until Codex hook payloads are verified."
-      )
-    );
-  }
 }

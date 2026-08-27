@@ -10,6 +10,7 @@ import {
   ROOT_CAUSE_ENUM,
   schemaVersionMarker,
 } from "./solution-schema.js";
+import { renderSafetyGatesSection } from "./safety-gates.js";
 
 /** Copied into new-project AGENTS.md/CLAUDE.md. Keep short — it is always-on context. */
 export const LOAD_BEARING_WORK =
@@ -87,20 +88,24 @@ After a non-obvious fix, write a solution doc (\`/soloship:learn\`). Ship to pro
 ## Rules
 
 Coding conventions live in this file and in package-level AGENTS.md files.
-Always-on safety rules auto-load from \`.claude/rules/\` (billing confirmation,
-live-data evidence, browser QA, deploy-from-main, automation registry,
-recurrence, model-mode). Name repeated or business/config values; leave
-one-shot literals inline. Search for an existing UI component before creating
-one (extract a shared component on the third use). Before planning or
-debugging, search \`docs/solutions/\`. Plans live in \`docs/plans/\` with status
-frontmatter, \`## Goal\`, \`## Done-When\`, a Why per phase, Key Decisions, and a
-QA Plan row per touched surface. Automations register in
-\`docs/automations/registry.json\` and check in (\`/soloship:cron\` is the console).
+The seven always-on safety gates (billing confirmation, live-data evidence,
+browser QA, deploy-from-main, automation registry, recurrence, model-mode)
+live in root \`AGENTS.md\`'s \`## Safety gates\` section — read there, not here.
+Name repeated or business/config values; leave one-shot literals inline.
+Search for an existing UI component before creating one (extract a shared
+component on the third use). Before planning or debugging, search
+\`docs/solutions/\`. Plans live in \`docs/plans/\` with status frontmatter,
+\`## Goal\`, \`## Done-When\`, a Why per phase, Key Decisions, and a QA Plan row
+per touched surface. Automations register in \`docs/automations/registry.json\`
+and check in (\`/soloship:cron\` is the console).
 
 ## Agent Surfaces
 
-Claude Code uses this \`CLAUDE.md\` file plus \`.claude/rules/\` and \`.claude/settings.local.json\`.
-Codex uses \`AGENTS.md\` plus \`.codex/rules/\`. Keep behavior aligned across both when changing project guardrails.
+Claude Code reads this \`CLAUDE.md\` file plus \`.claude/settings.local.json\`
+(hooks). Cursor, Codex, and Antigravity read \`AGENTS.md\` directly — that is
+where the safety gates and the rest of the project's standing instructions
+actually live; this file exists because Claude Code does not read AGENTS.md
+on its own.
 `;
 }
 
@@ -147,9 +152,8 @@ When a plan is warranted, write it to \`docs/plans/YYYY-MM-DD-<slug>.md\`. After
 ## Rules
 
 Coding conventions live in this file and in package-level AGENTS.md files.
-Always-on safety rules auto-load from \`.codex/rules/\`: billing confirmation,
-live-data evidence, browser QA, deploy-from-main, automation registry,
-recurrence, and model-mode.
+The seven always-on safety gates below apply regardless of what else this
+file says.
 
 - Name repeated or business/config values; leave one-shot literals inline.
 - Search for an existing UI component before creating one; extract a shared component on the third use.
@@ -158,7 +162,15 @@ recurrence, and model-mode.
 - No user-facing change is done until the affected flow has been exercised in a real browser. Isolated browser first (\`/soloship:browse\`); use the user's real browser only when a login is required. If a flow needs login, use the default test account at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask.
 - Every automation is registered in \`docs/automations/registry.json\` and checks in.
 
-Claude Code uses \`CLAUDE.md\`, \`.claude/rules/\`, and \`.claude/settings.local.json\`. Codex uses this file and \`.codex/rules/\`.
+## Agent Surfaces
+
+This file is read directly by Cursor, Codex, and Antigravity. Claude Code
+reads \`CLAUDE.md\` instead — it does not read \`AGENTS.md\` on its own, so the
+Safety gates section below is duplicated in \`CLAUDE.md\`'s own Rules section
+in short form. Edit the gate text here; it is the source of truth others
+should stay consistent with.
+
+${renderSafetyGatesSection()}
 
 <!-- Run /audit to discover and populate subdirectory AGENTS.md files -->
 `;
