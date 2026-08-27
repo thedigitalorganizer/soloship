@@ -1,8 +1,10 @@
 // Plan-done-checklist gate — behavioral regression tests.
 //
 // Exercises the GENERATED hook script end-to-end via child_process using the
-// real input contract ($HOOK_TOOL_INPUT env var — the same contract every
-// other PreToolUse gate uses). BLOCK-by-design, so MUST-FIRE positive
+// real input contract (the hook payload piped on stdin — the same contract
+// every host actually uses; a prior version of this test fed the payload via
+// a $HOOK_TOOL_INPUT env var Claude Code never sets, which masked the
+// inert-gate bug fixed 2026-08-27). BLOCK-by-design, so MUST-FIRE positive
 // fixtures are the load-bearing part: without them a dead detection regex
 // reads as "nothing to report".
 //
@@ -18,7 +20,7 @@
 // - Write into docs/plans/archive/ or docs/plans/README.md -> exempt
 // - Write outside docs/plans/*.md entirely -> exit 0, silent
 // - .ai/.plan-status-ack present -> stands down entirely
-// - empty $HOOK_TOOL_INPUT -> fails safe, exit 0, silent
+// - empty stdin payload -> fails safe, exit 0, silent
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { spawnSync } from "node:child_process";
@@ -33,7 +35,7 @@ const HOOK_CMD = buildPlanDoneChecklistGateScript();
 function runHook(toolInput: string, cwd: string) {
   const result = spawnSync("sh", ["-c", HOOK_CMD], {
     cwd,
-    env: { ...process.env, HOOK_TOOL_INPUT: toolInput },
+    input: toolInput,
     encoding: "utf8",
     timeout: 10_000,
   });
@@ -183,7 +185,7 @@ describe("plan-done-checklist gate", () => {
     expect(stderr).toBe("");
   });
 
-  it("fails safe with empty HOOK_TOOL_INPUT", () => {
+  it("fails safe with an empty stdin payload", () => {
     const { status, stderr } = runHook("", dir);
     expect(status).toBe(0);
     expect(stderr).toBe("");
