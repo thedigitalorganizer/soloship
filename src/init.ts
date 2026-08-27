@@ -16,6 +16,7 @@ import {
   installCursorHooks,
   installCodexHooks,
 } from "./hooks.js";
+import { syncSkillsCanonical } from "./skills-sync.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import {
   installClaudeRules,
@@ -178,6 +179,16 @@ export async function runInit(options: InitOptions): Promise<void> {
     const ruleResults = await installCursorRules(root);
     for (const result of ruleResults) {
       console.log(`  ${chalk.green("+")} Cursor: ${result}`);
+    }
+  }
+
+  // Step 5.5: Canonicalize project skills (.agents/skills/ real, .claude/skills/ symlinked)
+  const skillResults = syncSkillsCanonical(root);
+  if (skillResults.length > 0) {
+    console.log("");
+    console.log(chalk.blue("Syncing project skills to the canonical layout..."));
+    for (const result of skillResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
     }
   }
 
