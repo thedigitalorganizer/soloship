@@ -197,11 +197,21 @@ describe("Architecture Fitness Functions", () => {
       join(ROOT, "skills/references/work-size.md"),
       "utf-8"
     );
-    for (const text of [agents, claude, workSize]) {
+    // Phase 3 (2026-08-27): CLAUDE.md is now `@AGENTS.md` + a short
+    // Claude-only appendix — the do-the-work guidance lives ONLY in the
+    // imported AGENTS.md content, not literally in the CLAUDE.md string.
+    // Claude Code expands the import into context at session start (verified
+    // live against code.claude.com/docs/en/memory), so the guidance still
+    // reaches every session; this test just checks the two files at the
+    // string level, so it can only assert that on `agents` + `workSize`.
+    for (const text of [agents, workSize]) {
       expect(text).toContain("Do the work");
       expect(text).toContain(LOAD_BEARING_WORK);
       expect(text).not.toContain("Always start here for new work");
       expect(text).not.toMatch(/THINK\s*→\s*PLAN\s*→\s*WORK/);
     }
+    expect(claude.trimStart()).toMatch(/^@AGENTS\.md/);
+    expect(claude).not.toContain("Always start here for new work");
+    expect(claude).not.toMatch(/THINK\s*→\s*PLAN\s*→\s*WORK/);
   });
 });

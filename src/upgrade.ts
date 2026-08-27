@@ -1,4 +1,6 @@
 import chalk from "chalk";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import {
   formatAgentSelection,
   parseAgentTarget,
@@ -42,6 +44,32 @@ import { getVersion } from "./pkg.js";
 interface UpgradeOptions {
   agent?: AgentTarget;
   refreshGuides?: boolean;
+}
+
+// Phase 3 of docs/plans/2026-08-27-one-source-of-truth-across-agent-hosts.md:
+// migrating an existing fat CLAUDE.md into `@AGENTS.md` + a Claude-only
+// appendix is judgment work (deciding what prose is genuinely Claude-specific
+// vs. belongs in AGENTS.md) — that lives in /soloship:bootstrap, not here.
+// `upgrade` only detects the old shape and nudges toward bootstrap; it never
+// rewrites CLAUDE.md itself, matching upgrade's standing promise to preserve
+// project docs. Threshold: a real `@AGENTS.md`-shaped CLAUDE.md (import +
+// short appendix) is well under 1 KB — see the size assertion in
+// __arch__/agents-md-instruction-file.test.ts.
+const OLD_CLAUDE_MD_SIZE_THRESHOLD_BYTES = 1000;
+
+export function hasOldShapeClaudeMd(root: string): boolean {
+  const path = join(root, "CLAUDE.md");
+  if (!existsSync(path)) return false;
+  let content: string;
+  try {
+    content = readFileSync(path, "utf-8");
+  } catch {
+    return false;
+  }
+  return (
+    content.length > OLD_CLAUDE_MD_SIZE_THRESHOLD_BYTES &&
+    !content.trimStart().startsWith("@AGENTS.md")
+  );
 }
 
 export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
@@ -193,10 +221,16 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
       "  Project docs (CLAUDE.md, AGENTS.md, CHANGELOG.md) were preserved."
     )
   );
-  if (agentSelection.codex) {
+  if (hasOldShapeClaudeMd(root)) {
+    console.log("");
+    console.log(
+      chalk.yellow(
+        "  CLAUDE.md looks like the old fat-file shape (not an @AGENTS.md import)."
+      )
+    );
     console.log(
       chalk.dim(
-        "  Codex hooks were not ported; rules and AGENTS.md guidance are the Codex safety surface for this release."
+        "  Deciding what to move into AGENTS.md vs. keep Claude-specific is judgment work — run /soloship:bootstrap to migrate it."
       )
     );
   }

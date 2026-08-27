@@ -24,7 +24,36 @@ Use \`/soloship:plan\`, \`/soloship:grill-me\`, \`/soloship:review\`, \`/soloshi
 
 Do not chain those skills as a default pipeline.`;
 
-export function generateClaudeMd(project: ProjectInfo): string {
+// Phase 3 of docs/plans/2026-08-27-one-source-of-truth-across-agent-hosts.md:
+// AGENTS.md became what CLAUDE.md used to be (the fat instruction file) and
+// CLAUDE.md became an import. Four of five hosts read AGENTS.md natively
+// (Cursor, Codex, Antigravity root-only, Grok); Claude Code is the only one
+// that does not, and Anthropic's own docs supply the bridge — a CLAUDE.md
+// whose first line is `@AGENTS.md`. Verified live against
+// code.claude.com/docs/en/memory, 2026-08-27: "Claude loads the imported
+// file at session start, then appends the rest" — exactly the shape used
+// below. This import resolves inside the project root (same directory as
+// CLAUDE.md), so it is never treated as an "external" import and never
+// triggers Claude Code's external-import approval dialog.
+export function generateClaudeMd(_project: ProjectInfo): string {
+  return `@AGENTS.md
+
+## Claude Code
+
+This import pulls in the entire project instruction set above, including
+the Safety gates section — nothing here duplicates it. What's genuinely
+Claude-specific:
+
+- Hooks (dangerous-command blocking, billing/deploy/recurrence/plan gates,
+  session coordination) live in \`.claude/settings.local.json\`, not in
+  AGENTS.md — that file is gitignored per-checkout by design.
+- Project rule directories under \`.claude/\` no longer carry Soloship's
+  safety-gate rules (moved into AGENTS.md above); a \`.claude/rules/\`
+  directory that still exists holds only rules you authored yourself.
+`;
+}
+
+export function generateAgentsMd(project: ProjectInfo): string {
   const stackLine = [
     project.stack.language === "typescript"
       ? "TypeScript"
@@ -38,11 +67,9 @@ export function generateClaudeMd(project: ProjectInfo): string {
     .filter(Boolean)
     .join(" + ");
 
-  return `# CLAUDE.md — AI Assistant Guide
+  return `# AGENTS.md — ${project.name}
 
-**${project.name}**${project.description ? ` — ${project.description}` : ""}
-
-${stackLine ? `**Stack:** ${stackLine}\n` : ""}
+${project.description ? `${project.description}\n\n` : ""}${stackLine ? `**Stack:** ${stackLine}\n` : ""}
 > **Audience note:** The maintainer of this project may not be a traditional coder — Soloship is built for people who ship software through AI agents. When explaining anything technical (architecture, protocols, tooling, tradeoffs), lead with a plain-English analogy before introducing jargon. Define a technical term once with its meaning, then use it freely. Default to recommendations with tradeoffs, not term-paper breakdowns.
 >
 > Be brief: lead with the conclusion, cut preamble and recap, length should track the question's actual complexity rather than fill space. Frame problems and decisions in product or user-experience terms — what behavior changes and why it matters — not implementation details. Never ask the maintainer to review code, judge technical correctness, or decide implementation specifics (data models, database structure, library choices); make those calls yourself and surface only choices that need their product judgment.
@@ -71,7 +98,10 @@ TODO: Run /audit or /bootstrap to populate this section
 
 ## Intent Layer
 
-**Before modifying code in a subdirectory, read its AGENTS.md first.**
+**Before modifying code in a subdirectory, read its AGENTS.md first.** Nested
+AGENTS.md files keep the Scope/Owns/Contracts/Key-Files schema this root file
+no longer carries — that schema restates the file it's written in when used
+at the root, but at each subdirectory it's real information nothing else has.
 
 ## Cross-Cutting Contracts
 
@@ -83,71 +113,7 @@ TODO: Run /audit or /bootstrap to populate this section
 
 ${DEFAULT_WORK_PATH}
 
-After a non-obvious fix, write a solution doc (\`/soloship:learn\`). Ship to production only when the user asks (\`/soloship:shipfast\` for a hotfix, \`/soloship:shipthorough\` for a thorough production go-live).
-
-## Rules
-
-Coding conventions live in this file and in package-level AGENTS.md files.
-The seven always-on safety gates (billing confirmation, live-data evidence,
-browser QA, deploy-from-main, automation registry, recurrence, model-mode)
-live in root \`AGENTS.md\`'s \`## Safety gates\` section — read there, not here.
-Name repeated or business/config values; leave one-shot literals inline.
-Search for an existing UI component before creating one (extract a shared
-component on the third use). Before planning or debugging, search
-\`docs/solutions/\`. Plans live in \`docs/plans/\` with status frontmatter,
-\`## Goal\`, \`## Done-When\`, a Why per phase, Key Decisions, and a QA Plan row
-per touched surface. Automations register in \`docs/automations/registry.json\`
-and check in (\`/soloship:cron\` is the console).
-
-## Agent Surfaces
-
-Claude Code reads this \`CLAUDE.md\` file plus \`.claude/settings.local.json\`
-(hooks). Cursor, Codex, and Antigravity read \`AGENTS.md\` directly — that is
-where the safety gates and the rest of the project's standing instructions
-actually live; this file exists because Claude Code does not read AGENTS.md
-on its own.
-`;
-}
-
-export function generateAgentsMd(project: ProjectInfo): string {
-  return `# AGENTS.md — Project Root
-
-## Scope
-
-Top-level project configuration, documentation, and cross-cutting concerns.
-
-## Audience Note
-
-The maintainer may not be a traditional coder. Explain technical work with a plain-English analogy before jargon, define each technical term once, and frame decisions by user impact instead of implementation detail.
-
-## Owns
-
-- CLAUDE.md — project configuration for AI agents
-- AGENTS.md — project configuration for Codex
-- CHANGELOG.md — version history
-- docs/ — plans, solutions, architecture, audit reports
-- docs/automations/ — the automation registry (every cron/webhook/scheduled job + watchdog thresholds)
-- Project configuration files (package.json, tsconfig.json, etc.)
-
-## Contracts
-
-- All subdirectories should have their own AGENTS.md describing scope and contracts
-- Changes to shared types or interfaces must be noted in CHANGELOG.md
-- Plans go in docs/plans/, solutions go in docs/solutions/
-- Every automation (cron, webhook, scheduled job) is registered in docs/automations/registry.json and checks in to the watchdog; new automations follow /soloship:cron add mode (register -> deploy -> wire -> observe)
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| AGENTS.md | Codex project guidance |
-| CLAUDE.md | Claude Code project guidance |
-| CHANGELOG.md | Version history |
-| docs/SOLUTION_GUIDE.md | Schema for solution docs |
-
-${DEFAULT_WORK_PATH}
-
-When a plan is warranted, write it to \`docs/plans/YYYY-MM-DD-<slug>.md\`. After a non-obvious fix, write a solution doc. Ship to production only when the user asks.
+When a plan is warranted, write it to \`docs/plans/YYYY-MM-DD-<slug>.md\`. After a non-obvious fix, write a solution doc (\`/soloship:learn\`). Ship to production only when the user asks (\`/soloship:shipfast\` for a hotfix, \`/soloship:shipthorough\` for a thorough production go-live).
 
 ## Rules
 
@@ -164,11 +130,13 @@ file says.
 
 ## Agent Surfaces
 
-This file is read directly by Cursor, Codex, and Antigravity. Claude Code
-reads \`CLAUDE.md\` instead — it does not read \`AGENTS.md\` on its own, so the
-Safety gates section below is duplicated in \`CLAUDE.md\`'s own Rules section
-in short form. Edit the gate text here; it is the source of truth others
-should stay consistent with.
+| Host | Reads this file how |
+|------|---------------------|
+| Cursor | Natively — root and nested \`AGENTS.md\` |
+| Codex | Natively — global + root-to-cwd nested, combined under a raised \`project_doc_max_bytes\` cap |
+| Antigravity | Natively — root only; nested support unverified |
+| Grok Build | Natively, plus its own and Cursor's rule/hook surfaces |
+| Claude Code | Does not read this file directly — \`CLAUDE.md\` starts with \`@AGENTS.md\`, an import Claude Code expands into context in full at session start, plus a short Claude-only appendix |
 
 ${renderSafetyGatesSection()}
 

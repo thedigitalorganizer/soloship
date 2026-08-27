@@ -2,8 +2,9 @@
 name: bootstrap
 description: |
   Configure project governance from audit findings or interactive questions.
-  Creates/updates CLAUDE.md, AGENTS.md files, rules, and hooks tailored to the
-  actual project. Use after /audit on existing projects, or standalone on new projects.
+  Creates/updates AGENTS.md (root + nested), CLAUDE.md as an import, rules,
+  and hooks tailored to the actual project. Use after /audit on existing
+  projects, or standalone on new projects.
 ---
 
 ## Host Compatibility
@@ -45,20 +46,32 @@ Check if `docs/audit/audit-findings.json` exists.
 
 ---
 
-## Step 2: CLAUDE.md
+## Step 2: AGENTS.md
 
-**If CLAUDE.md doesn't exist:** Generate one with:
+**Why AGENTS.md, not CLAUDE.md:** Four of five hosts (Cursor, Codex, Antigravity
+root-only, Grok) read `AGENTS.md` natively; Claude Code is the only one that
+doesn't and gets there through an import (Step 3). Put the fat instruction set
+where every host actually looks.
+
+### Root AGENTS.md
+
+**If root `AGENTS.md` doesn't exist (or exists only as the thin Scope/Owns/Key-
+Files schema from before this changed):** Generate/rewrite it with:
 - Project name and description (from audit or answers)
 - Stack line
-- **Audience note** (see below — always include in new CLAUDE.md files)
+- **Audience note** (see below — always include)
 - Related Documentation table (point to all docs that exist)
 - Project Structure (from actual file tree — run `ls` or `find`)
 - Quick Commands (parse from package.json scripts)
-- Key Files table (the 5-8 most important files based on import frequency or audit component map)
-- Intent Layer (list all directories that have AGENTS.md)
+- Intent Layer (list all directories that have their own AGENTS.md)
 - Cross-Cutting Contracts (from audit findings or placeholder)
 - Global Invariants (from audit conventions or placeholder)
 - Workflow section (Soloship default path: do the work; plan/review/implement/shipthorough only when asked or the work is load-bearing)
+- Safety gates section: already written by `npx soloship init`/`upgrade` — don't hand-duplicate it, verify it's present
+
+The root file does NOT carry the Scope/Owns/Key-Files schema — that would
+just restate the file it's written in. That schema is for nested AGENTS.md
+files (below), where it's real information nothing else has.
 
 **Audience note (place directly after the stack line):**
 
@@ -70,16 +83,13 @@ Check if `docs/audit/audit-findings.json` exists.
 > If the maintainer signals they want the technical version ("go deeper," "show me the code"), switch registers. Otherwise, keep it concrete.
 ```
 
-**If CLAUDE.md already exists:** Read it. Check for:
+**If root AGENTS.md already has this fat shape:** Read it. Check for:
 - Missing sections (add them)
 - Missing audience note (add it right after the stack line or project description — this is a Soloship default)
 - Stale project structure (update if audit shows it's wrong)
-- Missing key files (add from audit component map)
 - Do NOT overwrite existing content — only add what's missing
 
----
-
-## Step 3: AGENTS.md Files
+### Nested AGENTS.md files
 
 For each major source directory (identified by audit component map, or by scanning
 the file tree):
@@ -96,6 +106,37 @@ knows the directory better than an automated tool.
 - Only create AGENTS.md for directories with 3+ source files
 - Don't create them for config directories, test directories, or build output
 - Each AGENTS.md should be 15-40 lines — brief and useful, not exhaustive
+
+---
+
+## Step 3: CLAUDE.md
+
+Claude Code is the only host that doesn't read `AGENTS.md` on its own —
+`CLAUDE.md` bridges the gap via an import (`@AGENTS.md`, verified against
+Anthropic's own docs: "Claude loads the imported file at session start, then
+appends the rest").
+
+**If CLAUDE.md doesn't exist, or is the old fat shape from before this
+changed:** Write it as the import plus a short Claude-only appendix:
+
+```markdown
+@AGENTS.md
+
+## Claude Code
+
+<anything genuinely Claude-specific — .claude/settings.local.json hooks,
+not-yet-unified .claude/rules/ content the project author added by hand>
+```
+
+**Migrating an existing fat CLAUDE.md:** Read it. Anything that isn't
+Claude-specific mechanics (project structure, conventions, contracts,
+invariants, the audience note) belongs in AGENTS.md, not here — move it
+across (merge with what Step 2 already put there; don't duplicate). What's
+left after the move is the appendix. This is why migration is bootstrap's
+job and not `upgrade`'s: deciding what counts as "genuinely Claude-specific"
+is judgment, not a mechanical file operation. `upgrade` only detects the old
+shape (a `CLAUDE.md` over a size threshold that doesn't start with
+`@AGENTS.md`) and prints a nudge pointing here.
 
 ---
 
@@ -210,7 +251,7 @@ command -v node >/dev/null 2>&1 && command -v npx >/dev/null 2>&1 && echo "NODE_
 - Claude Code hooks (`.claude/settings.local.json`)
 - The `.soloship/version` stamp (used by the daily update-check hook)
 - The `.gitignore` for cache files
-- The four core workflow rules
+- The seven safety-gate rules as a `## Safety gates` section in root `AGENTS.md` — not as files in `.claude/rules/`
 - GitHub Actions CI workflow + architecture fitness tests (TypeScript/JavaScript projects only, only if git is initialized)
 
 Do not hand-write hooks into `.claude/settings.local.json` directly. The npm CLI is the source of truth; replicating it by hand causes drift.
@@ -272,17 +313,17 @@ When done, list everything that was created or updated:
 Bootstrap complete.
 
 Created:
-  + CLAUDE.md (generated from [audit/answers])
+  + AGENTS.md (generated from [audit/answers])
+  + CLAUDE.md (@AGENTS.md import + Claude-only appendix)
   + src/components/AGENTS.md
   + src/services/AGENTS.md
-  + .claude/rules/error-handling.md (from audit convention)
+  + .claude/rules/error-handling.md (from audit convention — project-specific, not a safety gate)
 
 Updated:
   ~ .claude/settings.local.json (hooks verified)
 
 Skipped (already exists):
   - CHANGELOG.md
-  - .claude/rules/billing-confirmation-gate.md
   - src/contexts/AGENTS.md
 
 [Post-bootstrap nudge]
@@ -292,10 +333,11 @@ Skipped (already exists):
 
 Bootstrap is not complete until ALL of these are true:
 
-- [ ] CLAUDE.md exists and contains project-specific content (not just a template)
-- [ ] AGENTS.md files created for directories with 3+ source files
+- [ ] Root AGENTS.md exists and contains project-specific content (not just a template)
+- [ ] CLAUDE.md is `@AGENTS.md` plus a short Claude-only appendix (not a duplicate fat file)
+- [ ] Nested AGENTS.md files created for directories with 3+ source files
 - [ ] No existing AGENTS.md files were overwritten
-- [ ] 7 safety-floor rules present in `.claude/rules/` (from init/upgrade, not hand-copied)
+- [ ] The seven safety gates are present in AGENTS.md's `## Safety gates` section (from init/upgrade, not hand-copied) — not in `.claude/rules/`
 - [ ] No retired Soloship workflow essays reinstalled as always-on files
 - [ ] Hooks verified in `.claude/settings.local.json`
 - [ ] Output summary presented listing all created/updated/skipped items
