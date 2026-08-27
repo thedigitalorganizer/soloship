@@ -23,7 +23,13 @@ const ROOT = resolve(__dirname, "..");
 // the wrong metric for content, and splitting them would be churn with no
 // maintainability gain. Everything else must stay under the limit.
 const MAX_SOURCE_LINES = 500;
-const CONTENT_HEAVY_EXEMPT = new Set(["rules.ts", "hooks.ts"]);
+// doctor.ts added 2026-08-27 (Codex hook checks): it is >90% a flat
+// declarative `sections` array of CheckResult descriptors (name/purpose/
+// install strings) plus small single-purpose check* helpers — the same
+// "bulk is descriptive text, not branching logic" shape as rules.ts, just
+// not literally an embedded script template. Splitting the sections array
+// into its own file would be pure churn for a ~1% overage.
+const CONTENT_HEAVY_EXEMPT = new Set(["rules.ts", "hooks.ts", "committed-gates.ts", "doctor.ts"]);
 
 // The rules Soloship ships. Update this when adding/removing a rule — the test
 // then guarantees a rule can't be silently dropped from the installer.

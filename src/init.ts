@@ -14,6 +14,7 @@ import {
   installHooks,
   installAntigravityHooks,
   installCursorHooks,
+  installCodexHooks,
 } from "./hooks.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import {
@@ -139,6 +140,15 @@ export async function runInit(options: InitOptions): Promise<void> {
     console.log(chalk.blue("Configuring Cursor hooks..."));
     const cursorHookResults = await installCursorHooks(root, projectInfo);
     for (const result of cursorHookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+  }
+
+  if (agentSelection.codex) {
+    console.log("");
+    console.log(chalk.blue("Configuring Codex hooks..."));
+    const codexHookResults = await installCodexHooks(root, projectInfo);
+    for (const result of codexHookResults) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
   }

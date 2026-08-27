@@ -10,6 +10,7 @@ import {
   installHooks,
   installAntigravityHooks,
   installCursorHooks,
+  installCodexHooks,
 } from "./hooks.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import {
@@ -97,6 +98,15 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     console.log(chalk.blue("Refreshing Cursor hooks..."));
     const cursorHookResults = await installCursorHooks(root, projectInfo);
     for (const result of cursorHookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+  }
+
+  if (agentSelection.codex) {
+    console.log("");
+    console.log(chalk.blue("Refreshing Codex hooks..."));
+    const codexHookResults = await installCodexHooks(root, projectInfo);
+    for (const result of codexHookResults) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
   }

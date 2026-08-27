@@ -85,12 +85,10 @@ export async function runDoctor(): Promise<void> {
         }),
         {
           name: ".codex/hooks.json",
-          present: existsSync(join(root, ".codex", "hooks.json")),
-          severity: "recommended",
-          purpose:
-            "Codex hook adapters. Not installed by Soloship until Codex hook payloads are verified.",
-          install:
-            "No action for this release; use .codex/rules and AGENTS.md guidance.",
+          present: existsSync(join(root, ".codex", "hooks.json")) && codexHooksFeatureFlagSet(root),
+          severity: projectHasCodex ? "required" : "recommended",
+          purpose: "Codex hook adapters (shared .soloship/hooks/*.cjs) + config.toml [features] hooks = true (off without it).",
+          install: "npx soloship upgrade --agent codex",
         },
       ],
     },
@@ -181,6 +179,11 @@ function checkCommand(
     present: commandExists(command),
     ...metadata,
   };
+}
+
+function codexHooksFeatureFlagSet(root: string): boolean {
+  const toml = readFileSafe(join(root, ".codex", "config.toml"));
+  return !!toml && /^\[features\]\s*$[\s\S]*?^hooks\s*=\s*true\s*$/m.test(toml);
 }
 
 function checkClaudePlugin(home: string): CheckResult {
@@ -408,12 +411,18 @@ function runCommandText(command: string, args: string[]): string | null {
   }
 }
 
-function readJsonSafe(path: string): Record<string, any> | null {
-  if (!existsSync(path)) {
+function readFileSafe(path: string): string | null {
+  try {
+    return readFileSync(path, "utf-8");
+  } catch {
     return null;
   }
+}
+
+function readJsonSafe(path: string): Record<string, any> | null {
+  const raw = readFileSafe(path);
   try {
-    return JSON.parse(readFileSync(path, "utf-8"));
+    return raw === null ? null : JSON.parse(raw);
   } catch {
     return null;
   }
