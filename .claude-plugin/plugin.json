@@ -15,5 +15,6 @@
     "methodology",
     "workflow",
     "guardrails"
-  ]
+  ],
+  "hooks": "./hooks/hooks.json"
 }

@@ -45,6 +45,12 @@ import { getVersion } from "./pkg.js";
 interface UpgradeOptions {
   agent?: AgentTarget;
   refreshGuides?: boolean;
+  // Suppresses the step-by-step console output below (headers, per-file
+  // "+"/"~" lines). Added for the SessionStart plugin hook
+  // (hooks/session-start-upgrade.cjs), which runs this unattended at every
+  // session start when a version bump is pending — full verbose output has
+  // no reader there and just adds noise to Claude Code's hook debug log.
+  quiet?: boolean;
 }
 
 // Phase 3 of docs/plans/2026-08-27-one-source-of-truth-across-agent-hosts.md:
@@ -75,8 +81,9 @@ export function hasOldShapeClaudeMd(root: string): boolean {
 
 export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
   const root = process.cwd();
+  const log = options.quiet ? (..._args: unknown[]) => {} : console.log;
 
-  console.log(chalk.blue("Detecting project..."));
+  log(chalk.blue("Detecting project..."));
   const detected = detectProject(root);
   const agentTarget = parseAgentTarget(options.agent);
   const stack = detected.stack!;
@@ -99,80 +106,80 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
     existingDocs,
   };
 
-  console.log(`  Guardrails: ${chalk.cyan(formatAgentSelection(agentSelection))}`);
+  log(`  Guardrails: ${chalk.cyan(formatAgentSelection(agentSelection))}`);
 
   if (agentSelection.claude) {
-    console.log("");
-    console.log(chalk.blue("Refreshing Claude Code hooks..."));
+    log("");
+    log(chalk.blue("Refreshing Claude Code hooks..."));
     const hookResults = await installHooks(root, projectInfo);
     for (const result of hookResults) {
-      console.log(`  ${chalk.green("+")} ${result}`);
+      log(`  ${chalk.green("+")} ${result}`);
     }
     for (const result of installCloudPluginEnablement(root)) {
-      console.log(`  ${chalk.green("+")} ${result}`);
+      log(`  ${chalk.green("+")} ${result}`);
     }
   }
 
   if (agentSelection.antigravity) {
-    console.log("");
-    console.log(chalk.blue("Refreshing Antigravity hooks..."));
+    log("");
+    log(chalk.blue("Refreshing Antigravity hooks..."));
     const agHookResults = await installAntigravityHooks(root, projectInfo);
     for (const result of agHookResults) {
-      console.log(`  ${chalk.green("+")} ${result}`);
+      log(`  ${chalk.green("+")} ${result}`);
     }
   }
 
   if (agentSelection.cursor) {
-    console.log("");
-    console.log(chalk.blue("Refreshing Cursor hooks..."));
+    log("");
+    log(chalk.blue("Refreshing Cursor hooks..."));
     const cursorHookResults = await installCursorHooks(root, projectInfo);
     for (const result of cursorHookResults) {
-      console.log(`  ${chalk.green("+")} ${result}`);
+      log(`  ${chalk.green("+")} ${result}`);
     }
   }
 
   if (agentSelection.codex) {
-    console.log("");
-    console.log(chalk.blue("Refreshing Codex hooks..."));
+    log("");
+    log(chalk.blue("Refreshing Codex hooks..."));
     const codexHookResults = await installCodexHooks(root, projectInfo);
     for (const result of codexHookResults) {
-      console.log(`  ${chalk.green("+")} ${result}`);
+      log(`  ${chalk.green("+")} ${result}`);
     }
   }
 
-  console.log("");
-  console.log(chalk.blue("Refreshing workflow rules..."));
+  log("");
+  log(chalk.blue("Refreshing workflow rules..."));
   if (agentSelection.claude) {
     const ruleResults = await installClaudeRules(root, { force: true });
     for (const result of ruleResults) {
-      console.log(`  ${chalk.green("+")} Claude: ${result}`);
+      log(`  ${chalk.green("+")} Claude: ${result}`);
     }
   }
   if (agentSelection.codex) {
     const ruleResults = await installCodexRules(root, { force: true });
     for (const result of ruleResults) {
-      console.log(`  ${chalk.green("+")} Codex: ${result}`);
+      log(`  ${chalk.green("+")} Codex: ${result}`);
     }
   }
   if (agentSelection.antigravity) {
     const ruleResults = await installAntigravityRules(root, { force: true });
     for (const result of ruleResults) {
-      console.log(`  ${chalk.green("+")} Antigravity: ${result}`);
+      log(`  ${chalk.green("+")} Antigravity: ${result}`);
     }
   }
   if (agentSelection.cursor) {
     const ruleResults = await installCursorRules(root, { force: true });
     for (const result of ruleResults) {
-      console.log(`  ${chalk.green("+")} Cursor: ${result}`);
+      log(`  ${chalk.green("+")} Cursor: ${result}`);
     }
   }
 
   const skillResults = syncSkillsCanonical(root);
   if (skillResults.length > 0) {
-    console.log("");
-    console.log(chalk.blue("Syncing project skills to the canonical layout..."));
+    log("");
+    log(chalk.blue("Syncing project skills to the canonical layout..."));
     for (const result of skillResults) {
-      console.log(`  ${chalk.green("+")} ${result}`);
+      log(`  ${chalk.green("+")} ${result}`);
     }
   }
 
@@ -181,13 +188,13 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
   // must never rewrite or resurrect them. A force-refresh here overwrote a
   // project's customized fitness test on 2026-07-06 (see
   // docs/solutions/integration-issues/upgrade-overwrote-customized-fitness-test-20260707.md).
-  console.log("");
-  console.log(
+  log("");
+  log(
     chalk.dim("CI scaffolding left untouched (install-once; customize freely).")
   );
 
-  console.log("");
-  console.log(chalk.blue("Updating version stamp..."));
+  log("");
+  log(chalk.blue("Updating version stamp..."));
   const stampResults = writeVersionStamp(root);
   for (const result of stampResults) {
     const icon =
@@ -196,7 +203,7 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
         : result.action === "skipped"
           ? chalk.dim("-")
           : chalk.yellow("~");
-    console.log(`  ${icon} ${result.path} ${chalk.dim(`(${result.action})`)}`);
+    log(`  ${icon} ${result.path} ${chalk.dim(`(${result.action})`)}`);
   }
 
   // Generated reference docs — checked, not scaffolded. `upgrade` preserves
@@ -204,45 +211,45 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
   // explicitly asked. Existing projects run `upgrade`, not `init`, so without
   // this the staleness check would never fire for the population that has stale
   // guides — the whole point of having it.
-  console.log("");
-  console.log(chalk.blue("Checking generated reference docs..."));
+  log("");
+  log(chalk.blue("Checking generated reference docs..."));
   const guideResults = syncSolutionGuide(root, {
     refresh: options.refreshGuides,
     createIfMissing: false,
   });
   if (guideResults.length === 0) {
-    console.log(
+    log(
       chalk.dim("  No generated reference docs found (run `npx soloship init` first).")
     );
   }
   for (const result of guideResults) {
-    console.log(
+    log(
       `  ${actionIcon(result.action)} ${result.path} ${chalk.dim(`(${result.action})`)}`
     );
   }
   printStaleNotice(guideResults, "npx soloship upgrade --refresh-guides");
 
-  console.log("");
-  console.log(
+  log("");
+  log(
     chalk.green.bold(`Soloship upgraded to v${getVersion()}.`)
   );
-  console.log(
+  log(
     chalk.dim(
       "  Project docs (CLAUDE.md, AGENTS.md, CHANGELOG.md) were preserved."
     )
   );
   if (hasOldShapeClaudeMd(root)) {
-    console.log("");
-    console.log(
+    log("");
+    log(
       chalk.yellow(
         "  CLAUDE.md looks like the old fat-file shape (not an @AGENTS.md import)."
       )
     );
-    console.log(
+    log(
       chalk.dim(
         "  Deciding what to move into AGENTS.md vs. keep Claude-specific is judgment work — run /soloship:bootstrap to migrate it."
       )
     );
   }
-  console.log("");
+  log("");
 }
