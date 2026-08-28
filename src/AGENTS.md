@@ -125,3 +125,22 @@ one session's context). Never assume the template in rules.ts is what sessions
 read; diff the installed stack. Doctor's planned rule-stack report makes this
 visible; removal is tombstone-by-byte-match only. See
 `docs/solutions/workflow-issues/2026-08-17-ancestor-rule-copies-shadow-and-drift.md`.
+
+### Pitfall: deleting a generated surface doesn't guarantee its replacement landed
+_Added by soloship-learn 2026-08-27_
+When a migration both deletes an old generated artifact and claims the
+content "moved" elsewhere, "deleted" and "moved" are separate claims that
+need separate verification. `upgrade` pruned the four generated rule-mirror
+directories on the premise that their text now lived in `AGENTS.md`'s
+`## Safety gates` section — true for a fresh `init`, false for an existing
+project's `upgrade`, since `upgrade` preserves `AGENTS.md` by contract and
+never regenerates it. The section only ever landed via `init`'s fresh
+`generateAgentsMd()` call; every existing project that ran `upgrade` lost
+the rules entirely, with the tool reporting success. Caught only by running
+the real CLI's `upgrade` against a real project with a pre-existing
+`AGENTS.md` (MAPS, in a throwaway worktree) — the existing test suite had
+full coverage of the prune and zero coverage of "does the destination
+already have content before this migration ran." Fixed with a
+marker-delimited `ensureSafetyGatesSection` (`safety-gates.ts`) that both
+`init` and `upgrade` run before the prune. See
+`docs/solutions/workflow-issues/2026-08-27-upgrade-deletes-rule-mirrors-without-writing-agents-md-replacement.md`.
