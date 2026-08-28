@@ -7,7 +7,8 @@ import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { homedir } from "node:os";
 import { isAbsolute, join } from "node:path";
-import { getWorkflowRules, RETIRED_WORKFLOW_RULES } from "./rules.js";
+import { RETIRED_WORKFLOW_RULES } from "./rules.js";
+import { SAFETY_GATE_FILENAMES } from "./safety-gates.js";
 
 type Severity = "required" | "recommended";
 
@@ -53,10 +54,10 @@ export async function runDoctor(): Promise<void> {
           purpose: "Project-level Claude hooks installed by npx soloship init.",
           install: "npx soloship init --agent claude",
         }),
-        checkRuleSet(join(root, ".claude", "rules"), {
+        checkRulesCleanedUp(join(root, ".claude", "rules"), {
           name: ".claude/rules",
-          severity: projectHasClaude ? "required" : "recommended",
-          purpose: "Claude-facing auto-loaded Soloship workflow rules.",
+          severity: "recommended",
+          purpose: "Safety-gate rules moved into AGENTS.md (Phase 2) — this directory should hold no Soloship-generated files.",
           install: "npx soloship upgrade --agent claude",
         }),
       ],
@@ -77,20 +78,18 @@ export async function runDoctor(): Promise<void> {
           purpose: "Codex-facing project guidance.",
           install: "npx soloship init --agent codex",
         }),
-        checkRuleSet(join(root, ".codex", "rules"), {
+        checkRulesCleanedUp(join(root, ".codex", "rules"), {
           name: ".codex/rules",
-          severity: projectHasCodex ? "required" : "recommended",
-          purpose: "Codex-facing Soloship workflow rules, including Browser QA Gate.",
+          severity: "recommended",
+          purpose: "Codex never read this directory (.codex/rules/*.rules is Starlark exec policy, not markdown) — should hold no Soloship-generated files.",
           install: "npx soloship upgrade --agent codex",
         }),
         {
           name: ".codex/hooks.json",
-          present: existsSync(join(root, ".codex", "hooks.json")),
-          severity: "recommended",
-          purpose:
-            "Codex hook adapters. Not installed by Soloship until Codex hook payloads are verified.",
-          install:
-            "No action for this release; use .codex/rules and AGENTS.md guidance.",
+          present: existsSync(join(root, ".codex", "hooks.json")) && codexHooksFeatureFlagSet(root),
+          severity: projectHasCodex ? "required" : "recommended",
+          purpose: "Codex hook adapters (shared scripts/soloship-hooks/*.cjs) + config.toml [features] hooks = true (off without it).",
+          install: "npx soloship upgrade --agent codex",
         },
       ],
     },
@@ -104,10 +103,10 @@ export async function runDoctor(): Promise<void> {
           purpose: "Project-level Antigravity hooks installed by npx soloship init.",
           install: "npx soloship init --agent antigravity",
         }),
-        checkRuleSet(join(root, ".agents", "rules"), {
+        checkRulesCleanedUp(join(root, ".agents", "rules"), {
           name: ".agents/rules",
-          severity: projectHasAntigravity ? "required" : "recommended",
-          purpose: "Antigravity-facing auto-loaded Soloship workflow rules.",
+          severity: "recommended",
+          purpose: "Safety-gate rules moved into AGENTS.md (Phase 2) — this directory should hold no Soloship-generated files.",
           install: "npx soloship upgrade --agent antigravity",
         }),
       ],
@@ -127,12 +126,11 @@ export async function runDoctor(): Promise<void> {
             "Cursor-native project hooks. COMMIT THIS — Cursor cloud agents load committed .cursor/hooks.json only, never ~/.cursor/hooks.json and never Claude Code hooks.",
           install: "npx soloship upgrade --agent cursor",
         }),
-        checkRuleSet(join(root, ".cursor", "rules"), {
+        checkRulesCleanedUp(join(root, ".cursor", "rules"), {
           name: ".cursor/rules",
           ext: ".mdc",
-          severity: projectHasCursor ? "required" : "recommended",
-          purpose:
-            "Cursor-facing always-on Soloship workflow rules (.mdc — plain .md here is silently ignored by Cursor).",
+          severity: "recommended",
+          purpose: "Safety-gate rules moved into AGENTS.md (Phase 2) — this directory should hold no Soloship-generated .mdc files.",
           install: "npx soloship upgrade --agent cursor",
         }),
       ],
@@ -181,6 +179,11 @@ function checkCommand(
     present: commandExists(command),
     ...metadata,
   };
+}
+
+function codexHooksFeatureFlagSet(root: string): boolean {
+  const toml = readFileSafe(join(root, ".codex", "config.toml"));
+  return !!toml && /^\[features\]\s*$[\s\S]*?^hooks\s*=\s*true\s*$/m.test(toml);
 }
 
 function checkClaudePlugin(home: string): CheckResult {
@@ -339,30 +342,31 @@ function checkProjectFile(
   };
 }
 
-function checkRuleSet(
+// Phase 2 of docs/plans/2026-08-27-one-source-of-truth-across-agent-hosts.md:
+// the seven safety-gate rules moved into AGENTS.md and Soloship stopped
+// generating any host rules directory content. "Healthy" for one of these
+// directories flipped from "has all 7 files" to "has none of Soloship's own
+// generated files left" — any leftover is exactly what a stale pre-2026-08-27
+// install still has lying around. User-authored files are never a problem;
+// they are reported as an FYI, not a failure, so the user can decide whether
+// to move them into AGENTS.md (the only file every host actually reads).
+function checkRulesCleanedUp(
   path: string,
   metadata: Omit<CheckResult, "present"> & { ext?: string }
 ): CheckResult {
   // Cursor reads `.mdc` and silently ignores `.md` in its rules directory.
   const { ext = ".md", ...rest } = metadata;
   const toName = (f: string) => f.replace(/\.md$/, ext);
-  const missing = Object.keys(getWorkflowRules()).filter(
-    (f) => !existsSync(join(path, toName(f)))
-  );
-  const leftovers = RETIRED_WORKFLOW_RULES.filter((f) =>
-    existsSync(join(path, toName(f)))
-  );
-  const ruleCount = existsSync(path)
-    ? readdirSync(path).filter((e) => e.endsWith(ext)).length
-    : 0;
+  const known = new Set([...RETIRED_WORKFLOW_RULES, ...SAFETY_GATE_FILENAMES].map(toName));
+  const entries = existsSync(path) ? readdirSync(path).filter((e) => e.endsWith(ext)) : [];
+  const leftovers = entries.filter((e) => known.has(e));
+  const survivors = entries.filter((e) => !known.has(e));
   const extra =
-    (missing.length ? `; missing ${missing.join(", ")}` : "") +
-    (leftovers.length ? `; ${leftovers.length} retired leftovers — run npx soloship upgrade` : "");
+    (leftovers.length ? `; ${leftovers.length} stale Soloship-generated leftovers — run npx soloship upgrade` : "") +
+    (survivors.length ? `; ${survivors.length} user-authored (untouched): ${survivors.join(", ")}` : "");
   return {
-    present: missing.length === 0 && leftovers.length === 0,
-    notes: existsSync(path)
-      ? `${ruleCount} rule files found${extra}`
-      : "rules directory missing",
+    present: leftovers.length === 0,
+    notes: existsSync(path) ? `${entries.length} rule file(s) found${extra}` : "no rules directory (nothing generated here anymore)",
     ...rest,
   };
 }
@@ -408,12 +412,18 @@ function runCommandText(command: string, args: string[]): string | null {
   }
 }
 
-function readJsonSafe(path: string): Record<string, any> | null {
-  if (!existsSync(path)) {
+function readFileSafe(path: string): string | null {
+  try {
+    return readFileSync(path, "utf-8");
+  } catch {
     return null;
   }
+}
+
+function readJsonSafe(path: string): Record<string, any> | null {
+  const raw = readFileSafe(path);
   try {
-    return JSON.parse(readFileSync(path, "utf-8"));
+    return raw === null ? null : JSON.parse(raw);
   } catch {
     return null;
   }

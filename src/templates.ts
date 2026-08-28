@@ -10,6 +10,9 @@ import {
   ROOT_CAUSE_ENUM,
   schemaVersionMarker,
 } from "./solution-schema.js";
+import { ensureSafetyGatesSection, renderSafetyGatesSection } from "./safety-gates.js";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 /** Copied into new-project AGENTS.md/CLAUDE.md. Keep short — it is always-on context. */
 export const LOAD_BEARING_WORK =
@@ -23,7 +26,36 @@ Use \`/soloship:plan\`, \`/soloship:grill-me\`, \`/soloship:review\`, \`/soloshi
 
 Do not chain those skills as a default pipeline.`;
 
-export function generateClaudeMd(project: ProjectInfo): string {
+// Phase 3 of docs/plans/2026-08-27-one-source-of-truth-across-agent-hosts.md:
+// AGENTS.md became what CLAUDE.md used to be (the fat instruction file) and
+// CLAUDE.md became an import. Four of five hosts read AGENTS.md natively
+// (Cursor, Codex, Antigravity root-only, Grok); Claude Code is the only one
+// that does not, and Anthropic's own docs supply the bridge — a CLAUDE.md
+// whose first line is `@AGENTS.md`. Verified live against
+// code.claude.com/docs/en/memory, 2026-08-27: "Claude loads the imported
+// file at session start, then appends the rest" — exactly the shape used
+// below. This import resolves inside the project root (same directory as
+// CLAUDE.md), so it is never treated as an "external" import and never
+// triggers Claude Code's external-import approval dialog.
+export function generateClaudeMd(_project: ProjectInfo): string {
+  return `@AGENTS.md
+
+## Claude Code
+
+This import pulls in the entire project instruction set above, including
+the Safety gates section — nothing here duplicates it. What's genuinely
+Claude-specific:
+
+- Hooks (dangerous-command blocking, billing/deploy/recurrence/plan gates,
+  session coordination) live in \`.claude/settings.local.json\`, not in
+  AGENTS.md — that file is gitignored per-checkout by design.
+- Project rule directories under \`.claude/\` no longer carry Soloship's
+  safety-gate rules (moved into AGENTS.md above); a \`.claude/rules/\`
+  directory that still exists holds only rules you authored yourself.
+`;
+}
+
+export function generateAgentsMd(project: ProjectInfo): string {
   const stackLine = [
     project.stack.language === "typescript"
       ? "TypeScript"
@@ -37,11 +69,9 @@ export function generateClaudeMd(project: ProjectInfo): string {
     .filter(Boolean)
     .join(" + ");
 
-  return `# CLAUDE.md — AI Assistant Guide
+  return `# AGENTS.md — ${project.name}
 
-**${project.name}**${project.description ? ` — ${project.description}` : ""}
-
-${stackLine ? `**Stack:** ${stackLine}\n` : ""}
+${project.description ? `${project.description}\n\n` : ""}${stackLine ? `**Stack:** ${stackLine}\n` : ""}
 > **Audience note:** The maintainer of this project may not be a traditional coder — Soloship is built for people who ship software through AI agents. When explaining anything technical (architecture, protocols, tooling, tradeoffs), lead with a plain-English analogy before introducing jargon. Define a technical term once with its meaning, then use it freely. Default to recommendations with tradeoffs, not term-paper breakdowns.
 >
 > Be brief: lead with the conclusion, cut preamble and recap, length should track the question's actual complexity rather than fill space. Frame problems and decisions in product or user-experience terms — what behavior changes and why it matters — not implementation details. Never ask the maintainer to review code, judge technical correctness, or decide implementation specifics (data models, database structure, library choices); make those calls yourself and surface only choices that need their product judgment.
@@ -70,7 +100,10 @@ TODO: Run /audit or /bootstrap to populate this section
 
 ## Intent Layer
 
-**Before modifying code in a subdirectory, read its AGENTS.md first.**
+**Before modifying code in a subdirectory, read its AGENTS.md first.** Nested
+AGENTS.md files keep the Scope/Owns/Contracts/Key-Files schema this root file
+no longer carries — that schema restates the file it's written in when used
+at the root, but at each subdirectory it's real information nothing else has.
 
 ## Cross-Cutting Contracts
 
@@ -82,74 +115,13 @@ TODO: Run /audit or /bootstrap to populate this section
 
 ${DEFAULT_WORK_PATH}
 
-After a non-obvious fix, write a solution doc (\`/soloship:learn\`). Ship to production only when the user asks (\`/soloship:shipfast\` for a hotfix, \`/soloship:shipthorough\` for a thorough production go-live).
+When a plan is warranted, write it to \`docs/plans/YYYY-MM-DD-<slug>.md\`. After a non-obvious fix, write a solution doc (\`/soloship:learn\`). Ship to production only when the user asks (\`/soloship:shipfast\` for a hotfix, \`/soloship:shipthorough\` for a thorough production go-live).
 
 ## Rules
 
 Coding conventions live in this file and in package-level AGENTS.md files.
-Always-on safety rules auto-load from \`.claude/rules/\` (billing confirmation,
-live-data evidence, browser QA, deploy-from-main, automation registry,
-recurrence, model-mode). Name repeated or business/config values; leave
-one-shot literals inline. Search for an existing UI component before creating
-one (extract a shared component on the third use). Before planning or
-debugging, search \`docs/solutions/\`. Plans live in \`docs/plans/\` with status
-frontmatter, \`## Goal\`, \`## Done-When\`, a Why per phase, Key Decisions, and a
-QA Plan row per touched surface. Automations register in
-\`docs/automations/registry.json\` and check in (\`/soloship:cron\` is the console).
-
-## Agent Surfaces
-
-Claude Code uses this \`CLAUDE.md\` file plus \`.claude/rules/\` and \`.claude/settings.local.json\`.
-Codex uses \`AGENTS.md\` plus \`.codex/rules/\`. Keep behavior aligned across both when changing project guardrails.
-`;
-}
-
-export function generateAgentsMd(project: ProjectInfo): string {
-  return `# AGENTS.md — Project Root
-
-## Scope
-
-Top-level project configuration, documentation, and cross-cutting concerns.
-
-## Audience Note
-
-The maintainer may not be a traditional coder. Explain technical work with a plain-English analogy before jargon, define each technical term once, and frame decisions by user impact instead of implementation detail.
-
-## Owns
-
-- CLAUDE.md — project configuration for AI agents
-- AGENTS.md — project configuration for Codex
-- CHANGELOG.md — version history
-- docs/ — plans, solutions, architecture, audit reports
-- docs/automations/ — the automation registry (every cron/webhook/scheduled job + watchdog thresholds)
-- Project configuration files (package.json, tsconfig.json, etc.)
-
-## Contracts
-
-- All subdirectories should have their own AGENTS.md describing scope and contracts
-- Changes to shared types or interfaces must be noted in CHANGELOG.md
-- Plans go in docs/plans/, solutions go in docs/solutions/
-- Every automation (cron, webhook, scheduled job) is registered in docs/automations/registry.json and checks in to the watchdog; new automations follow /soloship:cron add mode (register -> deploy -> wire -> observe)
-
-## Key Files
-
-| File | Purpose |
-|------|---------|
-| AGENTS.md | Codex project guidance |
-| CLAUDE.md | Claude Code project guidance |
-| CHANGELOG.md | Version history |
-| docs/SOLUTION_GUIDE.md | Schema for solution docs |
-
-${DEFAULT_WORK_PATH}
-
-When a plan is warranted, write it to \`docs/plans/YYYY-MM-DD-<slug>.md\`. After a non-obvious fix, write a solution doc. Ship to production only when the user asks.
-
-## Rules
-
-Coding conventions live in this file and in package-level AGENTS.md files.
-Always-on safety rules auto-load from \`.codex/rules/\`: billing confirmation,
-live-data evidence, browser QA, deploy-from-main, automation registry,
-recurrence, and model-mode.
+The seven always-on safety gates below apply regardless of what else this
+file says.
 
 - Name repeated or business/config values; leave one-shot literals inline.
 - Search for an existing UI component before creating one; extract a shared component on the third use.
@@ -158,7 +130,17 @@ recurrence, and model-mode.
 - No user-facing change is done until the affected flow has been exercised in a real browser. Isolated browser first (\`/soloship:browse\`); use the user's real browser only when a login is required. If a flow needs login, use the default test account at \`docs/testing/test-accounts.md\`; if that file is missing, stop and ask.
 - Every automation is registered in \`docs/automations/registry.json\` and checks in.
 
-Claude Code uses \`CLAUDE.md\`, \`.claude/rules/\`, and \`.claude/settings.local.json\`. Codex uses this file and \`.codex/rules/\`.
+## Agent Surfaces
+
+| Host | Reads this file how |
+|------|---------------------|
+| Cursor | Natively — root and nested \`AGENTS.md\` |
+| Codex | Natively — global + root-to-cwd nested, combined under a raised \`project_doc_max_bytes\` cap |
+| Antigravity | Natively — root only; nested support unverified |
+| Grok Build | Natively, plus its own and Cursor's rule/hook surfaces |
+| Claude Code | Does not read this file directly — \`CLAUDE.md\` starts with \`@AGENTS.md\`, an import Claude Code expands into context in full at session start, plus a short Claude-only appendix |
+
+${renderSafetyGatesSection()}
 
 <!-- Run /audit to discover and populate subdirectory AGENTS.md files -->
 `;
@@ -339,4 +321,32 @@ launchd/crontab jobs, and webhook receivers. Manage it with \`/soloship:cron\`.
 machine that sleeps get ~1800 (30h). Webhooks have no cadence — they get
 expected-activity windows and a baseline check-in seeded at wiring time.
 `;
+}
+
+/**
+ * Fs-level counterpart to ensureSafetyGatesSection(): makes sure the
+ * project's actual AGENTS.md on disk carries the current Safety gates
+ * section, called from both `init` (an existing project's AGENTS.md is never
+ * regenerated — scaffoldDocs skips it) and `upgrade` (which preserves
+ * AGENTS.md by contract and would otherwise never touch it). Run this BEFORE
+ * pruning the old generated rule-mirror directories: the prune's safety
+ * argument is "the text still lives in AGENTS.md," which is only true once
+ * this has run. Missing AGENTS.md entirely (a project that never ran `init`)
+ * gets a full fresh file via generateAgentsMd(project), not just the section
+ * — there's nothing else to preserve.
+ */
+export function ensureSafetyGatesInAgentsMd(
+  root: string,
+  project: ProjectInfo
+): { path: string; action: "created" | "updated" | "unchanged" } {
+  const path = join(root, "AGENTS.md");
+  if (!existsSync(path)) {
+    writeFileSync(path, generateAgentsMd(project));
+    return { path: "AGENTS.md", action: "created" };
+  }
+  const current = readFileSync(path, "utf-8");
+  const { content, changed } = ensureSafetyGatesSection(current);
+  if (!changed) return { path: "AGENTS.md", action: "unchanged" };
+  writeFileSync(path, content);
+  return { path: "AGENTS.md", action: "updated" };
 }

@@ -9,12 +9,15 @@ import {
 } from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
+import { ensureSafetyGatesInAgentsMd } from "./templates.js";
 import { actionIcon, printStaleNotice } from "./guide-freshness.js";
 import {
   installHooks,
   installAntigravityHooks,
   installCursorHooks,
+  installCodexHooks,
 } from "./hooks.js";
+import { syncSkillsCanonical } from "./skills-sync.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import {
   installClaudeRules,
@@ -112,6 +115,17 @@ export async function runInit(options: InitOptions): Promise<void> {
   }
   printStaleNotice(scaffoldResults, "npx soloship init --refresh-guides");
 
+  // scaffoldDocs above only WRITES AGENTS.md when it doesn't already exist
+  // (never overwrites); an existing AGENTS.md on a re-run of `init` needs the
+  // same mechanical-section ensure `upgrade` uses, or a project whose
+  // AGENTS.md predates the Safety gates section never gets it.
+  const safetyGatesResult = ensureSafetyGatesInAgentsMd(root, projectInfo);
+  if (safetyGatesResult.action !== "unchanged") {
+    console.log(
+      `  ${chalk.green("+")} ${safetyGatesResult.path} (Safety gates section ${safetyGatesResult.action})`
+    );
+  }
+
   // Step 4: Install Hooks
   if (agentSelection.claude) {
     console.log("");
@@ -139,6 +153,15 @@ export async function runInit(options: InitOptions): Promise<void> {
     console.log(chalk.blue("Configuring Cursor hooks..."));
     const cursorHookResults = await installCursorHooks(root, projectInfo);
     for (const result of cursorHookResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+  }
+
+  if (agentSelection.codex) {
+    console.log("");
+    console.log(chalk.blue("Configuring Codex hooks..."));
+    const codexHookResults = await installCodexHooks(root, projectInfo);
+    for (const result of codexHookResults) {
       console.log(`  ${chalk.green("+")} ${result}`);
     }
   }
@@ -171,6 +194,16 @@ export async function runInit(options: InitOptions): Promise<void> {
     }
   }
 
+  // Step 5.5: Canonicalize project skills (.agents/skills/ real, .claude/skills/ symlinked)
+  const skillResults = syncSkillsCanonical(root);
+  if (skillResults.length > 0) {
+    console.log("");
+    console.log(chalk.blue("Syncing project skills to the canonical layout..."));
+    for (const result of skillResults) {
+      console.log(`  ${chalk.green("+")} ${result}`);
+    }
+  }
+
   // Step 6: Install CI + architecture fitness functions
   console.log("");
   console.log(chalk.blue("Setting up CI..."));
@@ -196,13 +229,4 @@ export async function runInit(options: InitOptions): Promise<void> {
     }
   }
 
-  if (agentSelection.codex) {
-    console.log("");
-    console.log(chalk.dim("Codex note: hooks are not installed yet."));
-    console.log(
-      chalk.dim(
-        "  Soloship installs Codex rules and AGENTS.md guidance now; Claude hook parity waits until Codex hook payloads are verified."
-      )
-    );
-  }
 }

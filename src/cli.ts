@@ -72,15 +72,21 @@ program
     "--refresh-guides",
     "Rewrite generated reference docs built against an older schema (keeps a .bak of each)"
   )
+  .option(
+    "--quiet",
+    "Suppress step-by-step output — only the final summary and errors print (used by the SessionStart auto-upgrade hook)"
+  )
   .action(async (options) => {
-    console.log("");
-    console.log(chalk.bold("Soloship Upgrade"));
-    console.log(
-      chalk.dim(
-        "Refreshing project hooks and rules. Project docs and CI scaffolding are preserved."
-      )
-    );
-    console.log("");
+    if (!options.quiet) {
+      console.log("");
+      console.log(chalk.bold("Soloship Upgrade"));
+      console.log(
+        chalk.dim(
+          "Refreshing project hooks and rules. Project docs and CI scaffolding are preserved."
+        )
+      );
+      console.log("");
+    }
 
     try {
       await runUpgrade(options);

@@ -9,6 +9,15 @@ import { join } from "node:path";
 import { spawnSync } from "node:child_process";
 import { Script } from "node:vm";
 import type { ProjectInfo } from "./detect.js";
+import {
+  writeCommittedGateFiles,
+  gateInvocation,
+  portableGateInvocation,
+  gatePath,
+  GATE_BASE_DIR,
+  GATE_DIRNAME,
+  type GateName,
+} from "./committed-gates.js";
 
 // Session-coordination thresholds. Single definition site: these values are
 // interpolated into the generated hook scripts below AND rewritten to
@@ -101,6 +110,12 @@ export const PLAN_STATUSES_OPEN = ["planned", "in-progress"] as const;
 // loud, logged hatch survives. The anti-gaming clause of the recurrence-gate
 // rule applies — creating this without a real reason defeats the instrument.
 export const PLAN_STATUS_ACK = ".ai/.plan-status-ack";
+
+// Mirrors PLAN_STATUS_ACK for the billing-confirmation gate (see
+// .claude/rules/billing-confirmation-gate.md) — its own named constant so
+// committed-gates.ts (and any future generator) never has to derive one path
+// from the other's string.
+export const BILLING_ACK = ".ai/.billing-ack";
 
 const PLAN_STATUS_RE = PLAN_STATUSES.join("|");
 const PLAN_STATUS_OPEN_RE = PLAN_STATUSES_OPEN.join("|");
@@ -218,6 +233,13 @@ export async function installHooks(
     }
   }
 
+  // Write the committed cross-host gate files (scripts/soloship-hooks/*.cjs) once —
+  // every host's installer that runs in this pass shares them. See
+  // committed-gates.ts for why these 8 gates moved off inline bash: stdin
+  // JSON.parse instead of grep/sed removes the JSON-escaping bug class that
+  // bit command-safety and recurrence even after the 2026-08-27 stdin fix.
+  const gateFiles = writeCommittedGateFiles(root);
+
   // Build hooks config
   const hooks: HooksConfig["hooks"] = {};
 
@@ -230,7 +252,7 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildPreToolUseScript(),
+          command: gateInvocation(root, "command-safety"),
           timeout: 5000,
         },
       ],
@@ -240,7 +262,7 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildDeployFreshnessScript(),
+          command: gateInvocation(root, "deploy-freshness"),
           timeout: 10000,
         },
       ],
@@ -250,7 +272,7 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildDeployDisciplineScript(),
+          command: gateInvocation(root, "deploy-discipline"),
           timeout: 10000,
         },
       ],
@@ -260,7 +282,7 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildBillingGateScript(),
+          command: gateInvocation(root, "billing-confirmation"),
           timeout: 5000,
         },
       ],
@@ -270,7 +292,7 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildRecurrenceGateScript(),
+          command: gateInvocation(root, "recurrence"),
           timeout: 10000,
         },
       ],
@@ -281,7 +303,7 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildPlanTruthGateScript(),
+          command: gateInvocation(root, "plan-truth"),
           timeout: 5000,
         },
       ],
@@ -292,13 +314,15 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildPlanMergeGateScript(),
+          command: gateInvocation(root, "plan-merge"),
           timeout: 5000,
         },
       ],
     },
     // Main-checkout authoring warn: committing in the main checkout while
-    // other worktrees are active (warn-only, never blocks).
+    // other worktrees are active (warn-only, never blocks). Claude-only —
+    // not in the Phase 1 cross-host gate list (it's about Claude Code's own
+    // worktree pattern), so it stays inline bash.
     {
       matcher: "Bash",
       hooks: [
@@ -315,12 +339,13 @@ export async function installHooks(
       hooks: [
         {
           type: "command",
-          command: buildPlanNamespaceGateScript(),
+          command: gateInvocation(root, "plan-namespace"),
           timeout: 5000,
         },
       ],
     },
     // Plan-completeness gate: a plan must declare ## Goal + ## Done-When.
+    // Claude-only for now — not in the Phase 1 cross-host gate list.
     {
       matcher: "Edit|Write|MultiEdit",
       hooks: [
@@ -332,7 +357,8 @@ export async function installHooks(
       ],
     },
     // Plan-done-checklist gate: blocks status: done while the body still has
-    // unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers.
+    // unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers. Claude-only for
+    // now — not in the Phase 1 cross-host gate list.
     {
       matcher: "Edit|Write|MultiEdit",
       hooks: [
@@ -345,6 +371,7 @@ export async function installHooks(
     },
   ];
 
+  results.push(`Written ${gateFiles.length} shared gate files to scripts/soloship-hooks/ (shared with Cursor, Codex, Antigravity — commit these)`);
   results.push("PreToolUse: block dangerous commands (rm -rf ~, .env edits, force push to main)");
   results.push("PreToolUse: plan-truth gate (blocks code commits whose plan still says 'planned')");
   results.push("PreToolUse: plan-merge gate (blocks merging a branch whose plan is still open)");
@@ -528,40 +555,9 @@ export async function installAntigravityHooks(
 
   const hooksPath = join(agentsDir, "hooks.json");
 
-  const preCommandInline = `node -e '
-const fs = require("fs");
-const { execSync } = require("child_process");
-try {
-  const input = fs.readFileSync(0, "utf-8");
-  const data = JSON.parse(input || "{}");
-  const cmd = data.toolCall?.args?.CommandLine || "";
-  if (/\\brm\\s+-rf\\s+(~|\\/Users|\\/home|\\$HOME|\\/)\\b/.test(cmd)) {
-    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Dangerous rm -rf targeting home or root directory." }));
-    process.exit(0);
-  }
-  if (/(?:cat|echo|printf|>)\\s*.*\\.env(?:\\s|$)/.test(cmd)) {
-    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Direct .env file modification." }));
-    process.exit(0);
-  }
-  if (/git\\s+push.*--force.*(?:main|master)/.test(cmd)) {
-    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Force push to main/master." }));
-    process.exit(0);
-  }
-  if (/(?:ANTHROPIC|OPENAI|STRIPE|FIREBASE|GEMINI)_[A-Z_]*KEY\\s*=\\s*["\\x27][a-zA-Z0-9]{20,}["\\x27]/.test(cmd)) {
-    console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Detected possible hardcoded API key." }));
-    process.exit(0);
-  }
-  if (/(?:npm\\s+run\\s+deploy|wrangler\\s+deploy|fly\\s+deploy|vercel\\s+--prod)/.test(cmd)) {
-    const branch = execSync("git branch --show-current 2>/dev/null", { encoding: "utf-8" }).trim();
-    if (branch && branch !== "main" && branch !== "master") {
-      console.log(JSON.stringify({ decision: "deny", reason: "BLOCKED: Deployments must only be run from main/master branch." }));
-      process.exit(0);
-    }
-  }
-} catch(e) {}
-console.log(JSON.stringify({ decision: "allow" }));
-'`;
-
+  // The old inline command-safety script (rm -rf / .env / force-push / API
+  // key / deploy-branch checks) is gone — superseded by the shared
+  // command-safety.cjs gate wired below via sharedGateEntry.
   const preWriteInline = `node -e '
 const fs = require("fs");
 try {
@@ -608,25 +604,42 @@ try {
 console.log(JSON.stringify({}));
 '`;
 
-  const hooksConfig = {
-    "soloship-command-safety": {
+  // The committed gates (command-safety, deploy-freshness, deploy-discipline,
+  // billing-confirmation, recurrence, plan-truth, plan-merge, plan-namespace)
+  // give Antigravity full parity with Claude/Codex — previously only 3 of 11
+  // gates existed here (command-safety, file-protection, stop-checks), all as
+  // Antigravity-only inline copies of patterns that now live once in
+  // committed-gates.ts. preWriteInline's extra checks (.soloship/version
+  // protection, plan doc-format validation beyond plan-namespace's status
+  // check) and stopInline (post-merge plan-truth backstop) are not yet in the
+  // shared gate set — kept here as-is rather than dropping coverage.
+  const gateFiles = writeCommittedGateFiles(root);
+  const RUN_COMMAND_MATCHER = "run_command";
+  const WRITE_MATCHER = "write_to_file|replace_file_content|multi_replace_file_content";
+  const sharedGateEntry = (name: GateName, matcher: string) => ({
+    [`soloship-${name}`]: {
       PreToolUse: [
         {
-          matcher: "run_command",
-          hooks: [
-            {
-              type: "command",
-              command: preCommandInline,
-              timeout: 15,
-            },
-          ],
+          matcher,
+          hooks: [{ type: "command", command: portableGateInvocation(name), timeout: 15 }],
         },
       ],
     },
+  });
+
+  const hooksConfig = {
+    ...sharedGateEntry("command-safety", RUN_COMMAND_MATCHER),
+    ...sharedGateEntry("deploy-freshness", RUN_COMMAND_MATCHER),
+    ...sharedGateEntry("deploy-discipline", RUN_COMMAND_MATCHER),
+    ...sharedGateEntry("recurrence", RUN_COMMAND_MATCHER),
+    ...sharedGateEntry("plan-truth", RUN_COMMAND_MATCHER),
+    ...sharedGateEntry("plan-merge", RUN_COMMAND_MATCHER),
+    ...sharedGateEntry("billing-confirmation", WRITE_MATCHER),
+    ...sharedGateEntry("plan-namespace", WRITE_MATCHER),
     "soloship-file-protection": {
       PreToolUse: [
         {
-          matcher: "write_to_file|replace_file_content|multi_replace_file_content",
+          matcher: WRITE_MATCHER,
           hooks: [
             {
               type: "command",
@@ -649,10 +662,184 @@ console.log(JSON.stringify({}));
   };
 
   writeFileSync(hooksPath, JSON.stringify(hooksConfig, null, 2));
-  results.push("PreToolUse: command-safety (blocks dangerous rm -rf, force push, hardcoded keys, non-main deploy)");
-  results.push("PreToolUse: file-protection (protects .soloship/version, validates plan format)");
+  results.push(`Written ${gateFiles.length} shared gate files to scripts/soloship-hooks/ (shared with Claude, Cursor, Codex — commit these)`);
+  results.push(
+    "PreToolUse: command-safety, deploy-freshness, deploy-discipline, recurrence, plan-truth, plan-merge, billing-confirmation, plan-namespace (shared gates)"
+  );
+  results.push("PreToolUse: file-protection (protects .soloship/version, validates plan format — Antigravity-only, not yet unified)");
   results.push("Stop: plan-truth-check (prevents lying plans after branch merge)");
   results.push("Written to .agents/hooks.json");
+
+  return results;
+}
+
+export const CODEX_DIR = ".codex";
+export const CODEX_GATE_NAMES: GateName[] = [
+  "command-safety",
+  "deploy-freshness",
+  "deploy-discipline",
+  "billing-confirmation",
+  "recurrence",
+  "plan-truth",
+  "plan-merge",
+  "plan-namespace",
+];
+// Codex's own docs (learn.chatgpt.com/docs/hooks, fetched 2026-08-27) put the
+// timeout in seconds ("timeout": 600 in their own example) — matches
+// Cursor's unit, not Claude's milliseconds. Generous enough for a git call on
+// a cold sandbox, short enough that a hung hook does not stall the turn.
+const CODEX_HOOK_TIMEOUT_SEC = 10;
+
+// Ensures `.codex/config.toml` has `[features]\nhooks = true`. No TOML
+// library dependency (Soloship keeps zero runtime deps) — deliberately
+// narrow text surgery: only touches a `[features]` table's `hooks` key,
+// never anything else in the file, and never both writes AND reads back a
+// value it did not itself just write. If Codex ever changes hooks to
+// default-on (its own doc summary already read that way once, in tension
+// with the hooks reference page — see the plan's Phase 0 notes), writing the
+// key explicitly is still correct: an explicit `true` cannot make hooks any
+// more enabled than a version-dependent default already would.
+function ensureCodexHooksFeatureFlag(root: string): boolean {
+  const configPath = join(root, CODEX_DIR, "config.toml");
+  let content = existsSync(configPath) ? readFileSync(configPath, "utf-8") : "";
+
+  const featuresHeaderRe = /^\[features\]\s*$/m;
+  const hooksKeyRe = /^hooks\s*=\s*true\s*$/m;
+
+  if (featuresHeaderRe.test(content)) {
+    // A [features] table exists. Does it already set hooks = true somewhere
+    // between its header and the next table header (or EOF)?
+    const start = content.search(featuresHeaderRe);
+    const afterHeader = content.slice(start);
+    const nextTable = afterHeader.slice(1).search(/^\[/m);
+    const sectionEnd = nextTable === -1 ? afterHeader.length : nextTable + 1;
+    const section = afterHeader.slice(0, sectionEnd);
+    if (hooksKeyRe.test(section)) {
+      return false; // already set, nothing to change
+    }
+    // Insert right after the [features] header line.
+    const headerLineEnd = content.indexOf("\n", start);
+    const insertAt = headerLineEnd === -1 ? content.length : headerLineEnd + 1;
+    content = content.slice(0, insertAt) + "hooks = true\n" + content.slice(insertAt);
+  } else {
+    const sep = content.length > 0 && !content.endsWith("\n") ? "\n" : "";
+    content = `${content}${sep}${content.length > 0 ? "\n" : ""}[features]\nhooks = true\n`;
+  }
+
+  if (!existsSync(join(root, CODEX_DIR))) {
+    mkdirSync(join(root, CODEX_DIR), { recursive: true });
+  }
+  writeFileSync(configPath, content);
+  return true;
+}
+
+// Codex's own default cap on combined AGENTS.md content is 32 KiB (per the
+// plan's Phase 3 research) — too small once root AGENTS.md carries the seven
+// safety gates (Phase 2) plus nested intent-layer files; a real project's
+// root instructions alone can exceed that (MAPS: 17.5 KB, before this diet
+// added the gates). 128 KiB is generous headroom without being unbounded.
+export const CODEX_PROJECT_DOC_MAX_BYTES = 131072;
+
+// `project_doc_max_bytes` is a TOP-LEVEL TOML key (not under any table —
+// verified against learn.chatgpt.com/docs/config-file/config-reference,
+// 2026-08-27), so unlike the `[features]` table above, the only placement
+// rule is "before the first [table] header" — prepending at position 0
+// always satisfies that regardless of what else is in the file.
+function ensureCodexProjectDocMaxBytes(root: string): boolean {
+  const configPath = join(root, CODEX_DIR, "config.toml");
+  let content = existsSync(configPath) ? readFileSync(configPath, "utf-8") : "";
+
+  const keyRe = /^project_doc_max_bytes\s*=\s*(\d+)\s*$/m;
+  const existing = content.match(keyRe);
+  if (existing && Number(existing[1]) >= CODEX_PROJECT_DOC_MAX_BYTES) {
+    return false; // already generous enough — never shrink a user's own value
+  }
+
+  content = existing
+    ? content.replace(keyRe, `project_doc_max_bytes = ${CODEX_PROJECT_DOC_MAX_BYTES}`)
+    : `project_doc_max_bytes = ${CODEX_PROJECT_DOC_MAX_BYTES}\n${content}`;
+
+  if (!existsSync(join(root, CODEX_DIR))) {
+    mkdirSync(join(root, CODEX_DIR), { recursive: true });
+  }
+  writeFileSync(configPath, content);
+  return true;
+}
+
+// Codex CLI hooks. Verified live against learn.chatgpt.com/docs/hooks,
+// 2026-08-27: PreToolUse delivers {session_id, cwd, hook_event_name,
+// tool_name, tool_input} on stdin — byte-identical to Claude Code's contract
+// for the fields these gates read — and blocks via exit 2 (stderr) or exit 0
+// with {systemMessage} JSON to warn without blocking. That means the SAME
+// gate files Claude uses (auto-detecting "claude" for this shape — see
+// committed-gates.ts) work here unchanged; only the config format differs
+// (`.codex/hooks.json`, `matcher`/`hooks` shape identical to Claude's,
+// `timeout` in seconds not ms) and hooks must be enabled via
+// `[features] hooks = true` in `.codex/config.toml`.
+export async function installCodexHooks(
+  root: string,
+  _project: ProjectInfo
+): Promise<string[]> {
+  const results: string[] = [];
+  const codexDir = join(root, CODEX_DIR);
+  if (!existsSync(codexDir)) {
+    mkdirSync(codexDir, { recursive: true });
+  }
+
+  const gateFiles = writeCommittedGateFiles(root);
+
+  const preToolUse = CODEX_GATE_NAMES.map((name) => ({
+    matcher: name === "billing-confirmation" || name === "plan-namespace" ? "Edit|Write|MultiEdit|NotebookEdit" : "Bash",
+    hooks: [
+      {
+        type: "command",
+        command: portableGateInvocation(name),
+        timeout: CODEX_HOOK_TIMEOUT_SEC,
+      },
+    ],
+  }));
+
+  const hooksPath = join(codexDir, "hooks.json");
+  let config: Record<string, unknown> = {};
+  if (existsSync(hooksPath)) {
+    try {
+      config = JSON.parse(readFileSync(hooksPath, "utf-8"));
+    } catch {
+      // Unparseable file: start fresh rather than refusing to install a gate.
+    }
+  }
+  // Merge, not overwrite — a user may have added their own Codex hook
+  // entries. Replace only entries whose command references our committed
+  // gate directory (mirrors the Cursor installer's own-and-merge pattern).
+  const existingHooks = (config.hooks as Record<string, unknown[]>) || {};
+  const mergedHooks: Record<string, unknown[]> = { ...existingHooks };
+  const priorPreToolUse = Array.isArray(existingHooks.PreToolUse) ? existingHooks.PreToolUse : [];
+  const customPreToolUse = priorPreToolUse.filter((entry) => {
+    const cmd = (entry as { hooks?: { command?: string }[] })?.hooks?.[0]?.command || "";
+    return !cmd.includes(`${GATE_BASE_DIR}/${GATE_DIRNAME}/`);
+  });
+  mergedHooks.PreToolUse = [...customPreToolUse, ...preToolUse];
+  config.hooks = mergedHooks;
+  writeFileSync(hooksPath, JSON.stringify(config, null, 2) + "\n");
+
+  const flagChanged = ensureCodexHooksFeatureFlag(root);
+  const capChanged = ensureCodexProjectDocMaxBytes(root);
+
+  results.push(`Written ${gateFiles.length} shared gate files to scripts/soloship-hooks/ (shared with Claude, Cursor, Antigravity — commit these)`);
+  results.push(
+    "PreToolUse: command-safety, deploy-freshness, deploy-discipline, billing-confirmation, recurrence, plan-truth, plan-merge, plan-namespace"
+  );
+  results.push(`Written to ${CODEX_DIR}/hooks.json`);
+  results.push(
+    flagChanged
+      ? `${CODEX_DIR}/config.toml: set [features] hooks = true (hooks are off by default until this is set)`
+      : `${CODEX_DIR}/config.toml: [features] hooks = true already set`
+  );
+  results.push(
+    capChanged
+      ? `${CODEX_DIR}/config.toml: raised project_doc_max_bytes to ${CODEX_PROJECT_DOC_MAX_BYTES} (Codex's default cap on combined AGENTS.md content is 32 KiB — too small once the safety gates are in there)`
+      : `${CODEX_DIR}/config.toml: project_doc_max_bytes already >= ${CODEX_PROJECT_DOC_MAX_BYTES}`
+  );
 
   return results;
 }
@@ -2101,14 +2288,17 @@ function verifyCursorHookScript(path: string, filename: string): void {
 // `rm -rf dist/`, `rm -rf ./build`, and `rm -rf /tmp/scratch` alone — an
 // end-anchor here (the shape the Antigravity gate still carries) silently
 // allows every subpath, which is the common case.
-const CURSOR_DANGEROUS_RM_RE = String.raw`\brm\s+(?:-\S+\s+)+["']?(?:~|\$HOME|/Users|/home|/)(?:[\s/*"']|$)`;
-const CURSOR_ENV_WRITE_RE = String.raw`(?:cat|echo|printf|>)\s*[^|]*\.env(?:\s|$|\.)`;
+// Exported (not just Cursor-local) so committed-gates.ts can reuse the same
+// validated patterns for the shared command-safety gate instead of a third
+// copy — see committed-gates.ts header.
+export const CURSOR_DANGEROUS_RM_RE = String.raw`\brm\s+(?:-\S+\s+)+["']?(?:~|\$HOME|/Users|/home|/)(?:[\s/*"']|$)`;
+export const CURSOR_ENV_WRITE_RE = String.raw`(?:cat|echo|printf|>)\s*[^|]*\.env(?:\s|$|\.)`;
 // Two independent lookaheads so flag order does not matter: a sequential
 // pattern misses `git push origin main --force`, which is how the command is
 // most often typed. `--force` as a prefix also covers `--force-with-lease`.
-const CURSOR_FORCE_PUSH_RE = String.raw`git\s+push\b(?=[^\n]*(?:--force|\s-f(?:\s|$)))(?=[^\n]*\b(?:main|master)\b)`;
-const CURSOR_API_KEY_RE = String.raw`(?:ANTHROPIC|OPENAI|STRIPE|FIREBASE|GEMINI|CURSOR)_[A-Z_]*KEY\s*=\s*["'][a-zA-Z0-9_\-]{20,}["']`;
-const CURSOR_DEPLOY_RE = String.raw`(?:npm\s+run\s+deploy|wrangler\s+deploy|fly\s+deploy|vercel\s+--prod|netlify\s+deploy[^\n]*--prod)`;
+export const CURSOR_FORCE_PUSH_RE = String.raw`git\s+push\b(?=[^\n]*(?:--force|\s-f(?:\s|$)))(?=[^\n]*\b(?:main|master)\b)`;
+export const CURSOR_API_KEY_RE = String.raw`(?:ANTHROPIC|OPENAI|STRIPE|FIREBASE|GEMINI|CURSOR)_[A-Z_]*KEY\s*=\s*["'][a-zA-Z0-9_\-]{20,}["']`;
+export const CURSOR_DEPLOY_RE = String.raw`(?:npm\s+run\s+deploy|wrangler\s+deploy|fly\s+deploy|vercel\s+--prod|netlify\s+deploy[^\n]*--prod)`;
 
 // Path/plan patterns for the file-protection and plan-truth scripts. Same rule
 // as the command patterns: these are STRINGS compiled with new RegExp in the

@@ -25,16 +25,26 @@ sync only what changed and report what's new.
    hooks "not shipped". Building from remembered facts and checking
    docs afterward is the failure class this ordering prevents. The
    report records the docs-check date.
-2. **Sources are read-only.** `CLAUDE.md`, `AGENTS.md`,
-   `.claude/rules/`, `.claude/settings.json`, `.mcp.json` are inputs.
-   Never edit or trim them to fit the target.
+2. **Sources are read-only.** `AGENTS.md` is the primary source (project
+   instructions plus the seven safety-gate rules, in its `## Safety gates`
+   section — since 2026-08-27 those no longer live as separate files in
+   `.claude/rules/`); Codex reads it natively, so this is also the target,
+   not just an input to mirror. `CLAUDE.md` is derived from it (`@AGENTS.md`
+   import plus a Claude-only appendix). `.claude/rules/` (project-specific
+   rules a human added by hand), `.claude/settings.json`, `.mcp.json` are
+   also inputs. Never edit or trim any of them to fit the target.
 3. **Prefer the installer over hand-rolling.** Soloship HAS a codex
    target: `npx soloship init --agent codex` /
-   `npx soloship upgrade --agent codex`. Run that — don't reimplement
+   `npx soloship upgrade --agent codex` — as of 2026-08-27 this includes
+   `.codex/hooks.json` (the shared gate scripts every hook-capable host
+   uses) and `[features] hooks = true` in `.codex/config.toml`, not just
+   rules and AGENTS.md guidance. Run the installer — don't reimplement
    it. This skill's own work is the docs check, the delta check, the
    drift gap the installer misses, and MCP.
-4. **Real copies, never symlinks** (symlinked rule dirs corrupt other
-   installers — verified failure, 2026-08-15).
+4. **Real copies, never symlinks — for rule *directories* only.** A
+   symlinked rules dir routes other tools' installers into `.claude/rules/`
+   (verified failure, 2026-08-15). Per-skill symlinks are fine — Claude Code
+   documents symlinked skill directories as supported and dedupes them.
 5. **Syncing config does not certify the tool.** The final report must
    say so and point to the workspace's certification battery if one
    exists (default location: `docs/testing/model-certification/SOP.md`).
@@ -94,10 +104,18 @@ one line on why.
    `.claude/rules/*.md` into it verbatim. Confirm root `AGENTS.md`
    exists (Codex reads it natively); if absent, report the gap, don't
    invent one.
-4. **Hooks:** if Phase 3 found real lifecycle hooks, map each Claude
-   Code / Soloship gate to a candidate Codex hook and put the
-   implementation in the report as a proposal. Every gate with no
-   counterpart is listed as **protection absent in Codex**.
+4. **Hooks:** as of 2026-08-27, `npx soloship init`/`upgrade --agent codex`
+   installs real hooks — `.codex/hooks.json` pointing at the same
+   `scripts/soloship-hooks/*.cjs` gate files Claude Code uses (command-safety,
+   billing-confirmation, recurrence, deploy-freshness, deploy-discipline,
+   plan-truth, plan-merge, plan-namespace), plus `[features] hooks = true` in
+   `.codex/config.toml` (off by default otherwise). Step 1's installer run
+   already did this — verify it via `npx soloship doctor`'s `.codex/hooks.json`
+   line, don't re-propose it. If Phase 3's docs check found the hook contract
+   changed since 2026-08-27 (event names, payload shape, config format),
+   surface that as a Soloship bug instead of patching around it here.
+   `session-register`/`deploy-lock`/`stop-checks` are NOT yet ported to Codex
+   (Claude-only for now) — list those as **protection absent in Codex**.
 
 ## Phase 5 — MCP servers
 
@@ -121,9 +139,9 @@ unless the target file is confirmed gitignored / outside the repo.
    since the last run.
 2. **Delta** since last run (or "first run — full setup").
 3. **Synced:** what Codex now gets (doctor lines + drift-gap list).
-4. **Protections absent in Codex:** every hook/gate with no
-   counterpart, named, with what it guarded — plus any hook proposals
-   from the new docs.
+4. **Protections absent in Codex:** the gates not yet ported
+   (session-register, deploy-lock, stop-checks — see Phase 4 step 4),
+   named, with what each guards.
 5. **Manual steps:** the numbered list from Phase 3.
 6. **MCP:** mirrored / skipped / placeholders.
 7. **Certification reminder:** config synced ≠ tool trusted — run the

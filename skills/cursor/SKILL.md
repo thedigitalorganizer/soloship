@@ -35,11 +35,23 @@ a Cursor cloud agent is not on rails at all.
    remembered facts and checking docs afterward is the failure class this
    ordering prevents. **Record the docs-check date you actually ran** in the
    report — never copy a date forward from this file.
-2. **Sources are read-only.** `CLAUDE.md`, `AGENTS.md`, `.claude/rules/`,
-   `.claude/skills/`, `.claude/settings.json`, `.mcp.json` are inputs. Never
-   edit, trim, or restructure them to fit the target.
-3. **Real copies, never symlinks.** A symlinked rules dir routes other tools'
-   installers into `.claude/rules/` (verified failure, 2026-08-15).
+2. **Sources are read-only.** `AGENTS.md` is the primary source (project
+   instructions plus the seven safety-gate rules, in its `## Safety gates`
+   section — since 2026-08-27 those no longer live as separate files in
+   `.claude/rules/`). `CLAUDE.md` is derived from it (`@AGENTS.md` import
+   plus a short Claude-only appendix) — read the appendix for anything
+   genuinely Claude-specific, but AGENTS.md is what actually needs mirroring.
+   `.claude/rules/` (any project-specific rules a human added by hand, not
+   Soloship's generated ones), `.claude/skills/`, `.claude/settings.json`,
+   `.mcp.json` are also inputs. Never edit, trim, or restructure any of them
+   to fit the target.
+3. **Real copies, never symlinks — for rule *directories* only.** A
+   symlinked rules dir routes other tools' installers into `.claude/rules/`
+   (verified failure, 2026-08-15). Per-skill symlinks are fine — Claude Code
+   documents symlinked skill directories as supported and dedupes them; a
+   `.claude/skills/<name>` symlink pointing at a canonical `.agents/skills/`
+   copy is the intended cross-host layout (Phase 4 of the multi-host plan),
+   not a violation of this gate.
 4. **Generated files carry a header** so nobody edits the copy:
    `<!-- GENERATED from <source> by /soloship:cursor. Edit the source, then re-run. -->`
    (`.cursor/hooks.json` is the one exception — JSON has no comment syntax.

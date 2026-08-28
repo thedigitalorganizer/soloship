@@ -2,6 +2,59 @@
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-08-27
+
+### Fixed — Most Claude Code safety gates were silently inert
+
+Command-safety, billing-confirmation, recurrence, deploy-freshness,
+deploy-discipline, plan-truth, plan-merge, and plan-namespace all read
+`$HOOK_TOOL_INPUT`, an environment variable Claude Code has never set —
+verified against both the official hooks reference and a binary grep of the
+installed CLI (zero occurrences, versus 25 for `CLAUDE_PROJECT_DIR`). Every
+one of those gates exited silently on every call. Fixed by reading the real
+stdin JSON payload instead. If you installed Soloship's Claude hooks before
+this release, run `npx soloship upgrade` to pick up the fix — until then
+those eight gates are not protecting anything.
+
+### Added — One source of truth across five agent hosts
+
+A project's instructions, safety gates, and hooks now come from one set of
+files instead of separately-maintained per-host copies:
+
+- **Shared gate scripts.** The 8 gates above live once, as committed `.cjs`
+  files in `scripts/soloship-hooks/`, each auto-detecting which host called
+  it from its stdin payload shape. Wired into Claude Code, Codex (behind
+  `.codex/config.toml`'s `[features] hooks = true`, set automatically), and
+  Antigravity — 3 hosts instead of 1. Cursor already had its own working
+  hook set and is unchanged. 42 hook protections total, up from 25.
+- **`AGENTS.md` is now the instruction file; `CLAUDE.md` is an import.**
+  Four of five hosts read `AGENTS.md` natively; Claude Code's `CLAUDE.md` is
+  now a one-line `@AGENTS.md` import plus a short Claude-only appendix.
+  Existing projects get a one-time nudge toward `/soloship:bootstrap` to
+  migrate a large pre-existing `CLAUDE.md`; `upgrade` never rewrites it
+  unattended.
+- **The 7 always-on safety gates live once**, as a `## Safety gates` section
+  inside `AGENTS.md`, not as separate generated files in
+  `.claude/rules/`, `.codex/rules/`, `.cursor/rules/`, and `.agents/rules/`.
+  `upgrade` deletes Soloship's own old generated copies in those directories
+  (any user-authored files alongside them are left alone and reported by
+  name) and mechanically keeps the `AGENTS.md` section current via a
+  marker-delimited replace — the one exception to `upgrade`'s
+  preserve-your-docs contract, since this text has no judgment calls in it.
+- **Project skills canonicalize to `.agents/skills/`**, with `.claude/skills/`
+  becoming a symlink — three of five hosts read `.agents/skills/` natively;
+  Claude Code follows the symlink.
+- **`upgrade` does all of the above in one run**, and a new Claude Code
+  plugin `SessionStart` hook runs it automatically when the installed plugin
+  is newer than the project's stamp — fails open on every check (opt-out
+  file `.soloship/no-auto-upgrade`, a dirty Soloship-managed path, missing
+  git repo) and only ever instructs the session to commit; it never commits
+  on its own. First run on a machine with the `cursor` CLI on PATH will add
+  a `.cursor/` surface to a project that never had one — auto-detection
+  matches CLI-on-PATH as well as an existing `.cursor/` directory, by
+  design; `--agent claude` (or your usual target) pins it if you don't want
+  that.
+
 ### Changed — Always-on diet: 19 rules → 7, 32 hooks → 25
 
 The always-on cage was mixing product-safety gates with workflow coaching.
