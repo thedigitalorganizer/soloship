@@ -2,7 +2,7 @@
 
 > Ship solo, safely.
 
-Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Codex, Google Antigravity, and Cursor as guardrail targets (plus an environment-sync skill that sets up Grok Build): **mechanical enforcement** that fires automatically (25 hook protections, 7 always-on rules, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
+Soloship is guardrails for non-coders building software through AI agents. It supports Claude Code, Cursor, Codex, and Google Antigravity as guardrail targets (plus an environment-sync skill that sets up Grok Build): **mechanical enforcement** that fires automatically (42 hook protections shared across all four hosts, 7 always-on safety gates, and CI checks, no judgment calls required), **51 workflow skills** drawn from Soloship's own work plus five best-in-class upstream projects (Compound Engineering, Superpowers, Impeccable, gstack, ui-ux-pro-max, full attribution below), each with enforcement gates and anti-rationalization tables so the agent can't cut corners, and **a one-command setup** that detects your stack and wires guardrails into the project.
 
 Everything ships inside the one Soloship plugin. Nothing depends on other plugins being installed.
 
@@ -28,9 +28,9 @@ You don't need to install anything from npm by hand. `npx` downloads `soloship` 
 |---|---|---|
 | **Codex plugin** | Soloship skills for audit, bootstrap, plan, implement, review, browse, and ship workflows | `codex plugin ...` |
 | **Claude Code plugin** | `/soloship:*` slash commands backed by the same `skills/` source tree | `/plugin ...` in Claude Code |
-| **npm CLI** | Project guardrails: docs, rules, Claude hooks, CI, rollback stamp | `npx soloship ...` |
-| **Antigravity guardrails** | `.agents/rules/` + `.agents/hooks.json` + the global Gemini plugin (`npm run antigravity:install-local`) | `npx soloship init\|upgrade --agent antigravity` |
-| **Cursor guardrails** | Always-on `.cursor/rules/*.mdc` + a committed `.cursor/hooks.json` wired to `.cursor/hooks/soloship-*.cjs` | `npx soloship init\|upgrade --agent cursor` |
+| **npm CLI** | Project guardrails: docs, safety gates (in `AGENTS.md`), hooks for every target, CI, rollback stamp | `npx soloship ...` |
+| **Antigravity guardrails** | `.agents/hooks.json` (8 shared gates + file-protection + stop-check) + the global Gemini plugin (`npm run antigravity:install-local`) | `npx soloship init\|upgrade --agent antigravity` |
+| **Cursor guardrails** | A committed `.cursor/hooks.json` wired to `.cursor/hooks/soloship-*.cjs` | `npx soloship init\|upgrade --agent cursor` |
 
 Use the plugin for daily workflow. Use the npm CLI once per project, then again when guardrails need refreshing.
 
@@ -46,7 +46,7 @@ codex plugin add soloship@soloship
 npx soloship init --agent codex
 ```
 
-Start a new Codex thread after the plugin install. The project setup creates `AGENTS.md` and `.codex/rules/`; it does not create Claude hooks.
+Start a new Codex thread after the plugin install. The project setup creates `AGENTS.md` (safety gates live in its `## Safety gates` section) and `.codex/hooks.json` (8 shared gates, requires `[features] hooks = true` in `.codex/config.toml` — set automatically); it does not create Claude hooks.
 
 **Claude Code only**, if you only work in Claude Code:
 
@@ -61,7 +61,7 @@ Then set up each project:
 npx soloship init --agent claude
 ```
 
-This creates `CLAUDE.md`, `.claude/rules/`, and `.claude/settings.local.json`.
+This creates `CLAUDE.md` (a one-line `@AGENTS.md` import plus a short Claude-only appendix), `AGENTS.md` (safety gates live in its `## Safety gates` section), and `.claude/settings.local.json`.
 
 **Cursor**, if you work in the Cursor IDE or run Cursor cloud agents:
 
@@ -70,11 +70,9 @@ npx soloship init --agent cursor
 git add .cursor && git commit -m "chore: Soloship guardrails for Cursor"
 ```
 
-There is no Cursor plugin to install; Cursor is a CLI-only guardrail target. The setup writes always-on rules to `.cursor/rules/*.mdc` and mechanical gates to `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs` (command safety, file protection, and a plan-truth stop check).
+There is no Cursor plugin to install; Cursor is a CLI-only guardrail target. The setup writes mechanical gates to `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs` (command safety, file protection, and a plan-truth stop check). The seven always-on safety gates themselves live in `AGENTS.md`'s `## Safety gates` section — Cursor reads `AGENTS.md` natively.
 
 **Committing `.cursor/` is part of the setup, not a nicety.** A Cursor cloud agent loads the committed `.cursor/hooks.json` and nothing else: never `~/.cursor/hooks.json`, never your Claude Code hooks, regardless of any IDE toggle. Until that config is committed, a cloud agent on your repo is running with no mechanical protection at all.
-
-Two details worth knowing: the rules are written as **real copies, never symlinks**, because they are meant to be committed and read by a machine that has never seen your checkout. And the `.mdc` extension is load-bearing: Cursor **silently ignores** plain `.md` files in its rules directory, so a hand-copied rule looks installed and protects nothing.
 
 **Both Codex and Claude Code**, if you switch between them:
 
@@ -94,7 +92,7 @@ Then set up each project once:
 npx soloship init --agent both
 ```
 
-Both agents use the same `skills/` source and the same `docs/plans/` and `docs/solutions/` project artifacts. Claude Code gets `.claude/` hooks/rules; Codex gets `.codex/rules/` and `AGENTS.md`.
+Both agents use the same `skills/` source and the same `docs/plans/` and `docs/solutions/` project artifacts, and read the same `AGENTS.md` safety gates. Claude Code gets `.claude/settings.local.json` hooks; Codex gets `.codex/hooks.json` + `.codex/config.toml`.
 
 **Every target at once**, if you want the project covered no matter which agent opens it:
 
@@ -197,7 +195,7 @@ For every target at once:
 npx soloship init --agent all
 ```
 
-`init` creates the documentation structure, 7 workflow rules, CI checks, the automation registry scaffold, the `.soloship/version` stamp, and the right agent-facing guidance. Claude installs hooks under `.claude/settings.local.json`; Codex installs rules under `.codex/rules/` and uses `AGENTS.md`; Antigravity installs `.agents/rules/` and `.agents/hooks.json`; Cursor installs `.cursor/rules/*.mdc` and `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs`, which you then commit. Re-running the Cursor target merges into an existing `.cursor/hooks.json` rather than overwriting it, so your own hooks survive and Soloship's are never duplicated. Codex hooks are intentionally not ported yet; they wait on verified Codex hook payloads.
+`init` creates the documentation structure (the seven always-on safety gates live in `AGENTS.md`'s `## Safety gates` section — one copy, every host reads it), CI checks, the automation registry scaffold, the `.soloship/version` stamp, and hooks for every target you select, all sharing one set of gate scripts committed to `scripts/soloship-hooks/`. Claude installs them via `.claude/settings.local.json`; Codex via `.codex/hooks.json` + `.codex/config.toml` (`[features] hooks = true`); Antigravity via `.agents/hooks.json`; Cursor via `.cursor/hooks.json` + `.cursor/hooks/soloship-*.cjs`, which you then commit. Re-running the Cursor target merges into an existing `.cursor/hooks.json` rather than overwriting it, so your own hooks survive and Soloship's are never duplicated.
 
 For an existing codebase, run Soloship audit before bootstrap/setup so the guardrails match the code instead of guessing. In Claude Code, use `/soloship:audit`; in Codex, invoke the Soloship audit skill.
 
@@ -244,7 +242,7 @@ Start a new Codex thread after any plugin reinstall.
 
 ### Switching Between Claude Code And Codex
 
-Both agents use the same repo, the same `skills/` source tree, and the same plan/solution artifacts under `docs/`. Claude Code reads `CLAUDE.md`, `.claude/rules/`, and `.claude/settings.local.json`. Codex reads `AGENTS.md` and `.codex/rules/`. Claude uses `/soloship:*`; Codex uses the installed Soloship plugin skills.
+Both agents use the same repo, the same `skills/` source tree, and the same plan/solution artifacts under `docs/`. Claude Code reads `CLAUDE.md` (a one-line `@AGENTS.md` import) and `.claude/settings.local.json`. Codex reads `AGENTS.md` directly and `.codex/hooks.json`. Both read the same `## Safety gates` section in `AGENTS.md`. Claude uses `/soloship:*`; Codex uses the installed Soloship plugin skills.
 
 ## Where Soloship came from
 
@@ -266,9 +264,9 @@ That became Soloship.
 
 Three layers, from most mechanical to most guided:
 
-**Hooks** fire automatically in Claude Code sessions. They can't be rationalized away. Dangerous command blocking, security scanning on commits, auto-lint, CHANGELOG enforcement, plan validation, deploy discipline, the billing and recurrence gates, session presence for parallel agents, checkpoint commits, and a reply timestamp on every response so session logs can reconstruct when work actually happened. If the agent forgets, the hook remembers. Antigravity and Cursor get their own native hook sets (Cursor's covering command safety, file protection, and a plan-truth stop check). Codex hook parity is intentionally deferred until Codex hook payloads are verified.
+**Hooks** fire automatically, in every host that supports them. Eight gate scripts — command safety, deploy freshness, deploy discipline, billing confirmation, recurrence, plan-truth, plan-merge, plan-namespace — are shared byte-for-byte (`scripts/soloship-hooks/`, committed to the project) across Claude Code, Codex, and Antigravity, each reading the same stdin JSON contract. They can't be rationalized away. Claude Code adds session presence for parallel agents, checkpoint commits, and CHANGELOG/plan-lifecycle checks on top; Cursor has its own longer-standing hook set (command safety, file protection, a plan-truth stop check); Antigravity adds file-protection and a stop-check. 42 hook protections total across the four hosts.
 
-**Rules** are injected into every agent session as always-on context. Solution search before planning, plan materialization after plan mode, plan rationale and claim-verification requirements, plan lifecycle enforcement, a QA plan in every plan, the billing-confirmation and recurrence gates, parameterize-constants, deploy-from-main-only, the automation registry, and a **browser-QA gate that blocks "done" until the change has been exercised in a real browser** (with a test account where a flow needs login). The agent can't not see them, even if a skill doesn't reference them.
+**Rules** are the seven always-on safety gates — billing confirmation, live-data evidence, recurrence, browser QA, deploy-from-main-only, the automation registry, model mode — written once and delivered as a `## Safety gates` section inside `AGENTS.md`, the one file every host reads. No generated per-host rule directories; nothing to keep in sync. The agent can't not see them, even if a skill doesn't reference them.
 
 **Skills** are guided workflows. Claude Code exposes them as `/soloship:*` commands; Codex exposes them through the installed Soloship plugin. Each adds enforcement gates (checklists the agent must complete) and anti-rationalization tables (preemptive counters to the ways agents cut corners).
 
@@ -302,9 +300,12 @@ All 45 are invoked the same way: `/soloship:<name>`. Source attribution lives in
 When you run `/soloship:bootstrap` (or `/soloship:audit` then `/soloship:bootstrap` on an existing project), it detects your language, framework, and package manager, then installs:
 
 - **Folder scaffolding**: `docs/plans/`, `docs/solutions/`, `docs/audit/`, `docs/automations/` (the automation registry), `AGENTS.md` stubs
-- **22 Claude Code hooks** across five events. **PreToolUse (11):** dangerous command blocking, deploy-freshness gate, deploy-discipline gate, billing-confirmation gate, recurrence gate, plan-truth gate, plan-merge gate, main-checkout authoring warn, plan-namespace gate, plan-completeness gate (every plan must declare an observable Goal + Done-When), plan-done-checklist gate (blocks `status: done` while the plan body still has unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers). **PostToolUse (4):** auto-lint, recurrence audit, session heartbeat, browser claim. **Stop (3):** plan-truth backstop (reads the plan body, not just frontmatter — it prompts a review instead of commanding `status: done` when open items are still listed), a browser-teardown reminder, and a deploy-lock reminder. **SessionStart (2):** checkpoint commit, session presence. **SessionEnd (2):** browser-claim release, deploy-lock release.
-- **3 Cursor hook protections** in `.cursor/hooks.json`, wired to committed `.cursor/hooks/soloship-*.cjs` so Cursor cloud agents get them too. **beforeShellExecution:** command safety (dangerous `rm -rf`, direct `.env` writes, force-push to main/master, hardcoded API keys, deploys off the default branch). **preToolUse (Write|Delete):** file protection (`.soloship/version`, `.env`, `docs/plans/` frontmatter + status vocabulary, plan done-checklist). **stop:** plan-truth check. That's 25 hook protections across both targets.
-- **7 workflow rules** (always-on safety floor): billing confirmation, live-data evidence, recurrence, browser QA, deploy-from-main-only, automation registry, model mode. Planning shape, component reuse, named constants, and solution search live in skills and `AGENTS.md`, not as always-on essays.
+- **Shared gate scripts, one source, four hosts.** Eight gates — command safety, deploy-freshness, deploy-discipline, billing-confirmation, recurrence, plan-truth, plan-merge, plan-namespace — live once as committed `.cjs` files in `scripts/soloship-hooks/`, each auto-detecting which host called it from its stdin JSON shape. Wired into every target you select.
+- **21 Claude Code hooks** across five events. **PreToolUse (11):** the 8 shared gates plus main-checkout authoring warn, plan-completeness gate (every plan must declare an observable Goal + Done-When), plan-done-checklist gate (blocks `status: done` while the plan body still has unchecked boxes or PENDING/BLOCKED/IN PROGRESS markers). **PostToolUse (3):** recurrence audit, session heartbeat, browser claim. **Stop (3):** plan-truth backstop (reads the plan body, not just frontmatter — it prompts a review instead of commanding `status: done` when open items are still listed), a browser-teardown reminder, and a deploy-lock reminder. **SessionStart (2):** checkpoint commit, session presence. **SessionEnd (2):** browser-claim release, deploy-lock release.
+- **8 Codex hooks** in `.codex/hooks.json` — the shared gates, all `PreToolUse`. Requires `[features] hooks = true` in `.codex/config.toml`, set automatically (off by default in Codex).
+- **10 Antigravity hooks** in `.agents/hooks.json` — the 8 shared gates plus Antigravity-only file-protection (`.soloship/version` guard, plan doc-format check) and a plan-truth stop-check.
+- **3 Cursor hook protections** in `.cursor/hooks.json`, wired to committed `.cursor/hooks/soloship-*.cjs` so Cursor cloud agents get them too. **beforeShellExecution:** command safety (dangerous `rm -rf`, direct `.env` writes, force-push to main/master, hardcoded API keys, deploys off the default branch). **preToolUse (Write|Delete):** file protection (`.soloship/version`, `.env`, `docs/plans/` frontmatter + status vocabulary, plan done-checklist). **stop:** plan-truth check. That's 42 hook protections across all four targets.
+- **7 always-on safety gates**, delivered once as a `## Safety gates` section inside `AGENTS.md` — not as separate per-host rule files: billing confirmation, live-data evidence, recurrence, browser QA, deploy-from-main-only, automation registry, model mode. Planning shape, component reuse, named constants, and solution search live in skills and `AGENTS.md`'s other sections, not as always-on essays.
 - **GitHub Actions CI** with architecture fitness functions
 - **Generated docs**: `CLAUDE.md`, `AGENTS.md`, `CHANGELOG`, `SOLUTION_GUIDE`, sized to your stack
 
@@ -317,7 +318,7 @@ Run bootstrap once per project. For existing code, run `/soloship:audit` first s
 **Setup & orientation**
 
 - `/soloship:audit`: Deep 2-phase codebase investigation. Phase 1 launches 4 parallel agents to map architecture, conventions, decisions, and infrastructure. Phase 2 launches 7 more to assess quality, entanglement, security, dependencies, gaps, leverage points, and the automation surface (every cron, webhook, and scheduled job plus its monitoring state). Human checkpoint between phases prevents building assessment on wrong assumptions. Produces `docs/audit/AUDIT-YYYY-MM-DD.md` + `audit-findings.json`.
-- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates CLAUDE.md and/or AGENTS.md guidance, installs the 7 workflow rules, seeds the automation registry, and wires up Claude hooks when Claude is targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
+- `/soloship:bootstrap`: Configures governance from audit findings or interactive questions. Creates AGENTS.md (the instruction file, safety gates included) and/or CLAUDE.md (a one-line import), seeds the automation registry, and wires up hooks for whichever hosts are targeted. Never overwrites existing files. Anti-rationalization table blocks "I'll set up governance later."
 - `/soloship:onboard`: Reads CLAUDE.md, AGENTS.md, audit reports, and recent git history to produce a 7-section orientation briefing. Flags stale audit reports. Fully self-contained.
 
 **Daily work**
@@ -397,7 +398,7 @@ npx soloship rollback    # restore the last safety snapshot
 | 1-2 | Done | Cleanup + `npx soloship init` with stack detection |
 | 3-4 | Done | `/audit` + `/bootstrap` skills |
 | 5-6 | Done | The initial skill set + hooks + rules |
-| 7 | In progress | Safety floor shipped earlier. Always-on diet (7 rules, 25 hooks) is the first slice of surface simplification. AGENTS.md governance still open. |
+| 7 | Done | Safety floor shipped earlier. Always-on diet (7 rules, one shared AGENTS.md section) plus one source of truth across five hosts: 42 hook protections on shared gate scripts, generated per-host rule directories deleted, `AGENTS.md` is the instruction file every host reads, skills canonicalized to `.agents/skills/`. |
 | 8 | Not started | Graduation system, methodology documentation |
 
 Since the phase plan was written, releases 0.5 through 0.13 also vendored the full 45-skill set into the plugin, added Codex support, the browser QA gate, the QA-plan requirement, deploy discipline (deploy-from-main-only, the deploy lock, the `prod` tag), cross-session coordination for parallel agents, and the automation registry with its one-watchdog standard. See [`CHANGELOG.md`](CHANGELOG.md) for the full history. Phase 8's graduation system (calibrated thresholds that tell you when your project has outgrown solo mode) remains open.
@@ -438,8 +439,10 @@ src/                   # TypeScript source for the installer
   init.ts              # Main init orchestration
   detect.ts            # Stack detection
   scaffold.ts          # Folder + doc creation
-  hooks.ts             # Claude Code hook configuration
-  rules.ts             # Claude and Codex workflow rule installation
+  hooks.ts             # Hook installers for all four hook-capable hosts
+  committed-gates.ts   # The 8 shared gate scripts, one source, per-host emit
+  safety-gates.ts      # The 7 always-on rules' text (renders into AGENTS.md)
+  rules.ts             # Prunes old generated per-host rule-mirror files
   ci.ts                # GitHub Actions + architecture fitness
   templates.ts         # CLAUDE.md / AGENTS.md / CHANGELOG / SOLUTION_GUIDE generators
 skills/                # Shared Claude Code and Codex skills shipped by the plugins (46 total)

@@ -12,8 +12,20 @@ const REQUIRED_SKILL_COUNT = 51;
 const REQUIRED_AGENT_PROMPT_COUNT = 5;
 const SKILLS_DIR = "skills";
 const COMMANDS_DIR = "commands";
-const RULES_SOURCE = join("src", "rules.ts");
+// Phase 6 of docs/plans/2026-08-27-one-source-of-truth-across-agent-hosts.md:
+// the 7 rules moved from a map in rules.ts (now prune-only, no map left) to
+// safety-gates.ts's SAFETY_GATE_FILENAMES; hooks stopped being one Claude-only
+// enumeration and are now shared gate scripts across 4 hosts, so a flat
+// "count the build*Script functions in hooks.ts" no longer means what it used
+// to. countRegisteredRules/countHookScripts below were rewritten accordingly.
+const RULES_SOURCE = join("src", "safety-gates.ts");
 const HOOKS_SOURCE = join("src", "hooks.ts");
+const GATES_SOURCE = join("src", "committed-gates.ts");
+// Cursor's hook set is untouched by this plan (Phase 1 explicitly left it
+// alone — see committed-gates work) and has no shared-source count to derive
+// from, so it stays a hand-maintained constant like the others were before
+// this file existed. Update it only if Cursor's own hook count changes.
+const CURSOR_HOOK_COUNT = 3;
 
 // Prose docs state counts ("25 hook protections", "18 workflow rules") that
 // nothing verified, so they drifted silently. On 2026-07-31 README.md claimed
@@ -24,8 +36,7 @@ const HOOKS_SOURCE = join("src", "hooks.ts");
 // pattern deliberately rather than letting the number rot.
 const DOC_COUNT_CHECKS = [
   { file: "README.md", pattern: /(\d+) hook protections/g, truth: "hooks" },
-  { file: "README.md", pattern: /(\d+) always-on rules/g, truth: "rules" },
-  { file: "README.md", pattern: /(\d+) workflow rules/g, truth: "rules" },
+  { file: "README.md", pattern: /(\d+) always-on safety gates/g, truth: "rules" },
   { file: "README.md", pattern: /(\d+) workflow skills/g, truth: "skills" },
   { file: "AGENTS.md", pattern: /(\d+) skills for audit/g, truth: "skills" },
   { file: "AGENTS.md", pattern: /\((\d+) rules\)/g, truth: "rules" },
@@ -109,18 +120,47 @@ function countAgentPrompts() {
   ).length;
 }
 
-// Count the rules registered in src/rules.ts — the entries of the RULES map,
-// which is what installRules() actually writes into a project's .claude/rules/.
+// Count the 7 always-on rules — the entries of SAFETY_GATE_FILENAMES in
+// safety-gates.ts, rendered once into every AGENTS.md's `## Safety gates`
+// section rather than written per-host (rules.ts, despite the filename, no
+// longer writes rule files at all — it only prunes old generated ones).
 // Reading the source (rather than a compiled import) keeps this runnable
 // pre-build, the same as every other check here.
-// One builder function per installed hook script. This is the same shape the
-// README enumerates, so it is the number the docs must agree with.
+function countSharedGateNames() {
+  const gatesSource = join(repoRoot, GATES_SOURCE);
+  if (!existsSync(gatesSource)) return 0;
+  const source = readFileSync(gatesSource, "utf-8");
+  const match = source.match(/export const GATE_NAMES = \[([\s\S]*?)\] as const;/);
+  if (!match) return 0;
+  return (match[1].match(/"[a-z0-9-]+"/g) || []).length;
+}
+
+// Claude and Antigravity each report most of their hooks as one
+// `results.push("<Event>: description")` call per hook, so those are still
+// individually countable by grepping for the event-name prefix. Codex's
+// installer reports its whole PreToolUse set as ONE combined line (it has
+// nothing but the shared gates), and Antigravity reports its shared portion
+// the same way — both of those get added back in as countSharedGateNames(),
+// once per host, rather than being (mis)counted as a single hook each. See
+// README.md's "How it works" section for the human-readable version of this
+// same breakdown.
 function countHookScripts() {
   const hooksSource = join(repoRoot, HOOKS_SOURCE);
   if (!existsSync(hooksSource)) return 0;
   const source = readFileSync(hooksSource, "utf-8");
-  const matches = source.match(/function build[A-Za-z]+Script/g);
-  return matches ? new Set(matches).size : 0;
+  const individuallyReported = (
+    source.match(
+      /results\.push\("(PreToolUse|PostToolUse|Stop|SessionStart|SessionEnd|beforeShellExecution|preToolUse|stop)/g
+    ) || []
+  ).length;
+  const sharedGates = countSharedGateNames();
+  // individuallyReported already includes Claude's 8 shared + 5 own PreToolUse,
+  // 3 PostToolUse, 3 Stop, 2 SessionStart, 2 SessionEnd (21), plus
+  // Antigravity's 2 own (file-protection, stop-check) — 23 total. Codex's
+  // hooks are ENTIRELY the shared set (reported as one combined line, so add
+  // sharedGates once); Antigravity's shared portion is also one combined line
+  // (add sharedGates again); Cursor is untouched, hand-maintained.
+  return individuallyReported + sharedGates * 2 + CURSOR_HOOK_COUNT;
 }
 
 function checkDocumentedCounts(truths) {
@@ -154,8 +194,9 @@ function countRegisteredRules() {
   const rulesSource = join(repoRoot, RULES_SOURCE);
   if (!existsSync(rulesSource)) return 0;
   const source = readFileSync(rulesSource, "utf-8");
-  const matches = source.match(/^\s+"[a-z0-9-]+\.md":\s*RULE_/gm);
-  return matches ? matches.length : 0;
+  const match = source.match(/export const SAFETY_GATE_FILENAMES = \[([\s\S]*?)\] as const;/);
+  if (!match) return 0;
+  return (match[1].match(/"[a-z0-9-]+\.md"/g) || []).length;
 }
 
 function validateCodexManifest(codexPlugin, packageVersion) {
@@ -322,7 +363,7 @@ if (agentPromptCount !== REQUIRED_AGENT_PROMPT_COUNT) {
 const ruleCount = countRegisteredRules();
 if (ruleCount !== REQUIRED_RULE_COUNT) {
   errors.push(
-    `expected ${REQUIRED_RULE_COUNT} rules registered in src/rules.ts, found ${ruleCount}`
+    `expected ${REQUIRED_RULE_COUNT} rules registered in src/safety-gates.ts, found ${ruleCount}`
   );
 }
 

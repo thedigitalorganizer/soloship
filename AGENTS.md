@@ -38,7 +38,7 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 | 4. Bootstrap | Done | `/soloship:bootstrap` skill |
 | 5. Workflow commands | Done | 17 additional skills (19 total) |
 | 6. Hooks | Done | All 9 hooks implemented |
-| 7. Safety + Simplification | In progress | WS1 safety floor shipped earlier. WS2 always-on diet (19 rules → 7, coaching hooks removed) landed 2026-08-26. WS3 AGENTS.md governance still open. |
+| 7. Safety + Simplification | Done | WS1 safety floor shipped earlier. WS2 always-on diet (19 rules → 7) landed 2026-08-26. WS3 AGENTS.md governance shipped 2026-08-27: one source of truth across five hosts — 42 hook protections on shared gate scripts, generated per-host rule directories deleted, root `AGENTS.md` is the instruction file every host reads, project skills canonicalized to `.agents/skills/`. |
 | 8. Graduation + Docs | Not started | WS4: graduation system, methodology page for aifoundationlevels.com |
 
 ## Project Structure
@@ -53,8 +53,10 @@ See `docs/research/2026-04-08-adversarial-review-synthesis.md` for the reasoning
 │   ├── init.ts            # Main init orchestration
 │   ├── detect.ts          # Stack detection (language, framework, package manager)
 │   ├── scaffold.ts        # Folder structure + doc creation
-│   ├── hooks.ts           # Claude Code + Cursor hook configuration (25 hooks)
-│   ├── rules.ts           # Workflow rule installation (7 rules)
+│   ├── hooks.ts           # Hook installers for all four hook-capable hosts (42 hooks)
+│   ├── committed-gates.ts # The 8 shared gate scripts, one source, per-host emit
+│   ├── safety-gates.ts    # The always-on rules' text (7 rules), renders into AGENTS.md
+│   ├── rules.ts           # Prunes old generated per-host rule-mirror files
 │   ├── ci.ts              # GitHub Actions CI + architecture fitness functions
 │   └── templates.ts       # CLAUDE.md, AGENTS.md, CHANGELOG, SOLUTION_GUIDE generators
 ├── dist/                  # Compiled output (gitignored)
