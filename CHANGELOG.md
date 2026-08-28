@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.28.0] - 2026-08-27
+
 ### Fixed — Most Claude Code safety gates were silently inert
 
 Command-safety, billing-confirmation, recurrence, deploy-freshness,
