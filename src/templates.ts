@@ -10,7 +10,9 @@ import {
   ROOT_CAUSE_ENUM,
   schemaVersionMarker,
 } from "./solution-schema.js";
-import { renderSafetyGatesSection } from "./safety-gates.js";
+import { ensureSafetyGatesSection, renderSafetyGatesSection } from "./safety-gates.js";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 
 /** Copied into new-project AGENTS.md/CLAUDE.md. Keep short — it is always-on context. */
 export const LOAD_BEARING_WORK =
@@ -319,4 +321,32 @@ launchd/crontab jobs, and webhook receivers. Manage it with \`/soloship:cron\`.
 machine that sleeps get ~1800 (30h). Webhooks have no cadence — they get
 expected-activity windows and a baseline check-in seeded at wiring time.
 `;
+}
+
+/**
+ * Fs-level counterpart to ensureSafetyGatesSection(): makes sure the
+ * project's actual AGENTS.md on disk carries the current Safety gates
+ * section, called from both `init` (an existing project's AGENTS.md is never
+ * regenerated — scaffoldDocs skips it) and `upgrade` (which preserves
+ * AGENTS.md by contract and would otherwise never touch it). Run this BEFORE
+ * pruning the old generated rule-mirror directories: the prune's safety
+ * argument is "the text still lives in AGENTS.md," which is only true once
+ * this has run. Missing AGENTS.md entirely (a project that never ran `init`)
+ * gets a full fresh file via generateAgentsMd(project), not just the section
+ * — there's nothing else to preserve.
+ */
+export function ensureSafetyGatesInAgentsMd(
+  root: string,
+  project: ProjectInfo
+): { path: string; action: "created" | "updated" | "unchanged" } {
+  const path = join(root, "AGENTS.md");
+  if (!existsSync(path)) {
+    writeFileSync(path, generateAgentsMd(project));
+    return { path: "AGENTS.md", action: "created" };
+  }
+  const current = readFileSync(path, "utf-8");
+  const { content, changed } = ensureSafetyGatesSection(current);
+  if (!changed) return { path: "AGENTS.md", action: "unchanged" };
+  writeFileSync(path, content);
+  return { path: "AGENTS.md", action: "updated" };
 }

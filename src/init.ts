@@ -9,6 +9,7 @@ import {
 } from "./agents.js";
 import { detectProject, type ProjectInfo } from "./detect.js";
 import { scaffoldDocs } from "./scaffold.js";
+import { ensureSafetyGatesInAgentsMd } from "./templates.js";
 import { actionIcon, printStaleNotice } from "./guide-freshness.js";
 import {
   installHooks,
@@ -113,6 +114,17 @@ export async function runInit(options: InitOptions): Promise<void> {
     );
   }
   printStaleNotice(scaffoldResults, "npx soloship init --refresh-guides");
+
+  // scaffoldDocs above only WRITES AGENTS.md when it doesn't already exist
+  // (never overwrites); an existing AGENTS.md on a re-run of `init` needs the
+  // same mechanical-section ensure `upgrade` uses, or a project whose
+  // AGENTS.md predates the Safety gates section never gets it.
+  const safetyGatesResult = ensureSafetyGatesInAgentsMd(root, projectInfo);
+  if (safetyGatesResult.action !== "unchanged") {
+    console.log(
+      `  ${chalk.green("+")} ${safetyGatesResult.path} (Safety gates section ${safetyGatesResult.action})`
+    );
+  }
 
   // Step 4: Install Hooks
   if (agentSelection.claude) {

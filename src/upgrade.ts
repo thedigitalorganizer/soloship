@@ -15,6 +15,7 @@ import {
   installCodexHooks,
 } from "./hooks.js";
 import { syncSkillsCanonical } from "./skills-sync.js";
+import { ensureSafetyGatesInAgentsMd } from "./templates.js";
 import { installCloudPluginEnablement } from "./cloud-enablement.js";
 import {
   installClaudeRules,
@@ -36,7 +37,11 @@ import { getVersion } from "./pkg.js";
  *
  * Refreshes: hooks, rules, version stamp. CI scaffolding (ci.yml, fitness
  * test) is install-once and never touched by upgrade — projects customize it.
- * Preserves: CLAUDE.md, AGENTS.md, CHANGELOG.md, docs/, and any user content.
+ * Preserves user content in CLAUDE.md, AGENTS.md, CHANGELOG.md, and docs/ —
+ * with one owned exception: AGENTS.md's marker-delimited `## Safety gates`
+ * section (see ensureSafetyGatesInAgentsMd/safety-gates.ts) is mechanical,
+ * verbatim, generated text, kept current on every run like the hooks and
+ * rules around it. Everything else in those files is never rewritten.
  *
  * The hooks installer already overwrites `.claude/settings.local.json`'s hooks
  * key wholesale, so users who hand-edited hooks will lose those changes — same
@@ -146,6 +151,17 @@ export async function runUpgrade(options: UpgradeOptions = {}): Promise<void> {
       log(`  ${chalk.green("+")} ${result}`);
     }
   }
+
+  // Must run BEFORE pruning the generated rule-mirror directories below —
+  // the prune is only safe because the text it deletes is supposed to
+  // already live in AGENTS.md, and `upgrade` otherwise never touches
+  // AGENTS.md (preserves project docs by contract). Caught live against
+  // MAPS: without this, `upgrade` deleted the mirrors and the safety-gate
+  // text landed nowhere.
+  log("");
+  log(chalk.blue("Ensuring AGENTS.md carries the Safety gates section..."));
+  const safetyGatesResult = ensureSafetyGatesInAgentsMd(root, projectInfo);
+  log(`  ${chalk.green("+")} ${safetyGatesResult.path} (${safetyGatesResult.action})`);
 
   log("");
   log(chalk.blue("Refreshing workflow rules..."));

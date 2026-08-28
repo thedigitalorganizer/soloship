@@ -57,20 +57,85 @@ function asSubsection(body: string): string {
   return `### ${title}\n\n${rest}`;
 }
 
-/** Renders every safety-gate rule as one `## Safety gates` block, for
- * generateAgentsMd(). Verbatim content, not a summary — AGENTS.md is now the
- * only copy that ships. */
+// Markers wrapping the rendered section inside AGENTS.md. `ensureSafetyGatesSection`
+// (below) uses these to find-and-replace the section in an EXISTING AGENTS.md
+// without touching anything else in the file — the mechanical-migration half of
+// what Phase 2 started: deleting the four generated rule-mirror directories is
+// only safe once the text those mirrors held actually lives in AGENTS.md, and
+// `upgrade` preserves project docs by contract, so it can never just regenerate
+// the whole file. Caught live against MAPS (Phase 5 QA): `upgrade` deleted the
+// mirrors but never wrote this section into MAPS's pre-existing AGENTS.md,
+// since only `init`'s fresh generateAgentsMd() call embedded it.
+export const SAFETY_GATES_MARKER_START = "<!-- soloship:safety-gates:start -->";
+export const SAFETY_GATES_MARKER_END = "<!-- soloship:safety-gates:end -->";
+
+/** Renders every safety-gate rule as one marker-wrapped `## Safety gates`
+ * block, for generateAgentsMd() and ensureSafetyGatesSection(). Verbatim
+ * content, not a summary — AGENTS.md is now the only copy that ships. */
 export function renderSafetyGatesSection(): string {
   const rules = getSafetyGateRules();
   const sections = SAFETY_GATE_FILENAMES.map((f) => asSubsection(rules[f])).join("\n\n");
-  return `## Safety gates
+  return `${SAFETY_GATES_MARKER_START}
+## Safety gates
 
 These seven apply to every session, every host — they are not optional
 reading. A hook enforces what it mechanically can (billing, deploy,
 recurrence, browser-QA teardown); the rest depend on you actually following
 them.
 
-${sections}`;
+${sections}
+${SAFETY_GATES_MARKER_END}`;
+}
+
+/**
+ * Ensures `agentsMd` contains the current, verbatim Safety gates section —
+ * pure string transform, no fs. Three cases, in order:
+ *   1. Marker pair present → replace everything between (and including) the
+ *      markers with the current render. Handles a stale section from an
+ *      older Soloship version, and is idempotent — a second call with
+ *      identical rule text changes nothing (`changed: false`).
+ *   2. No markers, but a legacy unmarked `## Safety gates` heading (the
+ *      shape Phase 3 shipped before this function existed) → replace
+ *      heading-to-next-`##`-or-EOF, upgrading it to the marked form.
+ *   3. Neither → append the marked section at the end of the file.
+ * Never touches content outside the markers/legacy heading — any
+ * user-authored prose elsewhere in AGENTS.md survives byte-identical.
+ */
+export function ensureSafetyGatesSection(agentsMd: string): {
+  content: string;
+  changed: boolean;
+} {
+  const section = renderSafetyGatesSection();
+
+  const startIdx = agentsMd.indexOf(SAFETY_GATES_MARKER_START);
+  const endIdx = agentsMd.indexOf(SAFETY_GATES_MARKER_END);
+  if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+    const before = agentsMd.slice(0, startIdx);
+    const after = agentsMd.slice(endIdx + SAFETY_GATES_MARKER_END.length);
+    const replaced = before + section + after;
+    return { content: replaced, changed: replaced !== agentsMd };
+  }
+
+  const legacyHeadingRe = /^## Safety gates\b.*$/m;
+  const legacyMatch = agentsMd.match(legacyHeadingRe);
+  if (legacyMatch && legacyMatch.index !== undefined) {
+    const headingEnd = legacyMatch.index + legacyMatch[0].length;
+    const rest = agentsMd.slice(headingEnd);
+    const nextHeadingMatch = rest.match(/\n## /);
+    const sectionEnd =
+      nextHeadingMatch && nextHeadingMatch.index !== undefined
+        ? headingEnd + nextHeadingMatch.index
+        : agentsMd.length;
+    const before = agentsMd.slice(0, legacyMatch.index).replace(/\s+$/, "");
+    const after = agentsMd.slice(sectionEnd);
+    const replaced = `${before}\n\n${section}${after}`;
+    return { content: replaced, changed: true };
+  }
+
+  const trimmed = agentsMd.replace(/\s+$/, "");
+  const separator = trimmed.length > 0 ? "\n\n" : "";
+  const appended = `${trimmed}${separator}${section}\n`;
+  return { content: appended, changed: appended !== agentsMd };
 }
 
 const RULE_BILLING_CONFIRMATION_GATE = `# Billing / Credit / Rerun-Window Confirmation Gate (Auto-Loaded)
