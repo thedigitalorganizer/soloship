@@ -6,7 +6,105 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node -e '\nconst fs = require(\"fs\");\nconst { execSync } = require(\"child_process\");\ntry {\n  const input = fs.readFileSync(0, \"utf-8\");\n  const data = JSON.parse(input || \"{}\");\n  const cmd = data.toolCall?.args?.CommandLine || \"\";\n  if (/\\brm\\s+-rf\\s+(~|\\/Users|\\/home|\\$HOME|\\/)\\b/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Dangerous rm -rf targeting home or root directory.\" }));\n    process.exit(0);\n  }\n  if (/(?:cat|echo|printf|>)\\s*.*\\.env(?:\\s|$)/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Direct .env file modification.\" }));\n    process.exit(0);\n  }\n  if (/git\\s+push.*--force.*(?:main|master)/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Force push to main/master.\" }));\n    process.exit(0);\n  }\n  if (/(?:ANTHROPIC|OPENAI|STRIPE|FIREBASE|GEMINI)_[A-Z_]*KEY\\s*=\\s*[\"\\x27][a-zA-Z0-9]{20,}[\"\\x27]/.test(cmd)) {\n    console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Detected possible hardcoded API key.\" }));\n    process.exit(0);\n  }\n  if (/(?:npm\\s+run\\s+deploy|wrangler\\s+deploy|fly\\s+deploy|vercel\\s+--prod)/.test(cmd)) {\n    const branch = execSync(\"git branch --show-current 2>/dev/null\", { encoding: \"utf-8\" }).trim();\n    if (branch && branch !== \"main\" && branch !== \"master\") {\n      console.log(JSON.stringify({ decision: \"deny\", reason: \"BLOCKED: Deployments must only be run from main/master branch.\" }));\n      process.exit(0);\n    }\n  }\n} catch(e) {}\nconsole.log(JSON.stringify({ decision: \"allow\" }));\n'",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/command-safety.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-deploy-freshness": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/deploy-freshness.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-deploy-discipline": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/deploy-discipline.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-recurrence": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/recurrence.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-plan-truth": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/plan-truth.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-plan-merge": {
+    "PreToolUse": [
+      {
+        "matcher": "run_command",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/plan-merge.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-billing-confirmation": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/billing-confirmation.cjs\"'",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "soloship-plan-namespace": {
+    "PreToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/plan-namespace.cjs\"'",
             "timeout": 15
           }
         ]

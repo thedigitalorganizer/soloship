@@ -1,0 +1,86 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/command-safety.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/deploy-freshness.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/deploy-discipline.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/billing-confirmation.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/recurrence.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/plan-truth.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/plan-merge.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'node \"$(git rev-parse --show-toplevel)/scripts/soloship-hooks/plan-namespace.cjs\"'",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
