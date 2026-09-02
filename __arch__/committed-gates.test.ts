@@ -143,6 +143,56 @@ describe("committed gate: billing-confirmation", () => {
     );
     expect(status).toBe(0);
   });
+
+  // Scope regressions (2026-09-02): the gate guards CODE inside THIS project.
+  it("passes: prose may use billing vocabulary (a plan, a rule, a session note)", () => {
+    const { status } = run(
+      "billing-confirmation",
+      claudePayload("Write", {
+        file_path: "docs/plans/2026-09-02-billing-plan.md",
+        content: "Michael asked whether CoachAccountable sends the invoice or Stripe does; refund policy TBD.",
+      })
+    );
+    expect(status).toBe(0);
+  });
+
+  it("passes: the gate's own rule file can be written", () => {
+    const { status } = run(
+      "billing-confirmation",
+      claudePayload("Write", { file_path: ".claude/rules/billing-confirmation-gate.md", content: "# Billing gate" })
+    );
+    expect(status).toBe(0);
+  });
+
+  it("passes: an absolute path outside the project root, even billing code", () => {
+    const outside = realpathSync(mkdtempSync(join(tmpdir(), "soloship-outside-")));
+    try {
+      const { status } = run(
+        "billing-confirmation",
+        claudePayload("Write", { file_path: join(outside, "billing.ts"), content: "creditBalance -= 5" })
+      );
+      expect(status).toBe(0);
+    } finally {
+      rmSync(outside, { recursive: true, force: true });
+    }
+  });
+
+  it("MUST FIRE: an absolute path inside the project root still blocks", () => {
+    const { status, stderr } = run(
+      "billing-confirmation",
+      claudePayload("Write", { file_path: join(dir, "src", "billing.ts"), content: "x" })
+    );
+    expect(status).toBe(2);
+    expect(stderr).toContain("billing-confirmation-gate");
+  });
+
+  it("MUST FIRE: a non-prose file with billing content still blocks", () => {
+    const { status } = run(
+      "billing-confirmation",
+      claudePayload("Write", { file_path: "src/ledger.sql", content: "UPDATE accounts SET credit_balance = 0" })
+    );
+    expect(status).toBe(2);
+  });
 });
 
 describe("committed gate: deploy-discipline", () => {

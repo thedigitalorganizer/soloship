@@ -254,6 +254,11 @@ Writing first and asking later is the exact failure this prevents.
 Covers charges, refunds, invoices, subscriptions, credit grant/deduction/
 expiry, rerun/retry/grace/trial windows, and any backfill that touches those.
 
+Scope: code files inside this project. Prose (.md, .txt, plans, rules,
+session notes) and files outside the repository are never gated, whatever
+words they contain — the money vocabulary is what those documents exist to
+discuss.
+
 Before writing code, confirm with the user:
 
 1. **Unit and sign** — cents vs dollars; balance vs delta; larger number means more credit or more owed
