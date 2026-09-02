@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+### Fixed — billing-confirmation gate blocked prose and out-of-repo files
+
+The gate matched on words like "invoice" or "subscription" in ANY file the
+agent wrote, including markdown notes in a second-brain vault outside the
+repo, and blocked writing its own rule file because the filename contains
+"billing". It now stands down for prose files (`.md`, `.mdx`, `.markdown`,
+`.txt`, `.rst`, `.adoc`) and for absolute paths outside the project's git
+toplevel; code inside the repo is gated exactly as before. Run
+`npx soloship upgrade` to regenerate `scripts/soloship-hooks/billing-confirmation.cjs`.
+
 ## [0.28.0] - 2026-08-27
 
 ### Fixed — Most Claude Code safety gates were silently inert
