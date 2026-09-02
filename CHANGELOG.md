@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [0.28.1] - 2026-09-02
+
 ### Fixed — billing-confirmation gate blocked prose and out-of-repo files
 
 The gate matched on words like "invoice" or "subscription" in ANY file the
